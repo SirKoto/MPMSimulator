@@ -1,0 +1,21 @@
+
+2D_SIM/x64/
+
+2D_SIM/\.vs/
+
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# User-specific files (MonoDevelop/Xamarin Studio)
+*.userprefs
+
+# Mono auto generated files
+mono_crash.*
+binaries/
+
+Libraries/
