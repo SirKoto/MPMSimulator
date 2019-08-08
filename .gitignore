@@ -19,3 +19,5 @@ mono_crash.*
 binaries/
 
 Libraries/
+
+2D_SIM/2D_SIM\.vcxproj
