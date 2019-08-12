@@ -117,7 +117,7 @@ int main()
 		processInput(window);
 
 
-		for(int i = 0; i < 10; ++i) sim.step(1e-3f);
+		for(int i = 0; i < 1; ++i) sim.step(1e-3f);
 
 		n_particles = sim.dumpPositions(p_pos);
 
