@@ -24,7 +24,8 @@ namespace utils
 		float scale = 1.0f / std::sqrt(x * x + y * y);
 		float c = x * scale;
 		float d = y * scale;
-		r[1][1] = r[0][0] = c;
+		r[1][1] = c;
+		r[0][0] = c;
 		r[0][1] = -d;
 		r[1][0] = d;
 		s = glm::transpose(r) * m;

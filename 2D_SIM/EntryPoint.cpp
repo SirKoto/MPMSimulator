@@ -89,7 +89,7 @@ int main()
 
 	glPointSize(1.5f); // Drawing points
 
-	int n_particles;
+	int n_particles = 500;
 
 	// Create simulator and add points
 	Simulator_2D sim;
@@ -99,13 +99,14 @@ int main()
 		std::mt19937 mt_rng;
 		std::uniform_real_distribution<float> dis(-5.0f, 5.0f);
 
-		for (int i = 0; i < 1000; ++i)
+		for (int i = 0; i < n_particles; ++i)
 		{
 			sim.addParticle(glm::vec2(dis(mt_rng), dis(mt_rng)) + glm::vec2(40.0f,50.0f));
 		}
 	}
 	utils::LastFrame = (float)glfwGetTime();
-
+	n_particles = sim.dumpPositions(p_pos);
+	std::cerr << n_particles << std::endl;
 	sim.step(1e-4f);
 	while (!glfwWindowShouldClose(window))
 	{
@@ -116,9 +117,15 @@ int main()
 		processInput(window);
 
 
-		sim.step(1e-4f);
+		for(int i = 0; i < 10; ++i) sim.step(1e-3f);
 
 		n_particles = sim.dumpPositions(p_pos);
+
+		for (int i = 0; i < 2 * n_particles; i += 1)
+		{
+			p_pos[i] *= 5.0f;
+		}
+
 
 		glClear(GL_COLOR_BUFFER_BIT);
 
@@ -130,6 +137,7 @@ int main()
 		glBindBuffer(GL_ARRAY_BUFFER, VBO);
 		glBufferSubData(GL_ARRAY_BUFFER, 0, n_particles * (2 * sizeof(float)), p_pos);
 		shader.use();
+		std::cerr << "Draw" << std::endl;
 		glDrawArrays(GL_POINTS, 0, n_particles);
 
 
