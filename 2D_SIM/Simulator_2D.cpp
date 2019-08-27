@@ -22,8 +22,8 @@ unsigned int Simulator_2D::dumpPositions(float* positions) const
 	const unsigned int size = static_cast<unsigned int>(particles.size()) / 2;
 	for (; i < size; ++i)
 	{
-		positions[2 * i] = particles[i].pos.x * grid_size.x;
-		positions[2 * i + 1] = particles[i].pos.y * grid_size.y;
+		positions[2 * i] = particles[i].pos.x;// *grid_size.x;
+		positions[2 * i + 1] = particles[i].pos.y;// *grid_size.y;
 	}
 	return 2 * size;
 }
@@ -37,8 +37,8 @@ void Simulator_2D::step(float dt)
 	for (auto& p : this->particles)
 	{
 		// compute the center 
-		glm::vec2 cell_idx = glm::floor(p.pos * grid_size);
-		glm::vec2 distFromCenter = p.pos * grid_size - cell_idx - 0.5f; // center at point 0,0
+		glm::vec2 cell_idx = glm::floor(p.pos /* * grid_size*/);
+		glm::vec2 distFromCenter = p.pos /* * grid_size*/ - cell_idx - 0.5f; // center at point 0,0
 
 		glm::vec2 weights[3] = {
 		  0.5f * glm::pow(0.5f - distFromCenter, glm::vec2(2.0f)),
@@ -63,11 +63,11 @@ void Simulator_2D::step(float dt)
 		//Corotated constitucional model     // [http://mpm.graphics Eqn. 52]
 		glm::mat2 PF = (2 * mu * (p.F - r) * glm::transpose(p.F) + lambda * (J - 1) * J);
 
-		const glm::vec2 Dinv = 4.0f * grid_size * grid_size;
+		//const glm::vec2 Dinv = 4.0f * grid_size * grid_size;
 		// Identity sclae by inverse derivate
-		const glm::mat2 DinvM = glm::mat2(Dinv.x, 0.0f, 0.0f, Dinv.y);
+		//const glm::mat2 DinvM = glm::mat2(Dinv.x, 0.0f, 0.0f, Dinv.y);
 		//EQn. 173
-		glm::mat2 stress = - (dt * volume) * (DinvM * PF); // eq_16_term_0
+		glm::mat2 stress = - (dt * volume) * (4.0f * PF); // eq_16_term_0
 
 		glm::mat2 affine = stress + mass * p.C;
 
@@ -83,8 +83,8 @@ void Simulator_2D::step(float dt)
 
 
 				// cell_distance to the particle in the corresponding updating cell
-				glm::vec2 cell_dist = cell_x - p.pos * grid_size + 0.5f;
-				cell_dist *= d_size; // to [0,1]
+				glm::vec2 cell_dist = cell_x - p.pos /* * grid_size*/ + 0.5f;
+				// cell_dist *= d_size; // to [0,1]
 				const float w = weights[i + 1].x * weights[j + 1].y;
 
 				const glm::vec3 moment_mass(p.v * mass, mass); // moment and particle mass
@@ -135,8 +135,8 @@ void Simulator_2D::step(float dt)
 	for (auto& p : particles)
 	{
 		// compute the center 
-		glm::vec2 cell_idx = glm::floor(p.pos * grid_size);
-		glm::vec2 distFromCenter = p.pos * grid_size - cell_idx - 0.5f; // center at point 0,0
+		glm::vec2 cell_idx = glm::floor(p.pos /* * grid_size*/);
+		glm::vec2 distFromCenter = p.pos /* * grid_size*/ - cell_idx - 0.5f; // center at point 0,0
 
 		glm::vec2 weights[3] = {
 			0.5f * glm::pow(0.5f - distFromCenter,glm::vec2(2.0f)),
@@ -153,11 +153,11 @@ void Simulator_2D::step(float dt)
 			{
 
 				glm::vec2 cell_x = cell_idx + glm::vec2(i, j);
-				glm::vec2 cell_dist = cell_x - p.pos * grid_size + 0.5f;
+				glm::vec2 cell_dist = cell_x - p.pos/* * grid_size */+ 0.5f;
 				if (cell_x.x < 0 || cell_x.y < 0 || cell_x.x > height || cell_x.y > width) continue;
 
 				const float w = weights[i + 1].x * weights[j + 1].y;
-				const glm::vec2 cell = static_cast<glm::vec2>(grid[static_cast<int>(cell_x.x) + i][static_cast<int>(cell_x.y) + j]);
+				const glm::vec2 cell = grid[static_cast<int>(cell_x.x) + i][static_cast<int>(cell_x.y) + j];
 
 				if (cell.x != cell.x || cell.y != cell.y)
 				{
@@ -199,6 +199,6 @@ void Simulator_2D::step(float dt)
 
 void Simulator_2D::addParticle(const glm::vec2& pos, const glm::vec2& v)
 {
-	Particle p(pos * d_size, v);
+	Particle p(pos /* * d_size*/, v);
 	particles.push_back(p);
 }
