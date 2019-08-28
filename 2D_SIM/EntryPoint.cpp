@@ -78,7 +78,7 @@ int main()
 		glBindBuffer(GL_ARRAY_BUFFER, VBO);
 		glBufferData(GL_ARRAY_BUFFER, utils::maxParticles * 2 * sizeof(float), p_pos, GL_DYNAMIC_DRAW);
 
-		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (GLvoid*)0);
 		glEnableVertexAttribArray(0);
 	}
 
@@ -89,7 +89,7 @@ int main()
 
 	glPointSize(1.5f); // Drawing points
 
-	int n_particles = 500;
+	int n_particles = 100;
 
 	// Create simulator and add points
 	Simulator_2D sim;
