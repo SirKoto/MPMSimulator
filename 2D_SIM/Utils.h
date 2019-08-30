@@ -1,37 +1,23 @@
 #pragma once
-#include <glm/glm.hpp>
+
+#ifndef UTILS_H
+#define UTILS_H
+
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/glm.hpp>
 
-
+#include <string>
 namespace utils
 {
 	static unsigned int SCR_WIDTH = 800;
 	static unsigned int SCR_HEIGHT = 600;
 
-
-
+	static float DeltaTime = 0.0f;
+	static float LastFrame = 0.0f;
 	const static unsigned int maxParticles = 10000;
 
 
-	static float DeltaTime = 0.0f;
-	static float LastFrame = 0.0f;
-
-
-	inline void polarDecomposition2D(const glm::mat2& m, glm::mat2& s, glm::mat2& r)
-	{
-		float x = m[1][1] + m[0][0]; // trace
-		float y = m[1][0] - m[0][1];
-		float scale = 1.0f / std::sqrt(x * x + y * y);
-		float c = x * scale;
-		float d = y * scale;
-		r[1][1] = c;
-		r[0][0] = c;
-		r[0][1] = -d;
-		r[1][0] = d;
-		s = glm::transpose(r) * m;
-	}
-
-	inline glm::mat2 outerProduct(const glm::vec2& a,const glm::vec2& b)
+	inline glm::mat2 outerProduct(const glm::vec2& a, const glm::vec2& b)
 	{
 		glm::mat2 r(0.0f);
 
@@ -41,4 +27,15 @@ namespace utils
 		r[1][1] = a[1] * b[1];
 		return r;
 	}
+
+	class utilF
+	{
+	public:
+
+
+		inline static void polarDecomposition2D(const glm::mat2& m, glm::mat2& s, glm::mat2& r);
+
+		void static writeImageToDisk(char const* filename, int id, int w, int h, int comp, const void* data);
+	};
 }
+#endif // UTILS_H

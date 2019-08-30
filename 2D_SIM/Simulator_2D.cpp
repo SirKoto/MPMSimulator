@@ -1,5 +1,7 @@
 #include "Simulator_2D.h"
+
 #include "Utils.h"
+
 #include <algorithm>
 
 #include <iostream>
@@ -13,7 +15,7 @@ Simulator_2D::Simulator_2D(float E, float nu) :
 { 
 	grid_size = glm::vec2(width, height);
 
-	aspectR = width / height;
+	aspectR = static_cast<float>(width)/ height;
 
 	d_size = 1.0f / grid_size;
 
