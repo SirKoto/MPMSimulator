@@ -19,6 +19,9 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow* window);
 
+
+Shader shader;
+
 bool initGLFW(GLFWwindow *&window)
 {
 	glfwInit();
@@ -67,7 +70,7 @@ int main()
 
 	setCallbacks(window);
 
-	float p_pos[500 * 2];
+	float* p_pos = new float[utils::maxParticles * 2];
 
 	GLuint VAO, VBO;
 	{
@@ -82,21 +85,22 @@ int main()
 		glEnableVertexAttribArray(0);
 	}
 
-	const glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(utils::SCR_WIDTH), 0.0f, static_cast<float>(utils::SCR_HEIGHT));
-	Shader shader("shaders/shaderPoint.vert", "shaders/shaderPoint.frag");
+	//const glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(utils::SCR_WIDTH), 0.0f, static_cast<float>(utils::SCR_HEIGHT));
+	const glm::mat4 projection = glm::ortho(-5.0f, 85.0f, -5.0f, 85.0f);
+	shader =  Shader("shaders/shaderPoint.vert", "shaders/shaderPoint.frag");
 	shader.use();
 	shader.setMat4("projection", projection);
 
-	glPointSize(1.5f); // Drawing points
+	glPointSize(4.0f); // Drawing points
 
-	int n_particles = 100;
+	int n_particles = 4000;
 
 	// Create simulator and add points
 	Simulator_2D sim;
 	{
 		// add random particles
 
-		std::mt19937 mt_rng;
+		std::mt19937 mt_rng(42);
 		std::uniform_real_distribution<float> dis(-5.0f, 5.0f);
 
 		for (int i = 0; i < n_particles; ++i)
@@ -104,10 +108,13 @@ int main()
 			sim.addParticle(glm::vec2(dis(mt_rng), dis(mt_rng)) + glm::vec2(40.0f,50.0f));
 		}
 	}
-	utils::LastFrame = (float)glfwGetTime();
+
 	n_particles = sim.dumpPositions(p_pos);
 	std::cerr << n_particles << std::endl;
-	sim.step(1e-4f);
+
+	utils::LastFrame = (float)glfwGetTime();
+	sim.step(0.2f);
+
 	while (!glfwWindowShouldClose(window))
 	{
 		float currentFrame = (float)glfwGetTime();
@@ -117,14 +124,16 @@ int main()
 		processInput(window);
 
 
-		for(int i = 0; i < 1; ++i) sim.step(1e-3f);
+		for(int i = 0; i < 10; ++i) sim.step(0.2f);
 
 		n_particles = sim.dumpPositions(p_pos);
 
-		for (int i = 0; i < 2 * n_particles; i += 1)
+		/*for (int i = 0; i < 2 * n_particles; i += 2 )
 		{
-			p_pos[i] *= 5.0f;
-		}
+			p_pos[i] = p_pos[i] * utils::SCR_WIDTH ;
+			p_pos[i + 1] = p_pos[i + 1] * utils::SCR_HEIGHT * sim.getAspectRatio();
+
+		}*/
 
 
 		glClear(GL_COLOR_BUFFER_BIT);
@@ -137,7 +146,7 @@ int main()
 		glBindBuffer(GL_ARRAY_BUFFER, VBO);
 		glBufferSubData(GL_ARRAY_BUFFER, 0, n_particles * (2 * sizeof(float)), p_pos);
 		shader.use();
-		std::cerr << "Draw" << std::endl;
+		std::cerr << "Draw " << 1.0f/utils::DeltaTime << std::endl;
 		glDrawArrays(GL_POINTS, 0, n_particles);
 
 
@@ -152,12 +161,19 @@ int main()
 	return 0;
 }
 
-
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
 	glViewport(0, 0, width, height);
 	utils::SCR_WIDTH = width;
 	utils::SCR_HEIGHT = height;
+
+	// TODO: Observator system to update all projection matrix in shaders
+	//const glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(utils::SCR_WIDTH), 0.0f, static_cast<float>(utils::SCR_HEIGHT));
+	const glm::mat4 projection = glm::ortho(-5.0f, 85.0f, -5.0f, 85.0f);
+
+	shader.use();
+	shader.setMat4("projection", projection);
+
 }
 
 void processInput(GLFWwindow* window)

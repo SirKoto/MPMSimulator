@@ -7,9 +7,14 @@
 
 Simulator_2D::Simulator_2D(float E, float nu) :
 	mu_0(E / (2 * (1 + nu))),
-	lambda_0(E * nu / ((1 + nu) * (1 - 2 * nu)))
+	lambda_0(E * nu / ((1 + nu) * (1 - 2 * nu))),
+	width(80),
+	height(80)
 { 
 	grid_size = glm::vec2(width, height);
+
+	aspectR = width / height;
+
 	d_size = 1.0f / grid_size;
 
 	//particles = std::vector<Particle>(0);
@@ -24,6 +29,19 @@ unsigned int Simulator_2D::dumpPositions(float* positions) const
 	{
 		positions[2 * i] = particles[i].pos.x;// *grid_size.x;
 		positions[2 * i + 1] = particles[i].pos.y;// *grid_size.y;
+	}
+	return 2 * size;
+}
+
+unsigned int Simulator_2D::dumpPositionsNormalized(float* positions) const
+{
+	unsigned int i = 0;
+	const unsigned int size = static_cast<unsigned int>(particles.size()) >> 1; // div 2
+	for (; i < size; ++i)
+	{
+		// TODO: posar que en un sol pas copii tot (ja que un vec2 en teoria son els dos floats seguits)
+		positions[2 * i] = particles[i].pos.x * d_size.x;// *grid_size.x;
+		positions[2 * i + 1] = particles[i].pos.y * d_size.y;// *grid_size.y;
 	}
 	return 2 * size;
 }
@@ -213,3 +231,4 @@ void Simulator_2D::addParticle(const glm::vec2& pos, const glm::vec2& v)
 	Particle p(pos /* * d_size*/, v);
 	particles.push_back(p);
 }
+

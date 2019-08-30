@@ -14,24 +14,32 @@ public:
 	// Returns the number of particles dumped in positions
 	unsigned int dumpPositions(float* positions) const;
 
+	unsigned int dumpPositionsNormalized(float* positions) const;
+
 	void step(float dt);
 
 	void addParticle(const glm::vec2& pos, const glm::vec2& v = glm::vec2(0));
+
+	inline const float getAspectRatio() const { return this->aspectR; };
+
 
 private:
 
 	const float mu_0, lambda_0;
 
 	const float boundary = 0.05f;
-	const unsigned int width = 80, height = 80;
+	const unsigned int width, height; 
+
+	float aspectR;
+
 	glm::vec2 grid_size;
 	glm::vec2 d_size; // derivate of the size
 
 	const float hardening = 10.0f;
 	const float volume = 1.0f;
 	const float mass = 1.0f; // massa
-	const glm::vec2 g = glm::vec2(0, -10.0f);
-
+	const glm::vec2 g = glm::vec2(0, -0.05f);
+	
 	struct Particle
 	{
 		glm::vec2 pos, v; // posicio i velocitat de la particula

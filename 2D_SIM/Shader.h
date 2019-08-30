@@ -13,6 +13,12 @@ class Shader
 {
 public:
 	GLuint ID;
+
+
+	Shader()
+	{}
+
+
 	Shader(const GLchar* vsPath, const GLchar* fsPath)
 	{
 		std::string vertexCode;

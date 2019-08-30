@@ -10,7 +10,7 @@ namespace utils
 
 
 
-	const static unsigned int maxParticles = 1000;
+	const static unsigned int maxParticles = 5000;
 
 
 	static float DeltaTime = 0.0f;
