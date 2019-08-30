@@ -7,19 +7,7 @@
 
 namespace utils {
 
-	inline void utilF::polarDecomposition2D(const glm::mat2& m, glm::mat2& s, glm::mat2& r)
-	{
-		float x = m[1][1] + m[0][0]; // trace
-		float y = m[1][0] - m[0][1];
-		float scale = 1.0f / std::sqrt(x * x + y * y);
-		float c = x * scale;
-		float d = y * scale;
-		r[1][1] = c;
-		r[0][0] = c;
-		r[0][1] = -d;
-		r[1][0] = d;
-		s = glm::transpose(r) * m;
-	}
+	
 
 
 	void utilF::writeImageToDisk(char const* filename, int id, int w, int h, int comp, const void* data)
