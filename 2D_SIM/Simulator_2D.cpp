@@ -110,7 +110,7 @@ void Simulator_2D::step(float dt)
 				const glm::vec3 moment_mass(p.v * mass, mass); // moment and particle mass
 
 				grid[static_cast<int>(cell_x.x)][static_cast<int>(cell_x.y)] +=
-					w * (moment_mass + mass * glm::vec3(affine * cell_dist, 0));
+					w * (moment_mass + glm::vec3(affine * cell_dist, 0));
 
 
 
@@ -134,7 +134,7 @@ void Simulator_2D::step(float dt)
 				// normalize by mass
 				// momentum to velocity
 				cell /= cell.z;
-				cell += dt * glm::vec3(g, 0);
+				cell += glm::vec3(dt * g, 0);
 
 				//float x = static_cast<float>(i) / height;
 				//float y = static_cast<float>(j) / width;
@@ -178,7 +178,7 @@ void Simulator_2D::step(float dt)
 				//if (cell_x.x < 0 || cell_x.y < 0 || cell_x.x > height || cell_x.y > width) continue;
 
 				const float w = weights[i + 1].x * weights[j + 1].y;
-				const glm::vec2 cell = grid[static_cast<int>(cell_x.x) + i][static_cast<int>(cell_x.y) + j];
+				const glm::vec2 cell = grid[static_cast<int>(cell_x.x)][static_cast<int>(cell_x.y)];
 
 				if (cell.x != cell.x || cell.y != cell.y)
 				{

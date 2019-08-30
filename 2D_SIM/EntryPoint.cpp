@@ -93,7 +93,7 @@ int main()
 
 	glPointSize(4.0f); // Drawing points
 
-	int n_particles = 4000;
+	int n_particles = 9000;
 
 	// Create simulator and add points
 	Simulator_2D sim;
@@ -101,11 +101,13 @@ int main()
 		// add random particles
 
 		std::mt19937 mt_rng(42);
-		std::uniform_real_distribution<float> dis(-5.0f, 5.0f);
+		std::uniform_real_distribution<float> dis(-10.0f, 8.0f);
+		std::uniform_real_distribution<float> up_v(0, 2.0f);
+
 
 		for (int i = 0; i < n_particles; ++i)
 		{
-			sim.addParticle(glm::vec2(dis(mt_rng), dis(mt_rng)) + glm::vec2(40.0f,50.0f));
+			sim.addParticle(glm::vec2(dis(mt_rng), dis(mt_rng)) + glm::vec2(40.0f,50.0f), glm::vec2(up_v(mt_rng) - 1.0f, up_v(mt_rng)));
 		}
 	}
 
@@ -124,7 +126,7 @@ int main()
 		processInput(window);
 
 
-		for(int i = 0; i < 10; ++i) sim.step(0.2f);
+		for(int i = 0; i < 3; ++i) sim.step(0.2f);
 
 		n_particles = sim.dumpPositions(p_pos);
 
