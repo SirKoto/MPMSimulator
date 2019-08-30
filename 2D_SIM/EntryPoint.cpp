@@ -1,13 +1,26 @@
+
+#pragma once
+
+#include "Utils.h"
+
+#include <Windows.h>
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+
 #include <iostream>
+
 #include <random>
-#include "Utils.h"
+
 #include "Shader.h"
 #include "Simulator_2D.h"
+
+
+//#define PRINT_IMAGES_FLAG
 
 struct ParticlePos
 {
@@ -116,9 +129,11 @@ int main()
 
 	utils::LastFrame = (float)glfwGetTime();
 	sim.step(0.2f);
-
+	int iteration = -1;
 	while (!glfwWindowShouldClose(window))
 	{
+		++iteration;
+
 		float currentFrame = (float)glfwGetTime();
 		utils::DeltaTime = currentFrame - utils::LastFrame;
 		utils::LastFrame = currentFrame;
@@ -154,12 +169,24 @@ int main()
 
 		glBindVertexArray(0);
 
+#ifdef PRINT_IMAGES_FLAG
+		{
+			char *data = new char[3 * utils::SCR_WIDTH * utils::SCR_HEIGHT];
+
+			glReadPixels(0, 0, utils::SCR_WIDTH, utils::SCR_HEIGHT, GL_RGB, GL_UNSIGNED_BYTE, data);
+
+			utils::utilF::writeImageToDisk("ft_", iteration, utils::SCR_WIDTH, utils::SCR_HEIGHT, 3, data);
+			delete[] data;
+		}
+#endif // PRINT_IMAGES_FLAG
+
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
 	
 	glfwTerminate();
+
 	return 0;
 }
 

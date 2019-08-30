@@ -17,9 +17,14 @@
 # Mono auto generated files
 mono_crash.*
 binaries/
+Release/
 
-Libraries/
+Libraries/bin/
 
+*.log
+
+# images outputted
+*.png 
 
 *.vcxproj
 
