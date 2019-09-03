@@ -71,25 +71,25 @@ void Simulator_2D::step(float dt)
 		float mu = mu_0 * e;
 		float lambda = lambda_0 * e;
 
-		//float J = glm::determinant(p.F);
+		float J = glm::determinant(p.F);
 		// Euler explicit time integration
 		// Looking for stress
 
 
 		glm::mat2 s, r;
-		//utils::polarDecomposition2D(p.F, s, r); // Decompose the deformation gradient in a rotation and an scale
+		utils::polarDecomposition2D(p.F, s, r); // Decompose the deformation gradient in a rotation and an scale
 
 
 		//Corotated constitucional model     // [http://mpm.graphics Eqn. 52]
-		//glm::mat2 PF = (2 * mu * (p.F - r) * glm::transpose(p.F) + lambda * (J - 1) * J);
+		glm::mat2 PF = 2.0f * mu * (p.F - r) * glm::transpose(p.F) + lambda * (J - 1.0f) * J;
 
 		//const glm::vec2 Dinv = 4.0f * grid_size * grid_size;
 		// Identity sclae by inverse derivate
 		//const glm::mat2 DinvM = glm::mat2(Dinv.x, 0.0f, 0.0f, Dinv.y);
 		//EQn. 173
-		//glm::mat2 stress = - (dt * volume) * (4.0f * PF); // eq_16_term_0
+		glm::mat2 stress = - (dt * volume) * (4.0f * PF); // eq_16_term_0
 
-		glm::mat2 affine = p.C;//stress + mass * p.C;
+		glm::mat2 affine = stress + mass * p.C;
 
 		//P2G
 		for (int i = -1; i < 2; ++i)
@@ -180,17 +180,17 @@ void Simulator_2D::step(float dt)
 				//if (cell_x.x < 0 || cell_x.y < 0 || cell_x.x > height || cell_x.y > width) continue;
 
 				const float w = weights[i + 1].x * weights[j + 1].y;
-				const glm::vec2 cell = grid[static_cast<int>(cell_x.x)][static_cast<int>(cell_x.y)];
+				const glm::vec2 cell_v = grid[static_cast<int>(cell_x.x)][static_cast<int>(cell_x.y)];
 
-				if (cell.x != cell.x || cell.y != cell.y)
+				if (cell_v.x != cell_v.x || cell_v.y != cell_v.y)
 				{
 					std::cerr << "preb v nan" << std::endl;
 				}
 
-				p.v += w * cell;
+				p.v += w * cell_v;
 
 				// apic, eq 10
-				p.C += utils::outerProduct(w * cell, cell_dist);
+				p.C += utils::outerProduct(w * cell_v, cell_dist);
 			}
 		}
 
@@ -204,27 +204,36 @@ void Simulator_2D::step(float dt)
 
 		p.pos += dt * p.v;
 
-		/*if (p.pos.x < 0) p.pos.x = 0;
-		if (p.pos.x > 79) p.pos.x = 79;
-		if (p.pos.y < 0) p.pos.y = 0;
-		if (p.pos.y > 79)p.pos.y = 79;
-		*/
 
 		// safety clamp!!
 
 		p.pos = glm::clamp(p.pos, glm::vec2(1, 1), grid_size - 2.0f);
 
-		//glm::mat2 F = (glm::mat2(1.0f) + dt * p.C) * p.F;
+		// update F gradient
+		glm::mat2 F = (glm::mat2(1.0f) + dt * p.C) * p.F;
 
+		glm::mat2 svd_u, svd_e, svd_v;
+		utils::singularValueDecomposition(F, svd_u, svd_e, svd_v);
 
+		glm::mat2 test = svd_u* svd_e* svd_v;
+		// Snow paper elasticiy constrains
+		for (int i = 0; i < 2; ++i) {
+			svd_e[i][i] = glm::clamp(svd_e[i][i], 1.0f - 2.5e-2f, 1.0f + 7.5e-3f);
+
+		}
 
 		/*if (!_finite(F[0][0]) || !_finite(F[0][1]) || !_finite(F[1][0]) || !_finite(F[1][1]))
 		{
 			std::cerr << "another NAN" << std::endl;
 		}*/
-		//p.F = F;
-		//p.J = glm::determinant(F);
 
+		float oldJ = glm::determinant(F);
+		F = svd_u * svd_e * glm::transpose(svd_v);
+
+		float newJ = glm::clamp(p.J * oldJ / glm::determinant(F), 0.6f, 20.0f);
+
+		p.F = F;
+		p.J = newJ;
 	}
 }
 

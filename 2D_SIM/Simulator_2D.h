@@ -9,7 +9,7 @@
 class Simulator_2D
 {
 public:
-	Simulator_2D(float E = 1e4f, float nu = 0.2f);
+	Simulator_2D(float E = 3.5e4f, float nu = 0.4f);
 
 	// Returns the number of particles dumped in positions
 	unsigned int dumpPositions(float* positions) const;
@@ -35,10 +35,10 @@ private:
 	glm::vec2 grid_size;
 	glm::vec2 d_size; // derivate of the size
 
-	const float hardening = 10.0f;
-	const float volume = 1.0f;
+	const float hardening = 0.3f;
+	const float volume = 0.3f;
 	const float mass = 1.0f; // massa
-	const glm::vec2 g = glm::vec2(0, -0.05f);
+	const glm::vec2 g = glm::vec2(0, -10.0f);
 	
 	struct Particle
 	{

@@ -52,8 +52,7 @@ namespace utils
 	// Find A = UEV^T where U and V are ortho and E diagonal
 	inline void singularValueDecomposition(glm::mat2 m, glm::mat2& U, glm::mat2& E, glm::mat2& V)
 	{
-		//set diagonal E
-		E[0][1] = E[1][0] = 0;
+		
 
 		glm::mat2 S;
 		polarDecomposition2D(m, S, U); // S scale, U rotation
@@ -93,6 +92,9 @@ namespace utils
 
 		V = glm::transpose(V);
 		U = U * V;
+
+		//set diagonal E
+		E[0][1] = E[1][0] = 0;
 	}
 
 	class utilF
