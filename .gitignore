@@ -1,8 +1,4 @@
 
-2D_SIM/x64/
-
-2D_SIM/\.vs/
-
 
 # User-specific files
 *.rsuser
@@ -25,8 +21,6 @@ Libraries/bin/
 
 # images outputted
 *.png 
-
-*.vcxproj
 
 
 

@@ -101,9 +101,6 @@ namespace utils
 	{
 	public:
 
-
-		inline static void polarDecomposition2D(const glm::mat2& m, glm::mat2& s, glm::mat2& r);
-
 		void static writeImageToDisk(char const* filename, int id, int w, int h, int comp, const void* data);
 	};
 }
