@@ -84,18 +84,25 @@ int main()
 	setCallbacks(window);
 
 	float* p_pos = new float[utils::maxParticles * 2];
-
-	GLuint VAO, VBO;
+	glm::vec3* p_col = new glm::vec3[utils::maxParticles];
+	GLuint VAO, VBO[2];
 	{
 		glGenVertexArrays(1, &VAO);
 		glBindVertexArray(VAO);
 
-		glGenBuffers(1, &VBO);
-		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		glGenBuffers(2, VBO);
+
+		glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
 		glBufferData(GL_ARRAY_BUFFER, utils::maxParticles * 2 * sizeof(float), p_pos, GL_DYNAMIC_DRAW);
 
 		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (GLvoid*)0);
 		glEnableVertexAttribArray(0);
+
+		glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
+		glBufferData(GL_ARRAY_BUFFER, utils::maxParticles * sizeof(glm::vec3), p_col, GL_STATIC_DRAW);
+
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (GLvoid*)0);
+		glEnableVertexAttribArray(1);
 	}
 
 	//const glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(utils::SCR_WIDTH), 0.0f, static_cast<float>(utils::SCR_HEIGHT));
@@ -120,7 +127,14 @@ int main()
 
 		for (int i = 0; i < n_particles; ++i)
 		{
-			sim.addParticle(glm::vec2(dis(mt_rng), dis(mt_rng)) + glm::vec2(40.0f,50.0f), 0.0f * glm::vec2(up_v(mt_rng) - 1.0f, up_v(mt_rng)));
+			float height = dis(mt_rng);
+			sim.addParticle(glm::vec2(dis(mt_rng), height) + glm::vec2(40.0f,50.0f), 0.0f * glm::vec2(up_v(mt_rng) - 1.0f, up_v(mt_rng)));
+			p_col[i] = height > 0 ? glm::vec3(0.0f, 1.0f, 0.0f) : glm::vec3(1.0f, 0.0f, 1.0f); // color according to height
+		}
+
+		{ // add the color into the buffer for each particle
+			glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
+			glBufferData(GL_ARRAY_BUFFER, utils::maxParticles * sizeof(glm::vec3), p_col, GL_STATIC_DRAW);
 		}
 	}
 
@@ -145,13 +159,6 @@ int main()
 
 		n_particles = sim.dumpPositions(p_pos);
 
-		/*for (int i = 0; i < 2 * n_particles; i += 2 )
-		{
-			p_pos[i] = p_pos[i] * utils::SCR_WIDTH ;
-			p_pos[i + 1] = p_pos[i + 1] * utils::SCR_HEIGHT * sim.getAspectRatio();
-
-		}*/
-
 
 		glClear(GL_COLOR_BUFFER_BIT);
 
@@ -160,7 +167,7 @@ int main()
 		glBindVertexArray(VAO);
 
 		// update positions
-		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
 		glBufferSubData(GL_ARRAY_BUFFER, 0, n_particles * (2 * sizeof(float)), p_pos);
 		shader.use();
 		std::cerr << "Draw " << 1.0f/utils::DeltaTime << std::endl;

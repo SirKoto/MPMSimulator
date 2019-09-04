@@ -26,13 +26,14 @@ Simulator_2D::Simulator_2D(float E, float nu) :
 unsigned int Simulator_2D::dumpPositions(float* positions) const
 {
 	unsigned int i = 0;
-	const unsigned int size = static_cast<unsigned int>(particles.size()) / 2;
-	for (; i < size; ++i)
+	const unsigned int size = static_cast<unsigned int>(particles.size());
+	for (; i < size; i += 2)
 	{
-		positions[2 * i] = particles[i].pos.x;// *grid_size.x;
-		positions[2 * i + 1] = particles[i].pos.y;// *grid_size.y;
+		const int j = i >> 1;
+		positions[i] = particles[j].pos.x;// *grid_size.x;
+		positions[i + 1] = particles[j].pos.y;// *grid_size.y;
 	}
-	return 2 * size;
+	return size;
 }
 
 unsigned int Simulator_2D::dumpPositionsNormalized(float* positions) const
