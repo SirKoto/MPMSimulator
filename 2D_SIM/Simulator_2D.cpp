@@ -143,11 +143,21 @@ void Simulator_2D::step(float dt)
 				//float y = static_cast<float>(j) / width;
 				// resolution and borders
 				//if (x < boundary || x > 1 - boundary || y > 1 - boundary)
-				if(i < 2 || i > height - 3)
+				if(i < 2 && cell.x < 0.0f)
 				{
 					cell.x = 0.0f;
 				}
-				if (j < 2 || j > width - 3)
+				else if (i > height - 3 && cell.x > 0.0f)
+				{
+					cell.x = 0.0f;
+				}
+
+
+				if (j < 2 && cell.y < 0.0f)
+				{
+					cell.y = 0.0f;
+				}
+				else if (j > width - 3 && cell.y > 0.0f)
 				{
 					cell.y = 0.0f;
 				}

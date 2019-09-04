@@ -9,7 +9,7 @@
 class Simulator_2D
 {
 public:
-	Simulator_2D(float E = 3.5e4f, float nu = 0.4f);
+	Simulator_2D(float E = 3.5e4f, float nu = 0.42f);
 
 	// Returns the number of particles dumped in positions
 	unsigned int dumpPositions(float* positions) const;
