@@ -33,7 +33,7 @@ unsigned int Simulator_2D::dumpPositions(float* positions) const
 		positions[i] = particles[j].pos.x;// *grid_size.x;
 		positions[i + 1] = particles[j].pos.y;// *grid_size.y;
 	}
-	return size;
+	return size >> 1;
 }
 
 unsigned int Simulator_2D::dumpPositionsNormalized(float* positions) const
@@ -46,7 +46,7 @@ unsigned int Simulator_2D::dumpPositionsNormalized(float* positions) const
 		positions[2 * i] = particles[i].pos.x * d_size.x;// *grid_size.x;
 		positions[2 * i + 1] = particles[i].pos.y * d_size.y;// *grid_size.y;
 	}
-	return 2 * size;
+	return size;
 }
 
 void Simulator_2D::step(float dt)
