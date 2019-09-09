@@ -3,9 +3,9 @@
 #include "Utils.h"
 
 #include <algorithm>
-
 #include <iostream>
-
+#include <Eigen/Dense> // include all core and algebra headers
+// TODO: refactor to Eigen
 
 Simulator_2D::Simulator_2D(float E, float nu) :
 	mu_0(E / (2 * (1 + nu))),

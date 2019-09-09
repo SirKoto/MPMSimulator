@@ -8,10 +8,18 @@ Projecte de Pol Martín Garcia de final de carrera d'informàtica.
 * GLAD
 * stb_image
 * OpenGL: min v3.3
+* Eigen
 
 ## Estat actual
 Creant versió bidimensional del simulador de fluids de MPM.
 Usant OpenGL per visualitzar.
+
+## Output images
+Per fer output d'imatges s'ha de descomentar la seguent linea  del fitxer EntryPoint.cpp
+```c++
+ #define PRINT_IMAGES_FLAG
+ ```
+ Es creara una nova carpeta amb els fotogrames.
 
 ## Links
 

@@ -3,7 +3,6 @@
 #define _SIM2D_
 
 #include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
 #include <vector>
 
 class Simulator_2D
