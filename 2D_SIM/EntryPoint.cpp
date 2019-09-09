@@ -129,7 +129,7 @@ int main()
 		{
 			float height = dis(mt_rng);
 			sim.addParticle(glm::vec2(dis(mt_rng), height) + glm::vec2(40.0f,50.0f), 0.0f * glm::vec2(up_v(mt_rng) - 1.0f, up_v(mt_rng)));
-			p_col[i] = height > 0 ? glm::vec3(0.0f, 1.0f, 0.0f) : glm::vec3(1.0f, 0.0f, 1.0f); // color according to height
+			p_col[i] = height > 8.0f ? glm::vec3(0.0f, 1.0f, 0.0f) : height < -8.0f ? glm::vec3(0.0f,1.0f,1.0f): glm::vec3(1.0f, 0.0f, 1.0f); // color according to height
 		}
 
 		{ // add the color into the buffer for each particle
