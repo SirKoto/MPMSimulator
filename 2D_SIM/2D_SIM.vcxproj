@@ -70,12 +70,12 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>D:\FluidSimulation\Libraries\includes;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\FluidSimulation\Libraries\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\Libraries\includes;$(IncludePath)</IncludePath>
+    <LibraryPath>..\Libraries\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>D:\FluidSimulation\Libraries\includes;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\FluidSimulation\Libraries\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\Libraries\includes;$(IncludePath)</IncludePath>
+    <LibraryPath>..\Libraries\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
