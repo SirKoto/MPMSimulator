@@ -6,6 +6,8 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/glm.hpp>
 
+#include <Eigen/Dense>
+
 #include <iostream>
 #include <string>
 namespace utils
@@ -18,31 +20,33 @@ namespace utils
 	const static unsigned int maxParticles = 10000;
 
 
-	inline glm::mat2 outerProduct(const glm::vec2& a, const glm::vec2& b)
+	inline void SumOuterProduct(Eigen::Matrix2f& r, const Eigen::Array2f& a, const Eigen::Array2f& b)
 	{
-		glm::mat2 r(0.0f);
 
-		r[0][0] = a[0] * b[0];
-		r[0][1] = a[0] * b[1];
-		r[1][0] = a[1] * b[0];
-		r[1][1] = a[1] * b[1];
-		return r;
+		r(0,0) += a[0] * b[0];
+		r(0,1) += a[0] * b[1];
+		r(1,0) += a[1] * b[0];
+		r(1,1) += a[1] * b[1];
 	}
 
-	inline void polarDecomposition2D(const glm::mat2& m, glm::mat2& s, glm::mat2& r)
+	inline void polarDecomposition2D(const Eigen::Matrix2f& m, Eigen::Matrix2f& s, Eigen::Matrix2f& r)
 	{
-		float x = m[1][1] + m[0][0]; // trace
-		float y = m[1][0] - m[0][1];
+		float x = m(1,1) + m(0,0); // trace
+		float y = m(1,0) - m(0,1);
 		float scale = 1.0f / std::sqrt(x * x + y * y);
 		float c = x * scale;
 		float d = y * scale;
+		r << c, -d,
+			d, c;
+		/*
 		r[1][1] = c;
 		r[0][0] = c;
 		r[0][1] = -d;
 		r[1][0] = d;
-		s = glm::transpose(r) * m;
+		*/
+		s = r.transpose() * m;
 
-		if (s[0][0] != s[0][0])
+		if (s != s)
 		{
 			std::cerr << "NAN in polar decom" << std::endl;
 		}
@@ -52,10 +56,10 @@ namespace utils
 	// Find A = UEV^T where U and V are ortho and E diagonal
 	inline void singularValueDecomposition(glm::mat2 m, glm::mat2& U, glm::mat2& E, glm::mat2& V)
 	{
-		
+		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! NOT WORKING !!!!!!!!!!!!!!!!!!
 
 		glm::mat2 S;
-		polarDecomposition2D(m, S, U); // S scale, U rotation
+		//polarDecomposition2D(m, S, U); // S scale, U rotation
 		float c, s;
 		if (std::abs(S[0][1]) < 1e-6f)
 		{
