@@ -4,7 +4,14 @@
 
 #include <algorithm>
 #include <iostream>
-// TODO: refactor to Eigen
+
+#define TIME_COUNT_FLAG
+#define G2P_FLAG
+
+
+#ifdef TIME_COUNT_FLAG
+#include <chrono>
+#endif
 
 Simulator_2D::Simulator_2D(float E, float nu) :
 	mu_0(E / (2 * (1 + nu))),
@@ -58,6 +65,9 @@ void Simulator_2D::step(float dt)
 	// all grid with 0's, velocity and mass
 	std::memset(grid, 0, sizeof(grid));
 
+#ifdef TIME_COUNT_FLAG
+	auto start = std::chrono::steady_clock::now();
+#endif
 	// Particle to grid
 	for (auto& p : this->particles)
 	{
@@ -72,7 +82,7 @@ void Simulator_2D::step(float dt)
 		  0.5f * (distFromCenter + 0.5f).square()
 		};
 
-		// Lamé parameters
+		// Lamï¿½ parameters
 		const float e = std::exp(hardening * (1.0f - p.J));
 		const float mu = mu_0 * e;
 		const float lambda = lambda_0 * e;
@@ -130,6 +140,17 @@ void Simulator_2D::step(float dt)
 		}
 	}
 
+#ifdef TIME_COUNT_FLAG
+	auto end = std::chrono::steady_clock::now();
+	auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+	MSG("P2G " << elapsed << " us");
+#endif
+
+
+#ifdef TIME_COUNT_FLAG
+	start = std::chrono::steady_clock::now();
+#endif
+
 	// Process grid
 	for (unsigned int i = 0; i < height; ++i)
 	{
@@ -171,9 +192,29 @@ void Simulator_2D::step(float dt)
 		}
 	}
 
+
+#ifdef TIME_COUNT_FLAG
+	end = std::chrono::steady_clock::now();
+	elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+	MSG("GRID P. " << elapsed << " us");
+#endif
+
+#ifdef TIME_COUNT_FLAG
+	start = std::chrono::steady_clock::now();
+#endif
+
+#if defined(TIME_COUNT_FLAG) && defined(G2P_FLAG)
+	long long v1 = 0;
+	long long v2 = 0;
+	long long v3 = 0;
+	long long v4 = 0;
+#endif
 	// Grid to particle
 	for (auto& p : particles)
 	{
+#if defined(TIME_COUNT_FLAG) && defined(G2P_FLAG)
+		auto start_in = std::chrono::steady_clock::now();
+#endif
 		// compute the center 
 		const Eigen::Array2f& cell_idxf = (p.pos /* * grid_size*/);
 		const Eigen::Array2i cell_idx = cell_idxf.cast<int>(); // floor
@@ -188,6 +229,13 @@ void Simulator_2D::step(float dt)
 		p.C.setZero();
 		p.v.setZero();
 
+#if defined(TIME_COUNT_FLAG) && defined(G2P_FLAG)
+		end = std::chrono::steady_clock::now();
+		v1 += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start_in).count();
+
+		start_in = std::chrono::steady_clock::now();
+#endif
+		// b-spline
 		for (int i = -1; i < 2; ++i)
 		{
 			for (int j = -1; j < 2; ++j)
@@ -215,6 +263,12 @@ void Simulator_2D::step(float dt)
 
 		p.C *= 4.0f;
 
+#if defined(TIME_COUNT_FLAG) && defined(G2P_FLAG)
+		end = std::chrono::steady_clock::now();
+		v2 += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start_in).count();
+
+		start_in = std::chrono::steady_clock::now();
+#endif
 		// advect particles
 		if (p.v.x() != p.v.x() || p.v.y() != p.v.y())
 		{
@@ -231,7 +285,12 @@ void Simulator_2D::step(float dt)
 		Eigen::Matrix2f F = (Eigen::Matrix2f::Identity() + dt * p.C) * p.F;
 
 		const Eigen::JacobiSVD<Eigen::Matrix2f, Eigen::NoQRPreconditioner> svd(F, Eigen::ComputeFullU | Eigen::ComputeFullV);
+#if defined(TIME_COUNT_FLAG) && defined(G2P_FLAG)
+		end = std::chrono::steady_clock::now();
+		v3 += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start_in).count();
 
+		start_in = std::chrono::steady_clock::now();
+#endif
 		const Eigen::Matrix2f& svd_u = svd.matrixU();
 		const Eigen::Matrix2f& svd_v = svd.matrixV();
 
@@ -255,7 +314,30 @@ void Simulator_2D::step(float dt)
 
 		p.F = F;
 		p.J = newJ;
+
+#if defined(TIME_COUNT_FLAG) && defined(G2P_FLAG)
+		end = std::chrono::steady_clock::now();
+		v4 += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start_in).count();
+#endif
 	}
+
+#if defined(TIME_COUNT_FLAG) && defined(G2P_FLAG)
+	double t = static_cast<double>(v1) / particles.size();
+	TMSG("Weights  " << t << " ns");
+	t = static_cast<double>(v2) / particles.size();
+	TMSG("B-Spline " << t << " ns");
+	t = static_cast<double>(v3) / particles.size();
+	TMSG("Adve&SVD " << t << " ns");
+	t = static_cast<double>(v4) / particles.size();
+	TMSG("end " << t << " ns");
+#endif
+
+#ifdef TIME_COUNT_FLAG
+	end = std::chrono::steady_clock::now();
+	elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+	MSG("G2P " << elapsed << " us");
+	MSG("");
+#endif
 }
 
 void Simulator_2D::addParticle(const glm::vec2& pos, const glm::vec2& v)

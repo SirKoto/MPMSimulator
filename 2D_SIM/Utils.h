@@ -10,6 +10,10 @@
 
 #include <iostream>
 #include <string>
+
+
+#define MSG(m) std::cout << m << std::endl 
+#define TMSG(m) std::cout << "\t" << m << std::endl
 namespace utils
 {
 	static unsigned int SCR_WIDTH = 800;
