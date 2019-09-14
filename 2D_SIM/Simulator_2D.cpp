@@ -246,12 +246,7 @@ void Simulator_2D::step(float dt)
 				//if (cell_x.x() < 0 || cell_x.y() < 0 || cell_x.x() > height || cell_x.y() > width) continue;
 
 				const float w = weights[i + 1].x() * weights[j + 1].y();
-				const Eigen::Array2f cell_v = grid[cell_x.x()][cell_x.y()].head<2>();
-
-				if (cell_v.x() != cell_v.x() || cell_v.y() != cell_v.y())
-				{
-					std::cerr << "preb v nan" << std::endl;
-				}
+				const Eigen::Array2f& cell_v = grid[cell_x.x()][cell_x.y()].head<2>();
 
 				p.v += w * cell_v;
 
@@ -270,11 +265,6 @@ void Simulator_2D::step(float dt)
 		start_in = std::chrono::steady_clock::now();
 #endif
 		// advect particles
-		if (p.v.x() != p.v.x() || p.v.y() != p.v.y())
-		{
-			std::cerr << "We have a NAN" << std::endl;
-		}
-
 		p.pos += dt * p.v;
 
 
