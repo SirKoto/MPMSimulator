@@ -4,6 +4,7 @@
 
 #include <glm/glm.hpp>
 #include <vector>
+#include <Eigen/Dense> // include all core and algebra headers
 
 class Simulator_2D
 {
@@ -31,36 +32,48 @@ private:
 
 	float aspectR;
 
-	glm::vec2 grid_size;
-	glm::vec2 d_size; // derivate of the size
+	Eigen::Array2f grid_size;
+	Eigen::Array2f d_size; // derivate of the size
+
+	Eigen::Array2f minBorder, maxBorder;
 
 	const float hardening = 0.3f;
 	const float volume = 0.3f;
 	const float mass = 1.0f; // massa
-	const glm::vec2 g = glm::vec2(0, -10.0f);
+	const Eigen::Array2f g = Eigen::Array2f(0.0f, -10.0f);
 	
 	struct Particle
 	{
-		glm::vec2 pos, v; // posicio i velocitat de la particula
+		Eigen::Array2f pos, v; // posicio i velocitat de la particula
 
-		glm::mat2 F, C; // Gradient de deformació i APIC
+		Eigen::Matrix2f F, C; // Gradient de deformaciï¿½ i APIC
 
 		float J; // Determinat de F (Jacobian) indica la deformacio del volum
 
-		Particle() : pos(0), v(0), F(1), C(0), J(1)
-		{}
+		Particle() : J(1.0f)
+		{
+			pos = Eigen::Array2f::Zero();
+			v = Eigen::Array2f::Zero();
 
-		Particle(const glm::vec2& x, const glm::vec2& v = glm::vec2(0)) :
+			F = Eigen::Matrix2f::Identity();
+			C = Eigen::Matrix2f::Zero();
+		}
+
+		Particle(const Eigen::Array2f& x, Eigen::Array2f& v) :
 			pos(x),
 			v(v),
-			F(1),
-			C(0),
 			J(1)
-		{}
+		{
+			F = Eigen::Matrix2f::Identity();
+			C = Eigen::Matrix2f::Zero();
+		}
 	};
 
+	// Get index = 128 * x + y
+	#define getInd(x, y) ((x << 7) | y)
+
 	std::vector<Particle> particles;
-	glm::vec3 grid[80 + 1][80 + 1]; // v.x, v.y, mass
+	Eigen::Array3f grid[128 * 128]; // v.x, v.y, mass
 
 };
 
