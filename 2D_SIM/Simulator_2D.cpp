@@ -5,8 +5,8 @@
 #include <algorithm>
 #include <iostream>
 
-#define TIME_COUNT_FLAG
-#define G2P_FLAG
+//#define TIME_COUNT_FLAG
+//#define G2P_FLAG
 
 
 #ifdef TIME_COUNT_FLAG
@@ -82,7 +82,7 @@ void Simulator_2D::step(float dt)
 		  0.5f * (distFromCenter + 0.5f).square()
 		};
 
-		// Lam� parameters
+		// Lame parameters
 		const float e = std::exp(hardening * (1.0f - p.J));
 		const float mu = mu_0 * e;
 		const float lambda = lambda_0 * e;
@@ -159,7 +159,7 @@ void Simulator_2D::step(float dt)
 			Eigen::Array3f& cell = grid[i][j]; // REFERENCE
 			// cell is (v.x(), v.y(), mass)
 			// only if there is mass
-			if (cell.z() > 0)  // TODO: posar != per a eficiencia
+			if (cell.z() > 0)
 			{
 				// normalize by mass
 				// momentum to velocity
@@ -197,9 +197,7 @@ void Simulator_2D::step(float dt)
 	end = std::chrono::steady_clock::now();
 	elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 	MSG("GRID P. " << elapsed << " us");
-#endif
 
-#ifdef TIME_COUNT_FLAG
 	start = std::chrono::steady_clock::now();
 #endif
 

@@ -46,14 +46,14 @@ private:
 	{
 		Eigen::Array2f pos, v; // posicio i velocitat de la particula
 
-		Eigen::Matrix2f F, C; // Gradient de deformació i APIC
+		Eigen::Matrix2f F, C; // Gradient de deformaciï¿½ i APIC
 
 		float J; // Determinat de F (Jacobian) indica la deformacio del volum
 
 		Particle() : J(1.0f)
 		{
-			pos << 0.0f, 0.0f;
-			v << 0.0f, 0.0f;
+			pos = Eigen::Array2f::Zero();
+			v = Eigen::Array2f::Zero();
 
 			F = Eigen::Matrix2f::Identity();
 			C = Eigen::Matrix2f::Zero();
@@ -70,7 +70,7 @@ private:
 	};
 
 	std::vector<Particle> particles;
-	Eigen::Array3f grid[80 + 1][80 + 1]; // v.x, v.y, mass
+	Eigen::Array3f grid[128][128]; // v.x, v.y, mass
 
 };
 
