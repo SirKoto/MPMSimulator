@@ -129,11 +129,11 @@ void Simulator_2D::step(float dt)
 
 				moment_mass.head<2>() += (affine * cell_dist).array();
 
-				grid[cell_x.x()][cell_x.y()] += w * moment_mass;
+				grid[getInd(cell_x.x(),cell_x.y())] += w * moment_mass;
 
 
 
-				if (((grid[cell_x.x()][cell_x.y()]) != (grid[cell_x.x()][cell_x.y()])).any()) {
+				if (((grid[getInd(cell_x.x(), cell_x.y())]) != (grid[getInd(cell_x.x(), cell_x.y())])).any()) {
 					std::cerr << "veri bigu problem" << std::endl;
 				}
 			}
@@ -156,7 +156,7 @@ void Simulator_2D::step(float dt)
 	{
 		for (unsigned int j = 0; j < width; ++j)
 		{
-			Eigen::Array3f& cell = grid[i][j]; // REFERENCE
+			Eigen::Array3f& cell = grid[getInd(i,j)]; // REFERENCE
 			// cell is (v.x(), v.y(), mass)
 			// only if there is mass
 			if (cell.z() > 0)
@@ -244,7 +244,7 @@ void Simulator_2D::step(float dt)
 				//if (cell_x.x() < 0 || cell_x.y() < 0 || cell_x.x() > height || cell_x.y() > width) continue;
 
 				const float w = weights[i + 1].x() * weights[j + 1].y();
-				const Eigen::Array2f& cell_v = grid[cell_x.x()][cell_x.y()].head<2>();
+				const Eigen::Array2f& cell_v = grid[getInd(cell_x.x(), cell_x.y())].head<2>();
 
 				p.v += w * cell_v;
 

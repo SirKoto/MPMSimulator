@@ -69,8 +69,11 @@ private:
 		}
 	};
 
+	// Get index = 128 * x + y
+	#define getInd(x, y) ((x << 7) | y)
+
 	std::vector<Particle> particles;
-	Eigen::Array3f grid[128][128]; // v.x, v.y, mass
+	Eigen::Array3f grid[128 * 128]; // v.x, v.y, mass
 
 };
 
