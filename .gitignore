@@ -20,7 +20,7 @@ Libraries/bin/
 *.log
 
 # images outputted
-*.png 
+*/img_out/*.png 
 
 
 

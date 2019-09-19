@@ -1,0 +1,75 @@
+\documentclass[a4paper]{article}
+
+\usepackage{amsmath}
+\usepackage{graphicx}
+
+\usepackage{anyfontsize}
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+
+ \renewcommand{\familydefault}{\sfdefault} % sans serif default
+
+
+
+\setcounter{tocdepth}{1} % Show sections
+\setcounter{tocdepth}{2} % + subsections
+\setcounter{tocdepth}{3} % + subsubsections
+%\setcounter{tocdepth}{4} % + paragraphs
+%\setcounter{tocdepth}{5} % + subparagraphs
+
+\title{Aplicació del Material Point Method (MPM) a la deformació d'objectes}
+
+\author{Martín Garcia, Pol}
+\date{\parbox{\linewidth}{\centering%
+		\today\endgraf\bigskip
+		Director: Susín Sánchez, Toni\endgraf \medskip
+		Especialitat Computació \endgraf
+		Facultat d'Informàtica de Barcelona}}
+
+\lhead{\includegraphics[width=5cm]{images/logo-fib.png}}
+\rhead{\fontsize{5}{6}\selectfont{\textbf{MPM a la deformació d'objectes} \\
+			Lliurament 1 GEP\\}}
+\begin{document}
+	\pagenumbering{gobble}
+	\maketitle
+	\newpage
+	
+
+	
+	\tableofcontents
+	\newpage
+	
+	\pagenumbering{arabic}	
+	\section{Introducció}
+	Aquest treball de fí de grau ha estat centrat en la simulació de fluids, una temàtica molt amplia que tot i que conceptualment sembla trivial, és molt complexa. Molts detalls i decisions s'han de tenir en compte a l'hora d'implementar un simulador d'aquestes característiques, com la representació del fluid, si aquest es compressible, elàstic, col·lisions, etc. \newline
+	Per a poder presentar el treball correctament, aquest document també serveix com a introducció a la simulació de fluids sense assumir coneixements previs en aquest aspecte.
+	I finalment també es busca mostrar com la simulació de materials sòlids elàstics es poden representar com a fluids, de la manera més eficient possible.\newline 
+
+	\subsection{Context}
+	La simulació de fluids, o dinàmiques de fluids computacionals (CFD's), és una disciplina que mitjançant tècniques d'analisi numéric busca resoldre problemes que impliquen, d'alguna manera, algun tipus de fluctuació o interacció amb fluids . \newline
+	La base de qualsevol simulador de fluids són les equacions de Navier-Stokes, que descriuen la mecànica d'aquests; però necessitem molt més que les equacions per a poder implementar aquest programa, doncs també son necessaris coneixements de software i hardware per a una implementació eficient, tècniques de gràfics per computador per a una adequada visualització, i coneixements matemàtics d'àlgebra lineal que ja s'han vist durant l'educació oferida per la Facultat d'Informàtica de Barcelona, sobretot en la branca de computació. Tot i així, l'abast del projecte ens obliga a sortir de l'àmbit de coneixements d'un enginyer informàtic, i integrar múltiples conceptes matemàtics de diferents caires, que seran explicats degudament. \newline
+	En el nostre cas les matemàtiques ens ajudaran a definir el comportament i les limitacions del nostre simulador, que a partir d'ara anomenaré \textit{solver}, per a poder configurar-lo amb coneixement a posteriori, i sempre ser conscients de l'estat sistema que s'està processant. \newline
+	
+	\subsubsection{Conceptes bàsics}
+	Abans d'entrar en detalls, hi ha uns coneixements bàsics que s'han de tenir en compte degut a l'amplia projecció dels simuladors de fluids.
+	\paragraph[Tipus de solvers]{Podem diferenciar els tipus de solvers} en 3 subgrups, que varien intrínsecament en el mateix concepte de la representació del fluid. Aquesta representació marcarà la manera d'interactuar i tractar el fluid tant amb ell mateix, com amb cossos externs.
+	
+	\subparagraph[Graella]{Graella:} Podem representar el fluid en un instant de temps concret com a una magnitud en un punt d'una graella, identificant la quantitat de fluid en aquella posició en un moment concret; per altra banda, cada cel·la de la graella té alguna representació de direcció i magnitud de moviment del fluid. \newline
+	A més a més, podem emmagatzemar altra informació a cada posició de la graella, o usar les dades ja guardades per a processar l'estat del sistema en un instant de temps posterior, tenint en compte que a cada cel·la només hi pot haver una quantitat màxima de fluid (volum màxim) per a que no sigui un fluid comprimible, i així provocar una dissipació d'aquest i el conseqüent moviment.\newline
+	En conjunt creem un espai acotat per les dimensions de la graella, on el fluid es mou de manera quantitativa a traves de les diferents cel·les d'acord amb la pròpia informació d'aquestes. \newline
+	Aquesta representació es coneix com simulador eulerià.
+	\subparagraph[Partícules]{Partícules:} Podem representar un petit volum de fluid com a una partícula en una posició a un espai indeterminat en un instant de temps, de manera que sempre representa la mateixa quantitat de fluid, i a més guardem tota la informació de moviment (força, velocitat,...) a un nivell molt concret. \newline
+	Aquesta representació permet, per exemple, barrejar dos fluids mantenint alhora les seves propietats separades, o simular interaccions entre partícules o sòlids externs amb molt més nivell de detall.
+	També cal dir, que aquest mètode dificulta la tasca de mantenir un volum constant del fluid, i sobretot necessita computar interaccions entre totes les partícules, comput que resulta costos. \newline
+	Els simuladors de partícules són coneguts com a lagrangians.
+	\subparagraph[Híbrids]{Híbrids:} Si mesclem els dos conceptes anteriors, podem obtenir un simulador que, podem dir, rep el millor dels dos mètodes.\newline
+	Per una banda, representem el fluid com partícules a cada instant de temps amb totes les seves propietats; i per altra banda el comput d'interaccions entre aquestes el gestionem mitjançant una graella (la qual defineix l'espai del sistema) a on hi traspassem les característiques de les partícules en determinades zones, de manera que la computació de col·lisions i/o interaccions és molt més eficient i acotada.   
+	
+\iffalse % Aixo es un comment
+	\begin{appendix}
+	\listoffigures
+	\listoftables
+	\end{appendix}
+\fi
+\end{document}
