@@ -97,7 +97,7 @@ void Simulator_2D::step(float dt)
 
 
 		//Corotated constitucional model     // [http://mpm.graphics Eqn. 52]
-		const Eigen::Matrix2f PF = 2.0f * mu * (p.F - r) + (p.F).transpose() * lambda * (J - 1.0f) * J; //TODO: he invertit el simbol de * i + ???
+		const Eigen::Matrix2f PF = 2.0f * mu * (p.F - r) * (p.F).transpose() + Eigen::Matrix2f::Constant(lambda * (J - 1.0f) * J); //TODO: he invertit el simbol de * i + ???
 
 		//const glm::vec2 Dinv = 4.0f * grid_size * grid_size;
 		// Identity sclae by inverse derivate
