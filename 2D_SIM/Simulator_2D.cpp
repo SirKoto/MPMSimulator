@@ -206,10 +206,16 @@ void Simulator_2D::step(float dt)
 	long long v2 = 0;
 	long long v3 = 0;
 	long long v4 = 0;
+
+#pragma omp parallel for reduction(+:v1,v2,v3,v4)
+#else
+#pragma omp parallel for
 #endif
+
 	// Grid to particle
-	for (auto& p : particles)
+	for (int i = 0; i < particles.size(); ++i)
 	{
+		Particle& p = particles[i];
 #if defined(TIME_COUNT_FLAG) && defined(G2P_FLAG)
 		auto start_in = std::chrono::steady_clock::now();
 #endif
