@@ -113,7 +113,7 @@ int main()
 
 	glPointSize(4.0f); // Drawing points
 
-	int n_particles = 1000;
+	int n_particles = 6000;
 
 	// Create simulator and add points
 	Simulator_2D sim;

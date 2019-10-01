@@ -9,7 +9,7 @@
 class Simulator_2D
 {
 public:
-	Simulator_2D(float E = 3.5e4f, float nu = 0.42f);
+	Simulator_2D(float E = 1.0e4f, float nu = 0.2f);
 
 	// Returns the number of particles dumped in positions
 	unsigned int dumpPositions(float* positions) const;
@@ -37,8 +37,8 @@ private:
 
 	Eigen::Array2f minBorder, maxBorder;
 
-	const float hardening = 0.3f;
-	const float volume = 0.3f;
+	const float hardening = 10.0f;
+	const float volume = 1.0f;
 	const float mass = 1.0f; // massa
 	const Eigen::Array2f g = Eigen::Array2f(0.0f, -10.0f);
 	

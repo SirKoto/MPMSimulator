@@ -35,7 +35,7 @@ Simulator_2D::Simulator_2D(float E, float nu) :
 unsigned int Simulator_2D::dumpPositions(float* positions) const
 {
 	unsigned int i = 0;
-	const unsigned int size = static_cast<unsigned int>(particles.size());
+	const unsigned int size = static_cast<unsigned int>(particles.size()) << 1;
 	for (; i < size; i += 2)
 	{
 		const int j = i >> 1;
@@ -108,35 +108,28 @@ void Simulator_2D::step(float dt)
 		const Eigen::Matrix2f affine = stress + mass * p.C;
 
 		//P2G
+		const Eigen::Array2i cell_x0 = cell_idx + Eigen::Array2i(-1, -1);
+		const Eigen::Vector2f cell_dist0 = (cell_x0.cast<float>() - p.pos) + 0.5f;
+
+		Eigen::Array3f moment_mass0 = (Eigen::Array3f() << p.v * mass, mass).finished(); // moment and particle mass
+		moment_mass0.head<2>() += (affine * cell_dist0).array();
+
+		const Eigen::Array2f jstep = affine.col(1).array();
+		const Eigen::Array2f istep = affine.col(0).array() - 3 * jstep;
+
 		for (int i = -1; i < 2; ++i)
 		{
 			for (int j = -1; j < 2; ++j)
 			{
-				// cell_x is the idx of the selected cell to update
-				const Eigen::Array2i cell_x = cell_idx + Eigen::Array2i(i, j);
 
-				// No hauria de fer falta la seguent linea
-				// if (cell_x.x() < 0 || cell_x.y() < 0 || cell_x.x() > height || cell_x.y() > width) continue;
-
-
-				// cell_distance to the particle in the corresponding updating cell
-				const Eigen::Vector2f cell_dist = (cell_x.cast<float>() - p.pos ) /* * grid_size*/ + 0.5f;
-				// cell_dist *= d_size; // to [0,1]
 				const float w = weights[i + 1].x() * weights[j + 1].y();
-
-				//TODO: optimitzar multiplicant w nomes per mass
-				Eigen::Array3f moment_mass = (Eigen::Array3f() << p.v * mass, mass).finished(); // moment and particle mass
-
-				moment_mass.head<2>() += (affine * cell_dist).array();
-
-				grid[getInd(cell_x.x(),cell_x.y())] += w * moment_mass;
+				grid[getInd(cell_idx.x() + i, cell_idx.y() + j)] += w * moment_mass0;
 
 
 
-				if (((grid[getInd(cell_x.x(), cell_x.y())]) != (grid[getInd(cell_x.x(), cell_x.y())])).any()) {
-					std::cerr << "veri bigu problem" << std::endl;
-				}
+				moment_mass0.head<2>() += jstep;
 			}
+			moment_mass0.head<2>() += istep;
 		}
 	}
 
@@ -296,13 +289,21 @@ void Simulator_2D::step(float dt)
 
 		}
 
-		/*if (!_finite(F[0][0]) || !_finite(F[0][1]) || !_finite(F[1][0]) || !_finite(F[1][1]))
+		if (!_finite(F(0,0)) || !_finite(F(0,1)) || !_finite(F(1,0)) || !_finite(F(1,1)))
 		{
 			std::cerr << "another NAN" << std::endl;
-		}*/
+			assert(false);
+		}
+		
 
 		const float oldJ = F.determinant();
 		F = svd_u * svd_e.asDiagonal() * svd_v.transpose();
+
+		if ((-F(0, 0)) == F(1, 1) && (F(1, 0)) == (F(1, 0)))
+		{
+			std::cerr << "anasdasdother NAN" << std::endl;
+			assert(false);
+		}
 
 		const float newJ = glm::clamp(p.J * oldJ / F.determinant(), 0.6f, 20.0f);
 
