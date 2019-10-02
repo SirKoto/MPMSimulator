@@ -194,6 +194,11 @@ int main()
 	
 	glfwTerminate();
 
+
+	delete[] p_col;
+	delete[] p_pos;
+
+
 	return 0;
 }
 
