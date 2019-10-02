@@ -19,10 +19,10 @@ Simulator_2D::Simulator_2D(float E, float nu) :
 	width(80),
 	height(80)
 { 
-	grid_size = Eigen::Vector2f(width, height);
+	grid_size = 128;
 
-	minBorder = Eigen::Array2f::Constant(1.0f);
-	maxBorder = grid_size - 2.0f;
+	minBorder = Eigen::Array2f::Constant(0.0f + 1.0e-3);
+	maxBorder = Eigen::Array2f::Constant(1.0f - 1.0e-3);
 
 	aspectR = static_cast<float>(width)/ height;
 
@@ -39,8 +39,8 @@ unsigned int Simulator_2D::dumpPositions(float* positions) const
 	for (; i < size; i += 2)
 	{
 		const int j = i >> 1;
-		positions[i] = particles[j].pos.x();// *grid_size.x();
-		positions[i + 1] = particles[j].pos.y();// *grid_size.y();
+		positions[i] = particles[j].pos.x() * grid_size;
+		positions[i + 1] = particles[j].pos.y() * grid_size;
 	}
 	return size >> 1;
 }
@@ -54,8 +54,8 @@ unsigned int Simulator_2D::dumpPositionsNormalized(float* positions) const
 	for (; i < size; ++i)
 	{
 		// TODO: posar que en un sol pas copii tot (ja que un vec2 en teoria son els dos floats seguits)
-		positions[2 * i] = particles[i].pos.x() * d_size.x();// *grid_size.x();
-		positions[2 * i + 1] = particles[i].pos.y() * d_size.y();// *grid_size.y();
+		positions[2 * i] = particles[i].pos.x() * d_size;// *grid_size.x();
+		positions[2 * i + 1] = particles[i].pos.y() * d_size;// *grid_size.y();
 	}
 	return size;
 }
@@ -71,10 +71,11 @@ void Simulator_2D::step(float dt)
 	// Particle to grid
 	for (auto& p : this->particles)
 	{
+		assert(p.pos.x() > 0.0f && p.pos.x() < 1.0f && p.pos.y() > 0.0f && p.pos.y() < 1.0f);
 		// compute the center 
-		const Eigen::Array2f& cell_idxf = (p.pos /* * grid_size*/);
+		const Eigen::Array2f& cell_idxf = (p.pos * grid_size);
 		const Eigen::Array2i cell_idx = cell_idxf.cast<int>(); // floor
-		const Eigen::Array2f distFromCenter = (p.pos /* * grid_size*/ - cell_idx.cast<float>()) - 0.5f; // center at point 0,0
+		const Eigen::Array2f distFromCenter = ((p.pos * grid_size) - cell_idx.cast<float>()) - 0.5f; // center at point 0,0
 
 		const Eigen::Array2f weights[3] = {
 		  0.5f * (0.5f - distFromCenter).square(),
@@ -103,33 +104,35 @@ void Simulator_2D::step(float dt)
 		// Identity sclae by inverse derivate
 		//const glm::mat2 DinvM = glm::mat2(Dinv.x(), 0.0f, 0.0f, Dinv.y());
 		//EQn. 173
-		const Eigen::Matrix2f stress = - (dt * volume) * (4.0f * PF); // eq_16_term_0
+		const Eigen::Matrix2f stress = - (dt * volume) * (4.0f * grid_size * grid_size * PF); // eq_16_term_0
 
 		const Eigen::Matrix2f affine = stress + mass * p.C;
 
 		//P2G
 		const Eigen::Array2i cell_x0 = cell_idx + Eigen::Array2i(-1, -1);
-		const Eigen::Vector2f cell_dist0 = (cell_x0.cast<float>() - p.pos) + 0.5f;
+		const Eigen::Vector2f cell_dist0 = ((cell_x0.cast<float>() - (p.pos * grid_size)) + 0.5f);
 
-		Eigen::Array3f moment_mass0 = (Eigen::Array3f() << p.v * mass, mass).finished(); // moment and particle mass
-		moment_mass0.head<2>() += (affine * cell_dist0).array();
-
-		const Eigen::Array2f jstep = affine.col(1).array();
-		const Eigen::Array2f istep = affine.col(0).array() - 3 * jstep;
-
-		for (int i = -1; i < 2; ++i)
 		{
-			for (int j = -1; j < 2; ++j)
+			Eigen::Array3f moment_mass0 = (Eigen::Array3f() << p.v * mass, mass).finished(); // moment and particle mass
+			moment_mass0.head<2>() += d_size * (affine * cell_dist0).array();
+
+			const Eigen::Array2f jstep =  affine.col(1) * d_size;
+			const Eigen::Array2f istep = (affine.col(0) * d_size).array() - (3.0f * jstep);
+
+			for (int i = -1; i < 2; ++i)
 			{
+				for (int j = -1; j < 2; ++j)
+				{
 
-				const float w = weights[i + 1].x() * weights[j + 1].y();
-				grid[getInd(cell_idx.x() + i, cell_idx.y() + j)] += w * moment_mass0;
+					const float w = weights[i + 1].x() * weights[j + 1].y();
+					grid[getInd(cell_idx.x() + i, cell_idx.y() + j)] += w * moment_mass0;
 
 
 
-				moment_mass0.head<2>() += jstep;
+					moment_mass0.head<2>() += jstep;
+				}
+				moment_mass0.head<2>() += istep;
 			}
-			moment_mass0.head<2>() += istep;
 		}
 	}
 
@@ -213,9 +216,9 @@ void Simulator_2D::step(float dt)
 		auto start_in = std::chrono::steady_clock::now();
 #endif
 		// compute the center 
-		const Eigen::Array2f& cell_idxf = (p.pos /* * grid_size*/);
+		const Eigen::Array2f& cell_idxf = (p.pos  * grid_size);
 		const Eigen::Array2i cell_idx = cell_idxf.cast<int>(); // floor
-		const Eigen::Array2f distFromCenter = (p.pos /* * grid_size*/ - cell_idx.cast<float>()) - 0.5f; // center at point 0,0
+		const Eigen::Array2f distFromCenter = ((p.pos * grid_size) - cell_idx.cast<float>()) - 0.5f; // center at point 0,0
 
 		const Eigen::Array2f weights[3] = {
 		  0.5f * (0.5f - distFromCenter).square(),
@@ -239,7 +242,7 @@ void Simulator_2D::step(float dt)
 			{
 
 				const Eigen::Array2i cell_x = cell_idx + Eigen::Array2i(i, j);
-				const Eigen::Vector2f cell_dist = (cell_x.cast<float>() - p.pos) /* * grid_size*/ + 0.5f;
+				const Eigen::Vector2f cell_dist = (cell_x.cast<float>() - (p.pos * grid_size)) + 0.5f;
 				//if (cell_x.x() < 0 || cell_x.y() < 0 || cell_x.x() > height || cell_x.y() > width) continue;
 
 				const float w = weights[i + 1].x() * weights[j + 1].y();
@@ -253,7 +256,7 @@ void Simulator_2D::step(float dt)
 			}
 		}
 
-		p.C *= 4.0f;
+		p.C *= 4.0f * grid_size;
 
 #if defined(TIME_COUNT_FLAG) && defined(G2P_FLAG)
 		end = std::chrono::steady_clock::now();
@@ -261,15 +264,18 @@ void Simulator_2D::step(float dt)
 
 		start_in = std::chrono::steady_clock::now();
 #endif
+
+		assert(p.pos.x() > 0.0f && p.pos.x() < 1.0f && p.pos.y() > 0.0f && p.pos.y() < 1.0f);
 		// advect particles
 		p.pos += dt * p.v;
+		assert(p.pos.x() > 0.0f && p.pos.x() < 1.0f && p.pos.y() > 0.0f && p.pos.y() < 1.0f);
 
 
 		// safety clamp!!
-		p.pos = maxBorder.min(minBorder.max(p.pos)); // clamp!!!!
+		//p.pos = maxBorder.min(minBorder.max(p.pos)); // clamp!!!!
 
 		// update F gradient
-		Eigen::Matrix2f F = (Eigen::Matrix2f::Identity() + dt * p.C) * p.F;
+		Eigen::Matrix2f F = (Eigen::Matrix2f::Identity() + (dt * p.C)) * p.F;
 
 		const Eigen::JacobiSVD<Eigen::Matrix2f, Eigen::NoQRPreconditioner> svd(F, Eigen::ComputeFullU | Eigen::ComputeFullV);
 #if defined(TIME_COUNT_FLAG) && defined(G2P_FLAG)
@@ -289,21 +295,16 @@ void Simulator_2D::step(float dt)
 
 		}
 
-		if (!_finite(F(0,0)) || !_finite(F(0,1)) || !_finite(F(1,0)) || !_finite(F(1,1)))
-		{
-			std::cerr << "another NAN" << std::endl;
-			assert(false);
-		}
+		// avoid infinities and NaNs
+		assert(_finite(F(0, 0)) && _finite(F(0, 1)) && _finite(F(1, 0)) & _finite(F(1, 1)));
 		
 
 		const float oldJ = F.determinant();
 		F = svd_u * svd_e.asDiagonal() * svd_v.transpose();
 
-		if ((-F(0, 0)) == F(1, 1) && (F(1, 0)) == (F(1, 0)))
-		{
-			std::cerr << "anasdasdother NAN" << std::endl;
-			assert(false);
-		}
+		// to avoid a division by 0 in the future
+		assert((-F(0, 0)) != F(1, 1) || (F(1, 0)) != (F(1, 0)));
+		
 
 		const float newJ = glm::clamp(p.J * oldJ / F.determinant(), 0.6f, 20.0f);
 
@@ -335,11 +336,12 @@ void Simulator_2D::step(float dt)
 #endif
 }
 
+
 void Simulator_2D::addParticle(const glm::vec2& pos, const glm::vec2& v)
 {
 	Eigen::Array2f Epos(pos.x, pos.y);
-	Eigen::Array2f Ev(v.x, v.y);
-	Particle p(Epos /* * d_size*/, Ev);
+	Eigen::Array2f Ev(0, 0);
+	Particle p(Epos * d_size, Ev);
 	particles.push_back(p);
 }
 

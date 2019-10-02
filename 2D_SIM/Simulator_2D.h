@@ -32,8 +32,8 @@ private:
 
 	float aspectR;
 
-	Eigen::Array2f grid_size;
-	Eigen::Array2f d_size; // derivate of the size
+	float grid_size;
+	float d_size; // derivate of the size
 
 	Eigen::Array2f minBorder, maxBorder;
 
@@ -70,7 +70,7 @@ private:
 	};
 
 	// Get index = 128 * x + y
-	#define getInd(x, y) ((x << 7) | y)
+	#define getInd(x, y) (((x) << 7) | (y))
 
 	std::vector<Particle> particles;
 	Eigen::Array3f grid[128 * 128]; // v.x, v.y, mass

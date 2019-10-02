@@ -113,7 +113,7 @@ int main()
 
 	glPointSize(4.0f); // Drawing points
 
-	int n_particles = 6000;
+	int n_particles = 3000;
 
 	// Create simulator and add points
 	Simulator_2D sim;
@@ -142,7 +142,7 @@ int main()
 	std::cerr << n_particles << std::endl;
 
 	utils::LastFrame = (float)glfwGetTime();
-	sim.step(0.002f);
+	sim.step(0.00006f);
 	int iteration = -1;
 	while (!glfwWindowShouldClose(window))
 	{
@@ -155,7 +155,7 @@ int main()
 		processInput(window);
 
 
-		for(int i = 0; i < 5; ++i) sim.step(0.002f);
+		for(int i = 0; i < 10; ++i) sim.step(0.00006f);
 
 		n_particles = sim.dumpPositions(p_pos);
 
