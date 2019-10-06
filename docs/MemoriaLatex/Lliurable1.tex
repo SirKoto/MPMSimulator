@@ -19,6 +19,8 @@
 
 \usepackage[nottoc,numbib]{tocbibind}
 
+\usepackage{eurosym}
+\usepackage{multirow}
 
 %\renewcommand{\familydefault}{\sfdefault} % sans serif default
 
@@ -57,7 +59,7 @@
 
 \lhead{\includegraphics[width=5cm]{images/logo-fib.png}}
 \rhead{\fontsize{5}{6}\selectfont{\textbf{\textit{MPM} a la deformació d'objectes} \\
-			Lliurament 2 GEP\\}}
+			Lliurable 3 GEP\\}}
 		
 	
 \renewcommand{\figurename}{Imatge}
@@ -69,7 +71,7 @@
 \setlength{\parskip}{0.4em}
 
 \usepackage[hidelinks]{hyperref}
-
+\usepackage{url}
 
 \begin{document}
 	\pagenumbering{gobble}
@@ -88,7 +90,7 @@
 	
 	\vspace{0.5cm}
 	\LARGE
-	Lliurable 2 GEP
+	Lliurable 3 GEP
 
 	\vspace{1.5cm}
 	
@@ -124,7 +126,6 @@
 
 
 	\chapter{Introducció}
-
 	Aquest treball de fi de grau ha estat centrat en la simulació de fluids, una temàtica molt àmplia que tot i que conceptualment sembla trivial, és molt complexa. Molts detalls i decisions s'han de tenir en compte a l'hora d'implementar un simulador d'aquestes característiques, com la representació del fluid, si aquest és compressible, elàstic, interactiu amb col·lisions, etc. \par
 	Per a poder presentar el treball correctament, aquest document també serveix com a introducció a la simulació de fluids sense assumir coneixements previs en aquest aspecte, i des del punt de vista d'un enginyer informàtic.\par
 	I finalment també es busca mostrar com materials sòlids-elàstics es poden representar i simular com a fluids.
@@ -287,7 +288,7 @@
 	\paragraph{\quad Previsió temporal} A causa de la gran quantitat de continguts a estudiar, s'assignen 65 hores dedicades a l'aprenentatge, pràctica i assoliment de conceptes nous. Posteriorment, s'estimen 25 hores per a la implementació, i 10 hores extres per a dur a terme la validació i correcció d'errors.
 	\paragraph{\quad Dependències} D'aquesta tasca, a l'estar dividida en dos, només una part té dependències. L'aprenentatge es pot dur a terme de forma lliure; però la implementació requereix aquest aprenentatge previ, i que ja existeixi una base programada.
 	
-	\subsubsection{Adició de model elàstic}
+	\subsubsection{Addició de model elàstic}
 	De la mateixa manera que la fase anterior, aquesta està dividida en aprenentatge i implementació, però dels models elàstics a incorporar en el simulador. En concret s'estudiarà \textit{CPIC} desenvolupat a \cite{hu2018mlsmpmcpic}, basat en \cite{Jiang2016}, i la seva addició de \textit{fixed corotated model} afegint l'estrès a \textit{CPIC} \cite{Hu,Jiang2016}. \par
 	Finalment, s'haurà de validar el funcionament dels models elàstics.
 	\paragraph{\quad Previsió temporal} Perquè l'estudi de models elàstics és d'un nivell molt avançat, i d'una branca molt separada a la d'informàtica, s'estima unes 60 hores màximes per al seu aprenentatge; posteriorment pel seu disseny i implementació s'assignen 30 hores; més 8 hores de validació i correcció d'errors. Aquestes estimacions són degudes a la inestabilitat dels mètodes a implementar.
@@ -352,7 +353,7 @@
 		\centering
 		\begin{tabular}{|| c || c | c c||}
 			\hline
-			Id & Nom & Hores & Dependències \\ 
+			\textbf{Id} & \textbf{Nom} & \textbf{Hores} & \textbf{Dependències} \\ 
 			\hline\hline
 			1 & Creació de la base & 25 & no \\
 			\hline
@@ -389,7 +390,7 @@
 			9.4 & Preparació defensa final & 20 & 9.3 \\
 			\hline
 		\end{tabular}
-	\caption{Taula resum de tasques. Elaboració pròpia}
+	\caption[Taula resum de tasques]{Taula resum de tasques. Elaboració pròpia}
 	\label{table:resumTasques}
 	\end{table}
 	
@@ -398,17 +399,334 @@
 	\begin{figure}[H]
 	\subsection{Diagrama de Gantt}
 		\includegraphics[width=1.45\textwidth,center]{images/Gantt.pdf}%
-		\caption{Diagrama de Gantt. Creat amb \cite{Teamgantt2019}. Elaboració pròpia.}
+		\caption[Diagrama de Gantt]{Diagrama de Gantt. Creat amb \cite{Teamgantt2019}. Elaboració pròpia.}
 		\label{fig:Gantt}
 	\end{figure}
 
-	\subsection{Planificació d'alternatives}
+	\subsection{Planificació d'alternatives} \label{section:alternatives}
 	En qualsevol projecte d'aquestes magnituds, tota planificació es pot esbiaixar a causa d'obstacles i inconvenients (tant directes com indirectes) que poden sorgir en qualsevol etapa, i ser de tipologies molt diverses. Tot això, en definitiva, sempre comportarà una pèrdua important de temps que cal tenir en compte. \par
 	Abans de res, és important notar que les duracions estimades de les tasques estan fetes a l'alça, i atès que usem una metodologia \textit{Kanban} en acabar una tasca es començarà immediatament amb la següent. Aquest petit detall ens pot acabar proporcionant un marge de temps extra per a tractar qualsevol imprevist a sorgir.\par
 	Si succeís que una tasca essencial ens importunés, seria necessari endarrerir l'entrada en escena de les consecutives etapes de manera estratègica. \par
 	En qualsevol cas però, sempre s'haurà de discutir el pla d'acció amb el director del projecte durant les reunions continuades, i sobretot en cas d'aparèixer un problema.\par
 	De ser necessari, s'eliminaran etapes del projecte, amb l'objectiu de què aquest acabi satisfactòriament a temps. \par
 	Una altra opció és substituir una etapa d'implementació i estudi, per una basada en teoritzar el funcionament de quelcom d'acord amb els resultats obtinguts, sense requerir més recursos. Així podem reduir el temps d'una tasca de manera important, tot i que els resultats no seran tangibles.
+
+
+	\section{Gestió econòmica del projecte}
+	En aquest apartat s'analitzarà l'impacte econòmic d'aquest projecte. Com que es tracta d'una activitat de recerca i investigació no hi ha costos de producció, ni de comercialització. És a dir: es tractaran els costos del disseny, planificació, estudi, implementació, recursos humans i materials de la indagació en nous coneixements. \par 
+	Per a calcular el cost d'amortització, es tindrà en compte la vida útil del component en comparació amb la duració del projecte, de fins a 6 mesos en l'actual cas. \par 
+	Cal afegir que s'usarà el punt com a indicador de decimals en aquest apartat, i tres xifres decimals significatives en els càlculs.
+	
+	\subsection{Hardware}
+	Tenim en compte el cost de dos ordinadors de sobretaula, que serviran per al desenvolupament i la renderització de simulacions. En concret disposem de les següents característiques.
+	\begin{itemize}
+		\item \textbf{Ordinador Sobretaula:} \textit{AMD Ryzen 5 2600} 3.40GHz x 6, \textit{GeForce GTX 1060} 6GB VRAM, 16GB de RAM, 256GB SSD i 2TB HDD.
+		\item \textbf{Ordinador Renderitzador:} \textit{Intel Core i7-6700} 3.40GHz x 8, \textit{GeForce GTX 1050} 4GB VRAM, 32GB RAM, 512GB SSD i 4TB HDD. Cal puntualitzar que considerem que aquest PC té una vida útil inferior a causa d'estar constantment sotmès a execucions que requereixen considerable potència de manera molt continuada.
+	\end{itemize}
+	Costs representats a la següent taula \ref{table:hardwareCosts}.
+	
+	\begin{table}%[h!]
+		\centering
+		\begin{tabular}{|| c || c | c | c||}
+			\hline
+			\textbf{Producte} & \textbf{Cost} & \textbf{Vida útil} & \textbf{Amortització} \\
+			\hline \hline
+			Ordinador Sobretaula & 890.000\euro & 6 anys & 74.166\euro \\
+			%\hline
+			Ordinador Renderitzador & 1 400.000\euro & 4 anys & 175.000\euro \\
+			\hline \hline
+			\textbf{Total} & - & - & 249.166\euro \\
+			\hline
+		\end{tabular}
+		\caption[Costs Hardware]{Costs Hardware. Elaboració pròpia}
+		\label{table:hardwareCosts}
+	\end{table}
+
+	\subsection{Software}
+	Per aquest projecte, s'ha usat un cert nombre de programes de pagament, i altres de gratuïts o \textit{Open Source}. Els productes de pagament, han sigut obtinguts de manera gratuïta gràcies a llicències d'estudiants oferides per la FIB.
+	Queden recollits en la taula \ref{table:softwareCosts}, a continuació.
+	\begin{table}%[h!]
+		\centering
+		\begin{tabular}{|| c || c | c||}
+			\hline
+			\textbf{Producte} & \textbf{Preu} &\textbf{Amortització} \\
+			\hline \hline
+			Git		 	& 0.000\euro 	& 0.000\euro \\
+			GitKraken\footnote	& 48.000\euro   & 0.000\euro \\
+			\LaTeX 		& 0.000\euro 	& 0.000\euro \\
+			TeamGantt 	& 0.000\euro	& 0.000\euro \\
+			Ubuntu OS 	& 0.000\euro  	& 0.000\euro \\
+			Visual Studio 2019\footnote& 641.000\euro & 0.000\euro \\
+			Windows 10\footnote[2] 	& 145.000\euro 	& 0.000\euro \\
+			\hline \hline
+			\textbf{Total} & 834.000\euro & 0.00\euro \\
+			\hline
+		\end{tabular}
+		\caption[Costs Software]{Costs Software. Elaboració pròpia}
+		\label{table:softwareCosts}
+	\end{table}
+		\footnotetext[1]{Obtingut amb la llicència de \textit{GitHub Student Pack}}
+		\footnotetext[2]{Obtingut amb la llicència de \textit{Windows Azure Education}}
+	
+	\subsection{Recursos Humans}
+	Els costs de recursos humans fan referència a les diverses funcions que realitza, en aquest cas, l'únic treballador que realitza el projecte. S'ha decidit excloure del pressupost al director del projecte, ja que s'ha considerat que és tracta d'un cost de consultoria i suport gratuïts per part de l'universitat.
+	\par 
+	En aquest cas el treballador farà les funcions de coordinador, analista, desenvolupador i tester (conegut com a \textit{Test engineer}); i la seva dedicació en hores, així com el cost associat  en cadascuna de les seves respectives tasques, es troba en les taules \ref{table:humansCost} i \ref{table:taskCost}. \par
+	Els costs són estimats suposant treballadors assalariats, acollint-nos a una jornada laboral màxima de 1800 hores anuals, d'acord amb el BOE 2016-2856\cite{boe}, i escollint els sous de la web \textit{Indeed}\cite{indeed} com a referents per als següents càlculs\footnote{Basats en la mitjana americana, d'una població de com a mínim 3500 individus.}. Per a calcular el cost amb la despesa de Seguretat Social, s'adjunta aquesta quantitat comptabilitzada com el 35 per cent del sou brut.
+	\begin{table}
+		\centering
+		\hspace*{-1cm}
+		\begin{tabular}{|| c || c | c | c | c ||}
+			\hline
+			\textbf{Posició} & \textbf{Salari brut (\euro/hora)} & \textbf{Hores} & \textbf{Cost} & \textbf{+ Seguretat Social}\\
+			\hline \hline
+			Coordinador	& 23.773	& 125	& 2 971.625\euro	& 4 011.693\euro \\
+			Analista	& 33.673	& 50	& 1 683.650\euro	& 2 272.927\euro \\
+			Desenvolupador &	46.943 & 358	& 16 805.594\euro	& 22 687.551\euro \\
+			Tester 		&	50.799 & 68 & 3 454.332\euro	& 4 663.348\euro \\			
+			\hline \hline 
+			Total & - & 601 & 24 915.201\euro & 33 635.521\euro \\ 
+			\hline
+		\end{tabular}
+		\caption[Cost RRHH]{Cost Recursos Humans. Elaboració pròpia.}
+		\label{table:humansCost}
+	\end{table}
+
+	\begin{table}
+		\centering
+		\begin{tabular}{|| c | c || c | c | c ||}
+			\hline
+			\textbf{Id} & \textbf{Activitat} & \textbf{Hores} & \textbf{RRHH} & \textbf{Cost (\euro)} \\
+			\hline
+			0 & Total & 601 & - & 24 915.201\euro \\ % 24 915.328
+			\hline \hline
+			1 & Creació de la base & 25 & Desenvolupador & 1 173.575\euro \\
+			\hline \hline
+			2 & Simulador de partícules simple & 100 & - & 4 732.860\euro\\
+			\hline
+			2.1 & Aprenentatge \textit{solver} & 65 & Desenvolupador &  3 051.295\euro \\
+			2.2 & Implementació \textit{solver} & 25 & Desenvolupador & 1 173.575\euro \\
+			2.3 & Validació \textit{solver} & 10 & Tester & 507.990\euro \\
+			\hline \hline
+			3 & Addició model elàstic & 98 & - & 4 631.209\euro \\
+			\hline
+			3.1 & Aprenentatge models elàstics & 60 & Desenvolupador & 2 816.580\euro \\
+			3.2 & Implementació models elàstics & 30 & Desenvolupador & 1 408.290\euro \\
+			3.3 & Validació models elàstics & 8 & Tester & 406.339\euro \\
+			\hline \hline
+			4 & Optimització i estudi 2D & 45 & - & 1 714.335\euro \\
+			\hline
+			4.1 & Estudi 2D & 30 & Analista & 1 010.190\euro \\ 
+			4.2 & Paral·lelisme & 15 & Desenvolupador & 704.145\euro \\
+			\hline \hline
+			5 & Primera documentació & 65 & - & 1 545.245\euro \\ 
+			\hline
+			5.1 & Documentació: planificació & 20 & Coordinador & 475.46\euro \\ 
+			5.2 & Documentació: redacció & 35 & Coordinador & 832.055\euro \\
+			5.3 & Documentació: correcció & 10 & Coordinador & 237.730\euro \\
+			\hline \hline
+			6 & Millora a 3D & 60 & -& 2932.260\euro \\
+			\hline
+			6.1 & 3D: migració & 30 & Desenvolupador & 1 408.290\euro \\
+			6.2 & 3D: validació & 30 & Tester & 1 523.970 \euro \\
+			\hline \hline
+			7 & Estudi i recerca 3D & 60 & - & 2 319.48\euro \\
+			\hline
+			7.1 & Estudi 3D & 20 & Analista & 673.46\euro \\ 
+			7.2 & Documentació 3D & 10 & Coordinador & 237.730\euro \\
+			7.3 & Estudi3D: millores i validació & 30 & Desenvolupador & 1 408.290\euro \\
+			\hline \hline
+			8 & Físiques & 80 &  - & 3 832.560\euro \\
+			\hline
+			8.1 & Aprenentatge físiques & 20 & Desenvolupador & 938.860\euro \\
+			8.2 & Implementació físiques & 30 & Desenvolupador & 1 408.290\euro \\
+			8.3 & Validació físiques & 20 & Tester & 1 015.980\euro \\
+			8.4 & Implementació eines & 10 & Desenvolupador & 469.430\euro \\
+			\hline \hline
+			9 & Documentació final & 68 & - & 2 033.804\euro \\
+			\hline
+			9.1 & Documentació programa & 18 & Desenvolupador & 844.974\euro \\
+			9.2 & Redacció memòria & 30 & Coordinador & 713.190\euro \\
+			9.3 & Preparació i defensa final & 20 & Coordinador & 475.460\euro \\
+			\hline
+		\end{tabular}
+		\caption[Cost RRHH per tasca]{Cost recursos humans per tasca. Elaboració pròpia.}
+		\label{table:taskCost}		
+	\end{table}
+
+	\subsection{Imprevistos}
+	En cas d'esdeveniments inesperats en el desenvolupament del projecte, una part del pressupost s'ha destinat, per totes les posicions corresponents a recursos humans, a tenir en compte hores extra com a cost addicional. Veure taula \ref{table:imprevistosRH}.
+	\begin{table}
+		\centering
+		\begin{tabular}{|| c || c | c ||}
+			\hline
+			\textbf{Posició} & \textbf{Hores} & \textbf{Cost + SS (\euro)} \\
+			\hline \hline
+			Coordinador & 10 & 42.094\euro \\
+			Analista & 5 & 227.293\euro \\
+			Desenvolupador & 20 & 1 267.461\euro \\
+			Tester & 10 &  507.990\euro \\
+			\hline \hline
+			Total & 35 & 1 944.838\euro\\
+			\hline
+		\end{tabular}
+		\caption[Imprevistos RRHH]{Imprevistos recursos humans. Elaboració pròpia}
+		\label{table:imprevistosRH}
+	\end{table}
+
+	La distribució d'hores addicionals es fa d'acord amb les possibilitats d'imprevistos en les diferents etapes i temps a dedicar en el projecte. Com que el treball usa una metodologia molt ``ràpida" \text{ i} l'assignació d'hores és prou laxa, no s'esperen imprevists importants.
+	\par 
+	A més a més, cal afegir una partida per a imprevists materials, avaries, o altres problemes que poden sorgir de manera circumstancial i aliena als mateixos recursos humans. Aquest pressupost es pot veure  a la taula \ref{table:imprevistosM}.
+	\begin{table}
+		\centering
+		\begin{tabular}{|| c || c | c ||}
+			\hline
+			\textbf{Recurs} & \textbf{Imprevist} & \textbf{Cost (\euro)} \\
+			\hline\hline
+			\multirow{3}{*}{Ordinador} & 
+					Falla de disc & 80\euro \\
+					&RAM malmesa  &  50\euro \\
+					&Servei de reparació 	 & 60\euro\\
+			\hline 
+			Perifèrics & Avaria & 25\euro\\
+			\hline
+			Material & Substitució & 10\euro \\
+			\hline \hline
+			Total & - & 225\euro \\
+			\hline
+		\end{tabular}
+		\caption[Imprevistos materials]{Imprevistos materials. Elaboració pròpia}
+		\label{table:imprevistosM}
+	\end{table}
+	
+	\subsection{Costs indirectes} \label{section:cIndirectes}
+	Els costs indirectes, donat que no són calculables precisament, s'intenten aproximar el millor possible en aquest apartat. \par
+	Pel que fa als costs elèctrics, es comptabilitza el preu per quilowatt hora a 0.11 \euro/kWh, i s'ha calculat un consum mitjà de l'ordinador de sobretaula de 240 Watt. Com que aquest terminal s'usarà, aproximadament, 500 hores, podem calcular l'energia consumida com a 120 kW, o 13.2\euro. \par
+	Per altra banda, disposem de l'ordinador per a computar els tests. Aquest, tot i que s'usarà una mitjana de 70 hores, té un consum molt més elevat que l'ordinador de sobretaula, ja que estarà treballant a màxima potència tota l'estona. Aquest fet ens dóna una potència esperada de 600 Watt, el que ens equival a una energia consumida de 42 kWh, o 4.62 \euro \par
+	També podem sumar el cost elèctric dels perifèrics, com les pantalles, amb un consum equivalent a 28 Watts durant 530 hores; és a dir: 14.84 kWh o 1.632\euro. \par
+	Afegim també els costs de transport per anar al CRV, on se situa el laboratori del ViRVIG, que es correspon amb viatges durant 3 mesos i es comptabilitzen amb els seus respectius descomptes, equivalent a 52.5\euro en total. \par
+	I finalment cobrim els costs de connexió a la xarxa, segons l'import mensual de 36.99\euro, durant els 6 mesos de duració del projecte, equivalent en definitiva 221.94\euro.\par
+	A la taula \ref{table:imprevistosI} podem observar un resum.
+	\begin{table}
+		\centering
+		\begin{tabular}{||c|| c||}
+			\hline
+			\textbf{Font} & \textbf{Cost(\euro)} \\
+			\hline \hline
+			Ordinador sobretaula & 13.200\euro \\
+			Ordinador rendering & 4.620\euro \\
+			Perifèrics & 1.632\euro \\
+			Transport & 52.500\euro \\
+			Connexió a internet & 221.940\euro\\
+			\hline \hline
+			Total & 293.892\euro\\
+			\hline
+		\end{tabular}
+		\caption[Costs Indirectes]{Costs Indirectes. Elaboració pròpia}
+		\label{table:imprevistosI}
+	\end{table}
+	
+	
+	\subsection{Contingència}
+	Reservem una part dels diners, per a qualsevol altre imprevist dels ja anomenats; garantint així la correcta realització del projecte sense inconvenients monetaris. Per a això reservarem uns diferents percentatges depenent de l'origen del cost, i el seu objectiu. Podem veure el pressupost de contingència a la taula \ref{table:contingencia}.
+	
+	\begin{table}
+		\centering
+		\begin{tabular}{|| c || c | c | c |}
+			\hline
+			\textbf{Font} & \textbf{Preu(\euro)} & \textbf{Percentatge} & \textbf{Cost(\euro)} \\
+			\hline \hline
+			Recursos Humans & 24 915.201\euro & 10\% & 2 491.520\euro \\
+			\hline
+			Imprevistos & 225.000\euro & 15\% & 33.750\euro \\
+			\hline
+			Costs indirectes & 293.892\euro & 15\% & 44.084\euro \\
+			\hline \hline
+			Total & - & - & 2 569.354\euro \\
+			\hline
+		\end{tabular}
+		\caption[Pla de contingència]{Pla de contingència. Elaboració pròpia}
+		\label{table:contingencia}
+	\end{table}
+
+	S'assigna un 10\% de contingència a recursos humans, ja que aquest pressupost ja té en compte imprevistos temporals, i per tant l'impacte serà menor. Per altra banda situem la contingència de la resta d'imprevistos i dels costs indirectes del projecte a un 15\% per a cobrir qualsevol mancança en aquest aspecte.
+	
+	\subsection{Pressupost final}
+	Finalment, reunim en la següent taula \ref{table:pressupostFinal} el sumatori de totes les parts del pressupost, per a obtenir una visió general del cost del projecte i la distribució de la inversió en aquest.
+	
+	\begin{table}
+		\centering
+		\begin{tabular}{|| c | c ||}
+			\hline
+			\textbf{Font} & \textbf{Cost(\euro)} \\
+			\hline \hline
+			Hardware & 249.166\euro \\
+			Software & 0.000\euro \\
+			Recursos Humans & 33 635.521\euro \\
+			Imprevistos RRHH & 1 944.838\euro \\
+			Imprevistos materials & 225.000\euro \\
+			Costs indirectes & 293.892\euro \\
+			Contingència  & 2 569.354\euro \\
+			\hline \hline
+			Total & 38 917.670\euro \\
+			\hline
+		\end{tabular}
+		\caption[Pressupost final]{Pressupost final. Elaboració pròpia}
+		\label{table:pressupostFinal}
+	\end{table}
+	
+	\subsection{Viabilitat econòmica} \label{section:viabilitat}
+	Aquest projecte és d'investigació, recerca i divulgació; i per tant no es cerca obtenir beneficis. D'aquesta manera, la viabilitat econòmica depèn de les subvencions i ajuts rebuts per part dels contribuents, que fan possible la realització de molts projectes d'aquesta temàtica i que segueixen la mateixa noció. \par
+	De totes maneres, la viabilitat econòmica va estrictament lligada a un control ajustat del pressupost, seguint uns certs procediments al final de cadascuna de les tasques a realitzar. L'objectiu d'aquest seguiment és calcular la diferència entre el cost esperat i el real, detectar desviacions en el pressupost i corregir-les com més aviat millor. \par
+	Les correccions a aplicar per assegurar la viabilitat econòmica han sigut descrites anteriorment, a la secció \ref{section:alternatives}, es basen a cobrir costs inesperats, replanificar etapes i retallar tasques.
+	
+	\section{Informe de Sostenibilitat}
+	La sostenibilitat no és una qüestió en la qual es pensi activament ni de bon tros, però és inherent a qualsevol activitat que es du a terme, concepte, producte, formació... i particularment en tot el que involucra recursos TIC, què en l'era de la informació són omnipresents. \par
+	Trobo essencial tenir intenció; intenció d'aprendre i millorar el nostre entorn, intenció de ser crític, i intenció de fer les coses bé. Pot ser que un mai s'hagi estat instruït en tècniques, conceptes, o indicadors de sostenibilitat; però si es té intenció de valorar i enriquir el tarannà de si mateix, molt errat no es pot anar. Amb això vull dir que no és necessari ser un expert per a poder aportar quelcom a l'entorn i la societat, i a ajudar al fet que aquesta sigui més sostenible. \par
+	Aquesta intenció també demostra un interès actiu i una consciència de l'impacte que un mateix pot arribar a tenir, reflectida en no només el ''què" es fa, sinó amb el ''com" es fa. Aquesta és la meva mentalitat al dur a terme aquest projecte. \par
+	La comprensió del poder que es té amb els recursos TIC ens atorga la capacitat, inevitablement, d'afectar en major o menor mesura el nostre entorn i, per tant, si busquem un àmbit més sostenible, estarem maximitzant l'impacte positiu de la nostra activitat professional sobre la societat. \par
+	Com a reflexió cal dir que és necessari tenir intenció, però no és suficient; trobo que a vegades cal anar més enllà, ser crític amb un mateix, i intentar millorar el que ja s'ha fet, cercar informació i aprendre per a fer una millor feina, i ser més sostenible. Un exemple clar seria l'aprenentatge i comprensió d'indicadors de les tres dimensions de la sostenibilitat, que ajuden a la correcta mesura i apreciació del potencial impacte del projecte. \par
+	Aquest fet es transmet a escala personal, tot i sempre intentar dur a terme les coses de manera correcta, he de reconèixer que mesurar a l'hora de la veritat la potencial empremta del projecte és una tasca desconeguda per a mi, així com el control de la dimensió econòmica i el coneixement d'indicadors de sostenibilitat. Per això parlo d'intenció, perquè espero millorar en aquest aspecte, i aconseguir elevar el treball a un següent nivell.
+	
+	\subsection{Dimensions de la sostenibilitat}
+	\subsubsection{Dimensió econòmica}
+	Com s'ha mencionat anteriorment a la secció \ref{section:viabilitat}, el projecte té un cost econòmic estimat de 38 917.670\euro. Tot i això, la viabilitat econòmica del projecte posat en producció no és valorable en beneficis monetaris, doncs aquests no es produiran. La motivació del projecte, a més de personal, busca millorar les solucions existents, i conseqüentment ha d'animar a altres investigadors a millorar l'estat actual de \textit{MPM} i dur a terme millores progressives; fet que provocarà l'aparició de nous projectes mentre aquest sigui una solució acceptable i potent. \par
+	És un projecte de recerca i investigació amb un cost moderadament elevat, a causa de l'amplitud de coneixements a incorporar i a validar, però en futurs projectes aquest cost serà amortitzat, ja que aquests coneixements ja estaran adquirits. \par
+	En aquest projecte, concretament, busquem una solució més eficient que permeti simular més ràpidament un entorn concret, i sense necessitar un gran nombre de recursos; disminuint el desgast de components d'un processador, i reduint el cost econòmic de temps de simulació necessaris.
+	
+	\subsubsection{Dimensió ambiental}
+	Els costos ambientals durant la realització del projecte, poden ser mesurats amb les dades obtingudes a la secció \ref{section:cIndirectes} en quilowatts hora consumits, d'un total de 176.67kWh de consum energètic durant l'etapa del projecte posat en producció (PPP). Caldria comptabilitzar, a més a més, les emissions de CO$_{2}$ produïdes pel transport públic usat per a viatjar al ViRVIG, i produïdes per generar l'electricitat consumida. \par
+	En el pitjor dels supòsits, en que la totalitat de l'electricitat prové d'una planta de crema de carbó, podem calcular una producció de 0.94Kg de CO$_2$ per cada quilowatt hora consumit; és a dir: 166.067Kg de CO$_2$ produïts pel projecte. Pel que fa al transport, sempre s'ha viatjat en tren o autobús, i s'ha calculat una aproximació 8.16Kg de CO$_2$ produït per aquest, donada una producció de 0.98 grams de CO$_2$ per quilòmetre. Per tant, hem generat una petjada de carboni equivalent a 174.227Kg de CO$_2$. \par
+	Pel que fa a la vida útil del projecte, des d'un punt de vista ambiental pot aportar una millora, ja que aquest busca reduir, i minimitzar, el temps i l'energia requerida per a efectuar certes simulacions. Això recau en un consum elèctric menor, i per tant una menor petjada de carboni respecte a les solucions existents actualment. \par
+	Pel que fa a riscs de caràcter ambiental, aquest projecte no en provoca de cap classe. En el pitjor dels casos, no es produiria cap millora, i ens quedaríem en l'estat previ a l'inici del projecte; i en el millor dels casos, haurem millorat les solucions existents de manera més sostenible.
+	
+	\subsubsection{Dimensió social}
+	Aquest projecte ha proporcionat a l'autor amb una àmplia base en simulació de fluids, així com en disciplines molt diferenciades de la branca cànon de la informàtica. L'aprenentatge d'aquesta temàtica ha sorgit d'un interès personal, el qual es demostrarà útil i una experiència productiva per a futurs projectes de tota mena, així com estimular la reusabilitat del mateix treball per a aprofundir més en aquest. \par
+	En l'àmbit social, aquest projecte és difícil que millori de manera significativa l'estat de l'art actual dels simuladors de fluids; però sí que busca ser un punt de partida i introducció en aquest extens i difícil camp, ja que existeixen pocs documents a la literatura, o a la comunitat, que puguin ser usats per quelcom amb l'objectiu d'introduir-se en la simulació de fluids, d'aquesta manera s'espera que aquesta memòria pugui servir per a suplir aquesta mancança. \par
+	Si aquest últim punt és ben aprofitat, les possibilitats són molt altes que s'usi aquest treball com a base per a que altres estudiants puguin reproduir els resultats aquí descrits, i aprofundir en altres subcamps de la simulació de fluids. \par
+	En contrast, la possibilitat que el projecte tingui un impacte negatiu a la societat és molt baixa, i depèn de la qualitat del treball per a servir de guia futura a altres alumnes, o persones que vulguin aprendre sobre aquesta temàtica.
+	
+	\subsection{Matriu de sostenibilitat}
+	A manera de resum, presentem la següent matriu de sostenibilitat representada a la taula \ref{table:sustanMatrix} per a sintetitzar els anteriors apartats.
+	
+	\begin{table}[h!]
+		\centering
+		\hspace*{-1cm}
+		\begin{tabular}{|| c || c | c | c ||}
+			\hline
+			& \textbf{PPP} & \textbf{Vida útil} & \textbf{Riscs} \\
+			\hline \hline
+			\textbf{Econòmica} & 38 917.670\euro & No beneficis & No viabilitat econòmica \\
+			\hline
+			\textbf{Ambiental} & 174.227KgCO$_2$ & Reducció energètica & No millora \\
+			\hline
+			\textbf{Social} & 9/10 & 7/10 & Pocs \\ 
+			\hline
+		\end{tabular}
+		
+		\caption[Matriu de sostenibilitat]{Matriu de sostenibilitat. Elaboració pròpia.}
+		\label{table:sustanMatrix}
+	\end{table}
 	
 	% REFERENCIES
 	\newpage
@@ -421,7 +739,7 @@
 	\newpage
 	
 	%\renewcommand\listfigurename{Llistat d'imatges}
-	%\listoffigures
-	
+	\listoffigures
+	\listoftables
 	
 \end{document}
