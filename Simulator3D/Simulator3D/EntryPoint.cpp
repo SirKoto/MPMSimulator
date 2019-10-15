@@ -121,14 +121,14 @@ int main()
 	}
 
 	const glm::mat4 projection = glm::perspective(glm::radians(camera.m_zoom), static_cast<float>(utils::SCR_WIDTH) / utils::SCR_HEIGHT, 0.1f, 200.0f);
-
+	const glm::mat4 projectionView = projection * camera.GetViewMatrix();
 	shader =  Shader("shaders/shaderPoint.vert", "shaders/shaderPoint.frag");
 	shader.use();
-	shader.setMat4("projection", projection);
+	shader.setMat4("projectionView", projectionView);
 
 	glPointSize(4.0f); // Drawing points
 
-	int n_particles = 1000;
+	int n_particles = 100;
 
 	// Create simulator and add points
 	Simulator_3D sim;
@@ -220,9 +220,10 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 	// TODO: Observator system to update all projection matrix in shaders
 	const glm::mat4 projection = glm::perspective(glm::radians(camera.m_zoom), static_cast<float>(utils::SCR_WIDTH) / utils::SCR_HEIGHT, 0.1f, 200.0f);
+	const glm::mat4 projectionView = projection * camera.GetViewMatrix();
 
 	shader.use();
-	shader.setMat4("projection", projection);
+	shader.setMat4("projectionView", projectionView);
 
 }
 

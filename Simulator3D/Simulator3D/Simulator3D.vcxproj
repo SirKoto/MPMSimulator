@@ -30,6 +30,10 @@
     <ClInclude Include="Simulator_3D.h" />
     <ClInclude Include="Utils.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\shaderPoint.frag" />
+    <None Include="shaders\shaderPoint.vert" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{D3AF8DBE-6E2C-4A5E-A1A5-0A15D1A903C8}</ProjectGuid>
