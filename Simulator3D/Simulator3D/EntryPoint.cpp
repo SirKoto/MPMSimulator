@@ -120,8 +120,8 @@ int main()
 		glEnableVertexAttribArray(1);
 	}
 
-	//const glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(utils::SCR_WIDTH), 0.0f, static_cast<float>(utils::SCR_HEIGHT));
-	const glm::mat4 projection = glm::ortho(-5.0f, 85.0f, -5.0f, 85.0f);
+	const glm::mat4 projection = glm::perspective(glm::radians(camera.m_zoom), static_cast<float>(utils::SCR_WIDTH) / utils::SCR_HEIGHT, 0.1f, 200.0f);
+
 	shader =  Shader("shaders/shaderPoint.vert", "shaders/shaderPoint.frag");
 	shader.use();
 	shader.setMat4("projection", projection);
@@ -219,8 +219,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 	utils::SCR_HEIGHT = height;
 
 	// TODO: Observator system to update all projection matrix in shaders
-	//const glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(utils::SCR_WIDTH), 0.0f, static_cast<float>(utils::SCR_HEIGHT));
-	const glm::mat4 projection = glm::ortho(-5.0f, 85.0f, -5.0f, 85.0f);
+	const glm::mat4 projection = glm::perspective(glm::radians(camera.m_zoom), static_cast<float>(utils::SCR_WIDTH) / utils::SCR_HEIGHT, 0.1f, 200.0f);
 
 	shader.use();
 	shader.setMat4("projection", projection);
