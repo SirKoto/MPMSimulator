@@ -6,10 +6,10 @@
 #include <vector>
 #include <Eigen/Dense> // include all core and algebra headers
 
-class Simulator_2D
+class Simulator_3D
 {
 public:
-	Simulator_2D(float E = 3.5e4f, float nu = 0.42f);
+	Simulator_3D(float E = 3.5e4f, float nu = 0.42f);
 
 	// Returns the number of particles dumped in positions
 	unsigned int dumpPositions(float* positions) const;

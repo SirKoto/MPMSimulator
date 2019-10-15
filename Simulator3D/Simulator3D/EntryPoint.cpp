@@ -131,7 +131,7 @@ int main()
 	int n_particles = 1000;
 
 	// Create simulator and add points
-	Simulator_2D sim;
+	Simulator_3D sim;
 	{
 		// add random particles
 

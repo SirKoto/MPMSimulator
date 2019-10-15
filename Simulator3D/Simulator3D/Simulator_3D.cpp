@@ -1,4 +1,4 @@
-#include "Simulator_2D.h"
+#include "Simulator_3D.h"
 
 #include "Utils.h"
 
@@ -13,7 +13,7 @@
 #include <chrono>
 #endif
 
-Simulator_2D::Simulator_2D(float E, float nu) :
+Simulator_3D::Simulator_3D(float E, float nu) :
 	mu_0(E / (2 * (1 + nu))),
 	lambda_0(E * nu / ((1 + nu) * (1 - 2 * nu))),
 	width(80),
@@ -32,7 +32,7 @@ Simulator_2D::Simulator_2D(float E, float nu) :
 	std::memset(grid, 0, sizeof(grid));
 }
 
-unsigned int Simulator_2D::dumpPositions(float* positions) const
+unsigned int Simulator_3D::dumpPositions(float* positions) const
 {
 	unsigned int i = 0;
 	const unsigned int size = static_cast<unsigned int>(particles.size());
@@ -45,7 +45,7 @@ unsigned int Simulator_2D::dumpPositions(float* positions) const
 	return size >> 1;
 }
 
-unsigned int Simulator_2D::dumpPositionsNormalized(float* positions) const
+unsigned int Simulator_3D::dumpPositionsNormalized(float* positions) const
 {
 	assert(false);
 
@@ -60,7 +60,7 @@ unsigned int Simulator_2D::dumpPositionsNormalized(float* positions) const
 	return size;
 }
 
-void Simulator_2D::step(float dt)
+void Simulator_3D::step(float dt)
 {
 	// all grid with 0's, velocity and mass
 	std::memset(grid, 0, sizeof(grid));
@@ -328,7 +328,7 @@ void Simulator_2D::step(float dt)
 #endif
 }
 
-void Simulator_2D::addParticle(const glm::vec2& pos, const glm::vec2& v)
+void Simulator_3D::addParticle(const glm::vec2& pos, const glm::vec2& v)
 {
 	Eigen::Array2f Epos(pos.x, pos.y);
 	Eigen::Array2f Ev(v.x, v.y);
