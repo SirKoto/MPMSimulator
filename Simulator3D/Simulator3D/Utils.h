@@ -5,6 +5,8 @@
 
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/glm.hpp>
+#include <glad/glad.h>
+
 
 #include <Eigen/Dense>
 
@@ -21,8 +23,9 @@ namespace utils
 
 	static float DeltaTime = 0.0f;
 	static float LastFrame = 0.0f;
-	const static unsigned int maxParticles = 10000;
+	const static unsigned int maxP = 10000;
 
+	constexpr unsigned int sizeGrid = 128;
 
 	inline void SumOuterProduct(Eigen::Matrix2f& r, const Eigen::Array2f& a, const Eigen::Array2f& b)
 	{
@@ -56,54 +59,22 @@ namespace utils
 		}
 	}
 
-	// https://www.seas.upenn.edu/~cffjiang/research/svd/svd.pdf 
-	// Find A = UEV^T where U and V are ortho and E diagonal
-	inline void singularValueDecomposition(glm::mat2 m, glm::mat2& U, glm::mat2& E, glm::mat2& V)
-	{
-		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! NOT WORKING !!!!!!!!!!!!!!!!!!
+	GLubyte CubeIndices[] =	   { 0,1,2, 2,3,0,   // 36 of indices
+								 0,3,4, 4,5,0,
+								 0,5,6, 6,1,0,
+								 1,6,7, 7,2,1,
+								 7,4,3, 3,2,7,
+								 4,7,6, 6,5,4 };
 
-		glm::mat2 S;
-		//polarDecomposition2D(m, S, U); // S scale, U rotation
-		float c, s;
-		if (std::abs(S[0][1]) < 1e-6f)
-		{
-			E = S;
-			c = 1;
-			s = 0;
-		}
-		else
-		{
-			float tau = 0.5f * (S[0][0] - S[1][1]);
-			float w = std::sqrt(tau * tau + S[0][1] * S[0][1]);
-			float t = tau > 0 ? S[0][1] / (tau + w) : S[0][1] / (tau - w);
-			c = 1.0f / std::sqrt(t * t + 1);
-			s = -t * c;
-			E[0][0] = c * c * S[0][0] - 2 * c * s * S[0][1] + s * s * S[1][1];
-			E[1][1] = s * s * S[0][0] + 2 * c * s * S[0][1] + c * c * S[1][1];
-		}
-
-		if (E[0][0] < E[1][1])
-		{
-			std::swap(E[0][0], E[1][1]);
-			V[0][0] = -s;
-			V[0][1] = -c;
-			V[1][0] = c;
-			V[1][1] = -s;
-		}
-		else
-		{
-			V[0][0] = c;
-			V[0][1] = -s;
-			V[1][0] = s;
-			V[1][1] = c;
-		}
-
-		V = glm::transpose(V);
-		U = U * V;
-
-		//set diagonal E
-		E[0][1] = E[1][0] = 0;
-	}
+	GLfloat CubeVertices[] = {	maxP, maxP, 0.0f,
+								0.0f, maxP, 0.0f,
+								0.0f, 0.0f, 0.0f, 
+								maxP, 0.0f, 0.0f,
+								maxP, 0.0f, maxP,
+								maxP, maxP, maxP,
+								0.0f, maxP, maxP,
+								0.0f, 0.0f, 0.0f
+								};
 
 	class utilF
 	{
