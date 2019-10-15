@@ -17,7 +17,8 @@
 #include <random>
 
 #include "Shader.h"
-#include "Simulator_2D.h"
+#include "Simulator_3D.h"
+#include "Camera.h"
 
 
 // #define PRINT_IMAGES_FLAG
@@ -31,9 +32,14 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow* window);
+void processInputLess(GLFWwindow* window);
 
 
 Shader shader;
+Camera camera(glm::vec3(0.0f, 0.0f, -3.0f));
+
+bool firstMouse = true;
+float lastX, lastY;
 
 bool initGLFW(GLFWwindow *&window)
 {
@@ -67,10 +73,19 @@ bool initGLFW(GLFWwindow *&window)
 void setCallbacks(GLFWwindow* window)
 {
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-	//glfwSetCursorPosCallback(window, mouse_callback);
-	//glfwSetScrollCallback(window, scroll_callback);
+	glfwSetCursorPosCallback(window, mouse_callback);
+	glfwSetScrollCallback(window, scroll_callback);
 	//Camputa mouse
-	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+}
+
+void deactivateCallbacks(GLFWwindow* window)
+{
+	glfwSetFramebufferSizeCallback(window, NULL);
+	glfwSetCursorPosCallback(window, NULL);
+	glfwSetScrollCallback(window, NULL);
+
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL); // disable dissapearing cursor
 }
 
 int main()
@@ -139,7 +154,7 @@ int main()
 	}
 
 	n_particles = sim.dumpPositions(p_pos);
-	std::cerr << n_particles << std::endl;
+	MSG(n_particles);
 
 	utils::LastFrame = (float)glfwGetTime();
 	sim.step(0.002f);
@@ -214,6 +229,51 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 void processInput(GLFWwindow* window)
 {
+	// Exit the simulation if ESCAPE
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, GLFW_TRUE);
+
+	float d = GLFW_PRESS == glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) ? 2.0f : 1.0f;
+
+	float cameraSpeed = 2.5f * utils::DeltaTime;
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+		camera.ProcessKeyboard(FORWARD, utils::DeltaTime * d);
+	if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS)
+		camera.ProcessKeyboard(BACKWARD, utils::DeltaTime * d);
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+		camera.ProcessKeyboard(RIGHT, utils::DeltaTime * d);
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+		camera.ProcessKeyboard(LEFT, utils::DeltaTime * d);
+
+}
+
+void processInputLess(GLFWwindow* window)
+{
+	// Exit the simulation if ESCAPE
+	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+		glfwSetWindowShouldClose(window, GLFW_TRUE);
+}
+
+void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+{
+	float xposf = static_cast<float>(xpos);
+	float yposf = static_cast<float>(ypos);
+	
+	if (firstMouse)
+	{
+		lastX = xposf;
+		lastY = yposf;
+
+		firstMouse = false;
+	}
+
+	float xoffset = xposf - lastX;
+	float yoffset = yposf - lastY;
+
+	camera.ProcessMouseMovement(xoffset, yoffset);
+}
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+	camera.ProcessMouseScroll(static_cast<float>(yoffset));
 }
