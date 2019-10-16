@@ -112,7 +112,7 @@ void initArraysParticles(GLuint& VAO, GLuint* VBO, float* &positions, glm::vec3*
 
 	shader = Shader("shaders/shaderPoint.vert", "shaders/shaderPoint.frag");
 
-	glPointSize(4.0f); // Drawing points
+	glPointSize(10.0f); // Drawing points
 }
 
 
@@ -141,7 +141,7 @@ void initArraysBB(GLuint& VAO, GLuint* VBO)
 
 }
 
-void drawBB(GLuint& VAO, GLuint* VBO)
+void drawBB(const GLuint VAO, const GLuint* VBO)
 {
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	shaderBB.use();
@@ -157,6 +157,25 @@ void drawBB(GLuint& VAO, GLuint* VBO)
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, VBO[1]);
 	glDrawElements(GL_TRIANGLES, sizeof(utils::CubeIndices), GL_UNSIGNED_BYTE, 0);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+}
+
+void drawParticles(const GLuint VAO, const GLuint* VBO, const Simulator_3D& sim, float* particleDump)
+{
+	unsigned int n = sim.dumpPositionsNormalized(particleDump);
+
+	// Draw
+	glBindVertexArray(VAO);
+
+	// update positions
+	glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, n * (3 * sizeof(float)), particleDump);
+
+	shader.use();
+	const glm::mat4 projection = glm::perspective(glm::radians(camera.m_zoom), static_cast<float>(utils::SCR_WIDTH) / utils::SCR_HEIGHT, 0.1f, 10.0f);
+	const glm::mat4 projectionView = projection * camera.GetViewMatrix();
+	shader.setMat4("projectionView", projectionView);
+
+	glDrawArrays(GL_POINTS, 0, n);
 }
 
 int main()
@@ -180,7 +199,7 @@ int main()
 
 	
 
-	int n_particles = 100;
+	int n_particles = utils::maxParticles;
 
 	// Create simulator and add points
 	Simulator_3D sim;
@@ -219,8 +238,10 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		drawBB(VAO_BB, VBO_BB);
-
+		drawParticles(VAO_particles, VBO_particles, sim, p_pos);
 		//MSG(camera.m_position.x << " " << camera.m_position.y << " " << camera.m_position.z << ", " << camera.m_front.x << " " << camera.m_front.y << " " << camera.m_front.z);
+
+		glBindVertexArray(0);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -239,21 +260,13 @@ int main()
 
 		for(int i = 0; i < 5; ++i) sim.step(0.002f);
 
-		n_particles = sim.dumpPositions(p_pos);
 
 
 		glClear(GL_COLOR_BUFFER_BIT);
 
 
-		// Draw
-		glBindVertexArray(VAO_particles);
 
-		// update positions
-		glBindBuffer(GL_ARRAY_BUFFER, VBO_particles[0]);
-		glBufferSubData(GL_ARRAY_BUFFER, 0, n_particles * (3 * sizeof(float)), p_pos);
-		shader.use();
 		std::cerr << "Draw " << 1.0f/utils::DeltaTime << std::endl;
-		glDrawArrays(GL_POINTS, 0, n_particles);
 
 
 		glBindVertexArray(0);
