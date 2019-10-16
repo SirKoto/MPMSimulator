@@ -109,7 +109,13 @@ void initArraysParticles(GLuint& VAO, GLuint* VBO, float* &positions, glm::vec3*
 
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (GLvoid*)0);
 	glEnableVertexAttribArray(1);
+
+	shader = Shader("shaders/shaderPoint.vert", "shaders/shaderPoint.frag");
+
+	glPointSize(4.0f); // Drawing points
 }
+
+
 
 void initArraysBB(GLuint& VAO, GLuint* VBO)
 {
@@ -140,7 +146,7 @@ void drawBB(GLuint& VAO, GLuint* VBO)
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	shaderBB.use();
 
-	const glm::mat4 projection = glm::perspective(glm::radians(camera.m_zoom), static_cast<float>(utils::SCR_WIDTH) / utils::SCR_HEIGHT, 0.1f, 200.0f);
+	const glm::mat4 projection = glm::perspective(glm::radians(camera.m_zoom), static_cast<float>(utils::SCR_WIDTH) / utils::SCR_HEIGHT, 0.1f, 10.0f);
 	const glm::mat4 projectionView = projection * camera.GetViewMatrix();
 	shaderBB.setMat4("projectionView", projectionView);
 	const glm::vec3 colorBB = glm::vec3(1.0f, 0.0, 0.0f);
@@ -172,32 +178,27 @@ int main()
 	GLuint VAO_BB, VBO_BB[2];
 	initArraysBB(VAO_BB, VBO_BB);
 
-	const glm::mat4 projection = glm::perspective(glm::radians(camera.m_zoom), static_cast<float>(utils::SCR_WIDTH) / utils::SCR_HEIGHT, 0.1f, 200.0f);
-	const glm::mat4 projectionView = projection * camera.GetViewMatrix();
-	/*
-	shader =  Shader("shaders/shaderPoint.vert", "shaders/shaderPoint.frag");
-	shader.use();
-	shader.setMat4("projectionView", projectionView);
-	*/
-	glPointSize(4.0f); // Drawing points
+	
 
 	int n_particles = 100;
 
 	// Create simulator and add points
 	Simulator_3D sim;
-	/*{
+	{
 		// add random particles
 
 		std::mt19937 mt_rng(42);
-		std::uniform_real_distribution<float> dis(-20.0f, 20.0f);
-		std::uniform_real_distribution<float> up_v(0, 2.0f);
+		std::uniform_real_distribution<float> dis(0.4f, 0.6f);
 
 
 		for (int i = 0; i < n_particles; ++i)
 		{
-			float height = dis(mt_rng);
-			sim.addParticle(glm::vec2(dis(mt_rng), height) + glm::vec2(40.0f,50.0f), 0.0f * glm::vec2(up_v(mt_rng) - 1.0f, up_v(mt_rng)));
-			p_col[i] = height > 8.0f ? glm::vec3(0.0f, 1.0f, 0.0f) : height < -8.0f ? glm::vec3(0.0f,1.0f,1.0f): glm::vec3(1.0f, 0.0f, 1.0f); // color according to height
+			float x = dis(mt_rng);
+			float y = dis(mt_rng);
+			float z = dis(mt_rng);
+			sim.addParticleNormalized(glm::vec3(x, y, z));
+
+			p_col[i] = y > 8.0f ? glm::vec3(0.0f, 1.0f, 0.0f) : y < -8.0f ? glm::vec3(0.0f,1.0f,1.0f): glm::vec3(1.0f, 0.0f, 1.0f); // color according to height
 		}
 
 		{ // add the color into the buffer for each particle
@@ -206,9 +207,8 @@ int main()
 		}
 	}
 
-	n_particles = sim.dumpPositions(p_pos);
+	n_particles = sim.dumpPositionsNormalized(p_pos);
 	MSG(n_particles);
-	*/
 	utils::LastFrame = (float)glfwGetTime();
 
 	while (!glfwWindowShouldClose(window)) 
@@ -220,7 +220,7 @@ int main()
 
 		drawBB(VAO_BB, VBO_BB);
 
-		MSG(camera.m_position.x << " " << camera.m_position.y << " " << camera.m_position.z << ", " << camera.m_front.x << " " << camera.m_front.y << " " << camera.m_front.z);
+		//MSG(camera.m_position.x << " " << camera.m_position.y << " " << camera.m_position.z << ", " << camera.m_front.x << " " << camera.m_front.y << " " << camera.m_front.z);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -289,7 +289,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 	utils::SCR_HEIGHT = height;
 
 	// TODO: Observator system to update all projection matrix in shaders
-	const glm::mat4 projection = glm::perspective(glm::radians(camera.m_zoom), static_cast<float>(utils::SCR_WIDTH) / utils::SCR_HEIGHT, 0.1f, 200.0f);
+	const glm::mat4 projection = glm::perspective(glm::radians(camera.m_zoom), static_cast<float>(utils::SCR_WIDTH) / utils::SCR_HEIGHT, 0.1f, 10.0f);
 	const glm::mat4 projectionView = projection * camera.GetViewMatrix();
 
 	shaderBB.use();
