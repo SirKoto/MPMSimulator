@@ -6,7 +6,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/glm.hpp>
 #include <glad/glad.h>
-
+#include <GLFW/glfw3.h>
 
 #include <Eigen/Dense>
 
@@ -23,9 +23,17 @@ namespace utils
 
 	static float DeltaTime = 0.0f;
 	static float LastFrame = 0.0f;
-	const static unsigned int maxP = 10000;
+	const static unsigned int maxParticles = 10000;
 
-	constexpr unsigned int sizeGrid = 128;
+	constexpr unsigned int sizG = 128;
+
+	inline float updateTime()
+	{
+		float currentFrame = (float)glfwGetTime();
+		utils::DeltaTime = currentFrame - utils::LastFrame;
+		utils::LastFrame = currentFrame;
+		return currentFrame;
+	}
 
 	inline void SumOuterProduct(Eigen::Matrix2f& r, const Eigen::Array2f& a, const Eigen::Array2f& b)
 	{
@@ -59,20 +67,22 @@ namespace utils
 		}
 	}
 
-	GLubyte CubeIndices[] =	   { 0,1,2, 2,3,0,   // 36 of indices
+	constexpr GLubyte CubeIndices[] =	   
+							   { 0,1,2, 2,3,0,   // 36 of indices
 								 0,3,4, 4,5,0,
 								 0,5,6, 6,1,0,
 								 1,6,7, 7,2,1,
 								 7,4,3, 3,2,7,
 								 4,7,6, 6,5,4 };
 
-	GLfloat CubeVertices[] = {	maxP, maxP, 0.0f,
-								0.0f, maxP, 0.0f,
+	constexpr GLfloat CubeVertices[] = 
+							 {  sizG, sizG, 0.0f,
+								0.0f, sizG, 0.0f,
 								0.0f, 0.0f, 0.0f, 
-								maxP, 0.0f, 0.0f,
-								maxP, 0.0f, maxP,
-								maxP, maxP, maxP,
-								0.0f, maxP, maxP,
+								sizG, 0.0f, 0.0f,
+								sizG, 0.0f, sizG,
+								sizG, sizG, sizG,
+								0.0f, sizG, sizG,
 								0.0f, 0.0f, 0.0f
 								};
 

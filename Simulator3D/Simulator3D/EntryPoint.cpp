@@ -88,6 +88,49 @@ void deactivateCallbacks(GLFWwindow* window)
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL); // disable dissapearing cursor
 }
 
+void initArraysParticles(GLuint& VAO, GLuint* VBO, float* &positions, glm::vec3* &colors)
+{
+	positions = new float[utils::maxParticles * 3];
+	colors = new glm::vec3[utils::maxParticles];
+
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO);
+
+	glGenBuffers(2, VBO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
+	glBufferData(GL_ARRAY_BUFFER, utils::maxParticles * 3 * sizeof(float), positions, GL_DYNAMIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (GLvoid*)0);
+	glEnableVertexAttribArray(0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
+	glBufferData(GL_ARRAY_BUFFER, utils::maxParticles * sizeof(glm::vec3), colors, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (GLvoid*)0);
+	glEnableVertexAttribArray(1);
+}
+
+void initArraysBB(GLuint& VAO, GLuint* VBO)
+{
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO);
+
+	glGenBuffers(2, VBO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(utils::CubeVertices), utils::CubeVertices, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (GLvoid*)0);
+	glEnableVertexAttribArray(0);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, VBO[1]);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(utils::CubeIndices), utils::CubeIndices, GL_STATIC_DRAW);
+
+
+}
+
+
 int main()
 {
 	GLFWwindow* window = NULL;
@@ -98,27 +141,14 @@ int main()
 
 	setCallbacks(window);
 
-	float* p_pos = new float[utils::maxParticles * 2];
-	glm::vec3* p_col = new glm::vec3[utils::maxParticles];
-	GLuint VAO, VBO[2];
-	{
-		glGenVertexArrays(1, &VAO);
-		glBindVertexArray(VAO);
+	float* p_pos;
+	glm::vec3* p_col;
+	// VBO[0] := positions, VBO[1] := color
+	GLuint VAO_particles, VBO_particles[2];
+	initArraysParticles(VAO_particles, VBO_particles, p_pos, p_col);
 
-		glGenBuffers(2, VBO);
-
-		glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
-		glBufferData(GL_ARRAY_BUFFER, utils::maxParticles * 2 * sizeof(float), p_pos, GL_DYNAMIC_DRAW);
-
-		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (GLvoid*)0);
-		glEnableVertexAttribArray(0);
-
-		glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
-		glBufferData(GL_ARRAY_BUFFER, utils::maxParticles * sizeof(glm::vec3), p_col, GL_STATIC_DRAW);
-
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (GLvoid*)0);
-		glEnableVertexAttribArray(1);
-	}
+	GLuint VAO_BB, VBO_BB[2];
+	initArraysBB(VAO_BB, VBO_BB);
 
 	const glm::mat4 projection = glm::perspective(glm::radians(camera.m_zoom), static_cast<float>(utils::SCR_WIDTH) / utils::SCR_HEIGHT, 0.1f, 200.0f);
 	const glm::mat4 projectionView = projection * camera.GetViewMatrix();
@@ -148,7 +178,7 @@ int main()
 		}
 
 		{ // add the color into the buffer for each particle
-			glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
+			glBindBuffer(GL_ARRAY_BUFFER, VBO_particles[1]);
 			glBufferData(GL_ARRAY_BUFFER, utils::maxParticles * sizeof(glm::vec3), p_col, GL_STATIC_DRAW);
 		}
 	}
@@ -157,17 +187,26 @@ int main()
 	MSG(n_particles);
 
 	utils::LastFrame = (float)glfwGetTime();
+
+	while (!glfwWindowShouldClose(window)) 
+	{
+		float currentFrame = utils::updateTime();
+
+		processInput(window);
+		glClear(GL_COLOR_BUFFER_BIT);
+
+
+	}
+
 	sim.step(0.002f);
 	int iteration = -1;
-	while (!glfwWindowShouldClose(window))
+	while (false && !glfwWindowShouldClose(window))
 	{
 		++iteration;
 
-		float currentFrame = (float)glfwGetTime();
-		utils::DeltaTime = currentFrame - utils::LastFrame;
-		utils::LastFrame = currentFrame;
+		float currentFrame = utils::updateTime();
 
-		processInput(window);
+		processInputLess(window);
 
 
 		for(int i = 0; i < 5; ++i) sim.step(0.002f);
@@ -179,11 +218,11 @@ int main()
 
 
 		// Draw
-		glBindVertexArray(VAO);
+		glBindVertexArray(VAO_particles);
 
 		// update positions
-		glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
-		glBufferSubData(GL_ARRAY_BUFFER, 0, n_particles * (2 * sizeof(float)), p_pos);
+		glBindBuffer(GL_ARRAY_BUFFER, VBO_particles[0]);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, n_particles * (3 * sizeof(float)), p_pos);
 		shader.use();
 		std::cerr << "Draw " << 1.0f/utils::DeltaTime << std::endl;
 		glDrawArrays(GL_POINTS, 0, n_particles);
@@ -206,6 +245,9 @@ int main()
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
+
+	delete[] p_pos;
+	delete[] p_col;
 	
 	glfwTerminate();
 
