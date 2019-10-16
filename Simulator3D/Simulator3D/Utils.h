@@ -25,7 +25,7 @@ namespace utils
 	static float LastFrame = 0.0f;
 	const static unsigned int maxParticles = 10000;
 
-	constexpr unsigned int sizG = 128;
+	constexpr unsigned int sizG = 1;
 
 	inline float updateTime()
 	{
@@ -83,7 +83,7 @@ namespace utils
 								sizG, 0.0f, sizG,
 								sizG, sizG, sizG,
 								0.0f, sizG, sizG,
-								0.0f, 0.0f, 0.0f
+								0.0f, 0.0f, sizG
 								};
 
 	class utilF

@@ -43,7 +43,14 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\shaderPoint.vert" />
-    <None Include="shaders\shaderPoint.frag" />
+    <None Include="shaders\shaderBB.vert">
+      <Filter>Archivos de recursos</Filter>
+    </None>
+    <None Include="shaders\shaderPoint.frag">
+      <Filter>Archivos de recursos</Filter>
+    </None>
+    <None Include="shaders\shaderPoint.vert">
+      <Filter>Archivos de recursos</Filter>
+    </None>
   </ItemGroup>
 </Project>

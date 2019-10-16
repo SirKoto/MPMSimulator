@@ -35,8 +35,8 @@ void processInput(GLFWwindow* window);
 void processInputLess(GLFWwindow* window);
 
 
-Shader shader;
-Camera camera(glm::vec3(0.0f, 0.0f, -3.0f));
+Shader shader, shaderBB;
+Camera camera(glm::vec3(0.5f, 0.0f, 10.0f));
 
 bool firstMouse = true;
 float lastX, lastY;
@@ -127,9 +127,31 @@ void initArraysBB(GLuint& VAO, GLuint* VBO)
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, VBO[1]);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(utils::CubeIndices), utils::CubeIndices, GL_STATIC_DRAW);
 
+	shaderBB = Shader("shaders/shaderBB.vert", "shaders/shaderPoint.frag");
+	const glm::vec3 colorBB = glm::vec3(1.0f, 0.0, 0.0f);
+
+	shaderBB.use();
+	shaderBB.setVec3("colorBBox", colorBB);
 
 }
 
+void drawBB(GLuint& VAO, GLuint* VBO)
+{
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	shaderBB.use();
+
+	const glm::mat4 projection = glm::perspective(glm::radians(camera.m_zoom), static_cast<float>(utils::SCR_WIDTH) / utils::SCR_HEIGHT, 0.1f, 200.0f);
+	const glm::mat4 projectionView = projection * camera.GetViewMatrix();
+	shaderBB.setMat4("projectionView", projectionView);
+	const glm::vec3 colorBB = glm::vec3(1.0f, 0.0, 0.0f);
+	shaderBB.setVec3("colorBBox", colorBB);
+
+	glBindVertexArray(VAO);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, VBO[1]);
+	glDrawElements(GL_TRIANGLES, sizeof(utils::CubeIndices), GL_UNSIGNED_BYTE, 0);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+}
 
 int main()
 {
@@ -152,17 +174,18 @@ int main()
 
 	const glm::mat4 projection = glm::perspective(glm::radians(camera.m_zoom), static_cast<float>(utils::SCR_WIDTH) / utils::SCR_HEIGHT, 0.1f, 200.0f);
 	const glm::mat4 projectionView = projection * camera.GetViewMatrix();
+	/*
 	shader =  Shader("shaders/shaderPoint.vert", "shaders/shaderPoint.frag");
 	shader.use();
 	shader.setMat4("projectionView", projectionView);
-
+	*/
 	glPointSize(4.0f); // Drawing points
 
 	int n_particles = 100;
 
 	// Create simulator and add points
 	Simulator_3D sim;
-	{
+	/*{
 		// add random particles
 
 		std::mt19937 mt_rng(42);
@@ -185,7 +208,7 @@ int main()
 
 	n_particles = sim.dumpPositions(p_pos);
 	MSG(n_particles);
-
+	*/
 	utils::LastFrame = (float)glfwGetTime();
 
 	while (!glfwWindowShouldClose(window)) 
@@ -195,10 +218,15 @@ int main()
 		processInput(window);
 		glClear(GL_COLOR_BUFFER_BIT);
 
+		drawBB(VAO_BB, VBO_BB);
 
+		MSG(camera.m_position.x << " " << camera.m_position.y << " " << camera.m_position.z << ", " << camera.m_front.x << " " << camera.m_front.y << " " << camera.m_front.z);
+
+		glfwSwapBuffers(window);
+		glfwPollEvents();
 	}
 
-	sim.step(0.002f);
+	//sim.step(0.002f);
 	int iteration = -1;
 	while (false && !glfwWindowShouldClose(window))
 	{
@@ -264,8 +292,8 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 	const glm::mat4 projection = glm::perspective(glm::radians(camera.m_zoom), static_cast<float>(utils::SCR_WIDTH) / utils::SCR_HEIGHT, 0.1f, 200.0f);
 	const glm::mat4 projectionView = projection * camera.GetViewMatrix();
 
-	shader.use();
-	shader.setMat4("projectionView", projectionView);
+	shaderBB.use();
+	shaderBB.setMat4("projectionView", projectionView);
 
 }
 
@@ -280,7 +308,7 @@ void processInput(GLFWwindow* window)
 	float cameraSpeed = 2.5f * utils::DeltaTime;
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 		camera.ProcessKeyboard(FORWARD, utils::DeltaTime * d);
-	if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 		camera.ProcessKeyboard(BACKWARD, utils::DeltaTime * d);
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 		camera.ProcessKeyboard(RIGHT, utils::DeltaTime * d);
@@ -311,6 +339,9 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 
 	float xoffset = xposf - lastX;
 	float yoffset = yposf - lastY;
+
+	lastX = xposf;
+	lastY = yposf;
 
 	camera.ProcessMouseMovement(xoffset, yoffset);
 }
