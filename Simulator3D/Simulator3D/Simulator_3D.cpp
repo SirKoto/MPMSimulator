@@ -361,8 +361,16 @@ void Simulator_3D::step(float dt)
 void Simulator_3D::addParticle(const glm::vec3& pos, const glm::vec3& v)
 {
 	Eigen::Array3f Epos(pos.x, pos.y, pos.z);
-	Eigen::Array3f Ev(0, 0, 0);
+	Eigen::Array3f Ev(v.x, v.y, v.z);
 	Particle p(Epos * d_size, Ev);
+	particles.push_back(p);
+}
+
+void Simulator_3D::addParticleNormalized(const glm::vec3& pos, const glm::vec3& v)
+{
+	Eigen::Array3f Epos(pos.x, pos.y, pos.z);
+	Eigen::Array3f Ev(v.x, v.y, v.z);
+	Particle p(Epos, Ev);
 	particles.push_back(p);
 }
 

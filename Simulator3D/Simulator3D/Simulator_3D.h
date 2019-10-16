@@ -22,7 +22,7 @@ public:
 
 	void addParticle(const glm::vec3& pos, const glm::vec3& v = glm::vec3(0));
 
-
+	void addParticleNormalized(const glm::vec3& pos, const glm::vec3& v = glm::vec3(0));
 
 private:
 
