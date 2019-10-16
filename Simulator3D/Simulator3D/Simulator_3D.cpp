@@ -24,6 +24,8 @@ Simulator_3D::Simulator_3D(float E, float nu) :
 
 	//particles = std::vector<Particle>(0);
 	std::memset(grid, 0, sizeof(grid));
+
+	svd = Eigen::JacobiSVD<Eigen::Matrix3f, Eigen::NoQRPreconditioner>(3, 3, Eigen::ComputeFullU | Eigen::ComputeFullV);
 }
 
 unsigned int Simulator_3D::dumpPositions(float* positions) const
@@ -92,9 +94,9 @@ void Simulator_3D::step(float dt)
 		// Looking for stress
 
 
-		Eigen::Matrix3f s, r;
-		// TODO:
-		utils::polarDecomposition3D(p.F, s, r); // Decompose the deformation gradient in a rotation and an scale
+		svd.compute(p.F);
+
+		const Eigen::Matrix3f r = svd.matrixU() * svd.matrixV().transpose();
 
 
 		//Corotated constitucional model     // [http://mpm.graphics Eqn. 52]
@@ -296,8 +298,7 @@ void Simulator_3D::step(float dt)
 
 		// update F gradient
 		Eigen::Matrix3f F = (Eigen::Matrix3f::Identity() + (dt * p.C)) * p.F;
-
-		const Eigen::JacobiSVD<Eigen::Matrix3f, Eigen::NoQRPreconditioner> svd(F, Eigen::ComputeFullU | Eigen::ComputeFullV);
+		svd.compute(F);
 #if defined(TIME_COUNT_FLAG) && defined(G2P_FLAG)
 		end = std::chrono::steady_clock::now();
 		v3 += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start_in).count();

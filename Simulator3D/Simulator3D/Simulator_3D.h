@@ -41,6 +41,8 @@ private:
 	const float mass = 1.0f; // massa
 	const Eigen::Array3f g = Eigen::Array3f(0.0f, -10.0f, 0.0f);
 	
+	Eigen::JacobiSVD<Eigen::Matrix3f, Eigen::NoQRPreconditioner> svd;
+
 	struct Particle
 	{
 		Eigen::Array3f pos, v; // posicio i velocitat de la particula
