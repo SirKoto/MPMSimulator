@@ -46,15 +46,16 @@ unsigned int Simulator_3D::dumpPositions(float* positions) const
 
 unsigned int Simulator_3D::dumpPositionsNormalized(float* positions) const
 {
-	assert(!"This function is deactivated");
-
-	unsigned int i = 0;
-	const unsigned int size = static_cast<unsigned int>(particles.size()) >> 1; // div 2
-	for (; i < size; ++i)
+	unsigned int j = 0;
+	const unsigned int size = static_cast<unsigned int>(particles.size());
+	for (; j < size; j++)
 	{
-		// TODO: posar que en un sol pas copii tot (ja que un vec2 en teoria son els dos floats seguits)
-		positions[2 * i] = particles[i].pos.x() * d_size;// *grid_size.x();
-		positions[2 * i + 1] = particles[i].pos.y() * d_size;// *grid_size.y();
+		const int i = 3 * j;
+
+		positions[i + 0] = particles[j].pos.x();
+		positions[i + 1] = particles[j].pos.y();
+		positions[i + 2] = particles[j].pos.z();
+
 	}
 	return size;
 }
