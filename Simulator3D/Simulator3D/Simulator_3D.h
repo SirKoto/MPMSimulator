@@ -13,6 +13,10 @@ class Simulator_3D
 public:
 	Simulator_3D(float E = 3.5e4f, float nu = 0.42f);
 
+	~Simulator_3D()
+	{
+		delete[] grid;
+	}
 	// Returns the number of particles dumped in positions
 	unsigned int dumpPositions(float* positions) const;
 
@@ -74,7 +78,7 @@ private:
 	#define getInd(x, y, z) (((((x) << 7) | (y)) << 7) | (z))
 
 	std::vector<Particle> particles;
-	Eigen::Array4f grid[utils::sizG * utils::sizG * utils::sizG]; // v.x, v.y, v.z mass
+	Eigen::Array4f* grid;// [128 * 128 * 128] ; // v.x, v.y, v.z, mass
 
 };
 

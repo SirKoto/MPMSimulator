@@ -23,7 +23,8 @@ Simulator_3D::Simulator_3D(float E, float nu) :
 	d_size = 1.0f / grid_size;
 
 	//particles = std::vector<Particle>(0);
-	std::memset(grid, 0, sizeof(grid));
+	grid = new Eigen::Array4f[(128 * 128 * 128)];
+	std::memset(grid, 0, (128 * 128 * 128 * sizeof(Eigen::Array4f)));
 
 	svd = Eigen::JacobiSVD<Eigen::Matrix3f, Eigen::NoQRPreconditioner>(3, 3, Eigen::ComputeFullU | Eigen::ComputeFullV);
 }
@@ -63,7 +64,7 @@ unsigned int Simulator_3D::dumpPositionsNormalized(float* positions) const
 void Simulator_3D::step(float dt)
 {
 	// all grid with 0's, velocity and mass
-	std::memset(grid, 0, sizeof(grid));
+	std::memset(grid, 0, (128 * 128 * 128 * sizeof(Eigen::Array4f)));
 
 #ifdef TIME_COUNT_FLAG
 	auto start = std::chrono::steady_clock::now();
@@ -129,7 +130,8 @@ void Simulator_3D::step(float dt)
 					{
 
 						const float w = weights[i + 1].x() * weights[j + 1].y() * weights[k + 1].z();
-						grid[getInd(cell_idx.x() + i, cell_idx.y() + j, cell_idx.z() + k)] += w * moment_mass0;
+						const int index = getInd(cell_idx.x() + i, cell_idx.y() + j, cell_idx.z() + k);
+						grid[index] += w * moment_mass0;
 
 						moment_mass0.head<3>() += kstep;
 					}
@@ -260,7 +262,6 @@ void Simulator_3D::step(float dt)
 				{
 					const Eigen::Array3i cell_x = cell_idx + Eigen::Array3i(i, j, k);
 					const Eigen::Vector3f cell_dist = (cell_x.cast<float>() - (p.pos * grid_size)) + 0.5f;
-					//if (cell_x.x() < 0 || cell_x.y() < 0 || cell_x.x() > height || cell_x.y() > width) continue;
 
 					const float w = weights[i + 1].x() * weights[j + 1].y();
 					const Eigen::Array3f& cell_v = grid[getInd(cell_x.x(), cell_x.y(), cell_x.z())].head<3>();
@@ -326,8 +327,8 @@ void Simulator_3D::step(float dt)
 		// to avoid a division by 0 in the future
 		assert((-F(0, 0)) != F(1, 1) || (F(1, 0)) != (F(1, 0)));
 
-
-		const float newJ = glm::clamp(p.J * oldJ / F.determinant(), 0.6f, 20.0f);
+		const float det = F.determinant();
+		const float newJ = glm::clamp(p.J * oldJ / det, 0.6f, 20.0f);
 
 		p.F = F;
 		p.J = newJ;

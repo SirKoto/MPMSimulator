@@ -39,6 +39,7 @@ Shader shader, shaderBB;
 Camera camera(glm::vec3(0.5f, 0.0f, 10.0f));
 
 bool firstMouse = true;
+bool doSimulation = false;
 float lastX, lastY;
 
 bool initGLFW(GLFWwindow *&window)
@@ -230,7 +231,7 @@ int main()
 	MSG(n_particles);
 	utils::LastFrame = (float)glfwGetTime();
 
-	while (!glfwWindowShouldClose(window)) 
+	while (!glfwWindowShouldClose(window) && !doSimulation) 
 	{
 		float currentFrame = utils::updateTime();
 
@@ -247,9 +248,8 @@ int main()
 		glfwPollEvents();
 	}
 
-	//sim.step(0.002f);
 	int iteration = -1;
-	while (false && !glfwWindowShouldClose(window))
+	while (!glfwWindowShouldClose(window) && doSimulation)
 	{
 		++iteration;
 
@@ -257,18 +257,13 @@ int main()
 
 		processInputLess(window);
 
-
 		for(int i = 0; i < 5; ++i) sim.step(0.002f);
 
 
+		drawParticles(VAO_particles, VBO_particles, sim, p_pos);
 
 		glClear(GL_COLOR_BUFFER_BIT);
-
-
-
 		std::cerr << "Draw " << 1.0f/utils::DeltaTime << std::endl;
-
-
 		glBindVertexArray(0);
 
 #ifdef PRINT_IMAGES_FLAG
@@ -317,6 +312,9 @@ void processInput(GLFWwindow* window)
 		glfwSetWindowShouldClose(window, GLFW_TRUE);
 
 	float d = GLFW_PRESS == glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) ? 2.0f : 1.0f;
+
+	if (glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS)
+		doSimulation = true;
 
 	float cameraSpeed = 2.5f * utils::DeltaTime;
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
