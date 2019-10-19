@@ -113,7 +113,7 @@ void initArraysParticles(GLuint& VAO, GLuint* VBO, float* &positions, glm::vec3*
 
 	shader = Shader("shaders/shaderPoint.vert", "shaders/shaderPoint.frag");
 
-	glPointSize(10.0f); // Drawing points
+	glPointSize(2.0f); // Drawing points
 }
 
 
@@ -248,6 +248,8 @@ int main()
 		glfwPollEvents();
 	}
 
+	deactivateCallbacks(window);
+
 	int iteration = -1;
 	while (!glfwWindowShouldClose(window) && doSimulation)
 	{
@@ -257,12 +259,12 @@ int main()
 
 		processInputLess(window);
 
-		for(int i = 0; i < 5; ++i) sim.step(0.002f);
+		for(int i = 0; i < 5; ++i) sim.step(0.0002f);
 
+		glClear(GL_COLOR_BUFFER_BIT);
 
 		drawParticles(VAO_particles, VBO_particles, sim, p_pos);
 
-		glClear(GL_COLOR_BUFFER_BIT);
 		std::cerr << "Draw " << 1.0f/utils::DeltaTime << std::endl;
 		glBindVertexArray(0);
 
