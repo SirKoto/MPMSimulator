@@ -258,12 +258,12 @@ void Simulator_3D::step(float dt)
 		{
 			for (int j = -1; j < 2; ++j)
 			{
-				for (int k = 0; k < 2; k++)
+				for (int k = -1; k < 2; k++)
 				{
 					const Eigen::Array3i cell_x = cell_idx + Eigen::Array3i(i, j, k);
 					const Eigen::Vector3f cell_dist = (cell_x.cast<float>() - (p.pos * grid_size)) + 0.5f;
 
-					const float w = weights[i + 1].x() * weights[j + 1].y();
+					const float w = weights[i + 1].x() * weights[j + 1].y() * weights[k + 1].z();
 					const Eigen::Array3f& cell_v = grid[getInd(cell_x.x(), cell_x.y(), cell_x.z())].head<3>();
 
 					p.v += w * cell_v;
