@@ -111,7 +111,7 @@ void Simulator_3D::step(float dt)
 		const Eigen::Matrix3f affine = stress + mass * p.C;
 
 		//P2G
-		const Eigen::Array3i cell_x0 = cell_idx + Eigen::Array3i(-1, -1, -1);
+		const Eigen::Array3i cell_x0 = cell_idx + Eigen::Array3i::Constant(-1);
 		const Eigen::Vector3f cell_dist0 = ((cell_x0.cast<float>() - (p.pos * grid_size)) + 0.5f);
 
 		{
@@ -317,15 +317,15 @@ void Simulator_3D::step(float dt)
 			svd_e[i] = glm::clamp(svd_e[i], 1.0f - 2.5e-2f, 1.0f + 7.5e-3f);
 		}
 
-		// avoid infinities and NaNs
-		assert(_finite(F(0, 0)) && _finite(F(0, 1)) && _finite(F(1, 0)) & _finite(F(1, 1)));
-
+		
 
 		const float oldJ = F.determinant();
 		F = svd_u * svd_e.asDiagonal() * svd_v.transpose();
 
-		// to avoid a division by 0 in the future
-		assert((-F(0, 0)) != F(1, 1) || (F(1, 0)) != (F(1, 0)));
+		// avoid infinities and NaNs
+		assert(_finite(F(0, 0)) && _finite(F(0, 1)) && _finite(F(1, 0)) & _finite(F(1, 1)));
+
+
 
 		const float det = F.determinant();
 		const float newJ = glm::clamp(p.J * oldJ / det, 0.6f, 20.0f);
