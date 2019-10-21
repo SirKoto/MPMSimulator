@@ -26,7 +26,7 @@ Simulator_3D::Simulator_3D(float E, float nu) :
 	grid = new Eigen::Array4f[(128 * 128 * 128)];
 	std::memset(grid, 0, (128 * 128 * 128 * sizeof(Eigen::Array4f)));
 
-	svd = Eigen::JacobiSVD<Eigen::Matrix3f, Eigen::NoQRPreconditioner>(3, 3, Eigen::ComputeFullU | Eigen::ComputeFullV);
+	//svd = Eigen::JacobiSVD<Eigen::Matrix3f, Eigen::NoQRPreconditioner>(3, 3, Eigen::ComputeFullU | Eigen::ComputeFullV);
 }
 
 unsigned int Simulator_3D::dumpPositions(float* positions) const
@@ -95,8 +95,7 @@ void Simulator_3D::step(float dt)
 		// Euler explicit time integration
 		// Looking for stress
 
-
-		svd.compute(p.F);
+		Eigen::JacobiSVD<Eigen::Matrix3f, Eigen::NoQRPreconditioner> svd(p.F, Eigen::ComputeFullU | Eigen::ComputeFullV);
 
 		const Eigen::Matrix3f r = svd.matrixU() * svd.matrixV().transpose();
 
@@ -108,7 +107,7 @@ void Simulator_3D::step(float dt)
 		//EQn. 173
 		const Eigen::Matrix3f stress = -(dt * volume) * (4.0f * grid_size * grid_size * PF); // eq_16_term_0
 
-		const Eigen::Matrix3f affine = stress + mass * p.C;
+		const Eigen::Matrix3f affine = 0.0f * (stress + mass * p.C);
 
 		//P2G
 		const Eigen::Array3i cell_x0 = cell_idx + Eigen::Array3i::Constant(-1);
@@ -290,17 +289,22 @@ void Simulator_3D::step(float dt)
 		// advect particles
 		p.pos += dt * p.v;
 
-		assert(	p.pos.x() > 0.0f && p.pos.x() < 1.0f && 
-				p.pos.y() > 0.0f && p.pos.y() < 1.0f &&
-				p.pos.z() > 0.0f && p.pos.z() < 1.0f);
 
 
 		// safety clamp!!
-		//p.pos = maxBorder.min(minBorder.max(p.pos)); // clamp!!!!
+		//p.pos = maxBorder.cwiseMin(minBorder.cwiseMax(p.pos)); // clamp!!!!
+
+		assert(p.pos.x() > 0.0f && p.pos.x() < 1.0f &&
+			p.pos.y() > 0.0f && p.pos.y() < 1.0f &&
+			p.pos.z() > 0.0f && p.pos.z() < 1.0f);
 
 		// update F gradient
 		Eigen::Matrix3f F = (Eigen::Matrix3f::Identity() + (dt * p.C)) * p.F;
-		svd.compute(F);
+		// avoid infinities and NaNs
+		assert(_finite(F(0, 0)) && _finite(F(0, 1)) && _finite(F(1, 0)) & _finite(F(1, 1)));
+
+		Eigen::JacobiSVD<Eigen::Matrix3f, Eigen::NoQRPreconditioner> svd(F, Eigen::ComputeFullU | Eigen::ComputeFullV);
+
 #if defined(TIME_COUNT_FLAG) && defined(G2P_FLAG)
 		end = std::chrono::steady_clock::now();
 		v3 += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start_in).count();

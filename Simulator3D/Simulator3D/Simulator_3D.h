@@ -1,6 +1,6 @@
 #pragma once
-#ifndef _SIM2D_
-#define _SIM2D_
+#ifndef _SIM3D_
+#define _SIM3D_
 
 #include <glm/glm.hpp>
 #include <vector>
@@ -45,7 +45,7 @@ private:
 	const float mass = 1.0f; // massa
 	const Eigen::Array3f g = Eigen::Array3f(0.0f, -10.0f, 0.0f);
 	
-	Eigen::JacobiSVD<Eigen::Matrix3f, Eigen::NoQRPreconditioner> svd;
+	//Eigen::JacobiSVD<Eigen::Matrix3f, Eigen::NoQRPreconditioner> svd;
 
 	struct Particle
 	{
@@ -83,4 +83,4 @@ private:
 };
 
 
-#endif //_SIM2D_
+#endif //_SIM3D_
