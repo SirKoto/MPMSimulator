@@ -25,7 +25,7 @@ namespace utils
 	static float LastFrame = 0.0f;
 	constexpr unsigned int maxParticles = 300;
 
-	constexpr unsigned int sizG = 1;
+	constexpr float sizG = 1;
 
 	inline float updateTime()
 	{
@@ -101,24 +101,50 @@ namespace utils
 		}
 	}
 
-	constexpr GLubyte CubeIndices[] =	   
-							   { 0,1,2, 2,3,0,   // 36 of indices
-								 0,3,4, 4,5,0,
-								 0,5,6, 6,1,0,
-								 1,6,7, 7,2,1,
-								 7,4,3, 3,2,7,
-								 4,7,6, 6,5,4 };
-
-	constexpr GLfloat CubeVertices[] = 
-							 {  sizG, sizG, 0.0f,
-								0.0f, sizG, 0.0f,
-								0.0f, 0.0f, 0.0f, 
-								sizG, 0.0f, 0.0f,
-								sizG, 0.0f, sizG,
-								sizG, sizG, sizG,
-								0.0f, sizG, sizG,
-								0.0f, 0.0f, sizG
-								};
+	constexpr GLfloat vertices[] = {
+		// Back face
+	 0.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f, // Bottom-left
+	 1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f, // bottom-right    
+	 1.0f,  1.0f, 0.0f, 0.0f, 0.0f, -1.0f, // top-right              
+	 1.0f,  1.0f, 0.0f, 0.0f, 0.0f, -1.0f, // top-right
+	 0.0f,  1.0f, 0.0f, 0.0f, 0.0f, -1.0f, // top-left
+	 0.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f, // bottom-left                
+	// Front face
+	 0.0f, 0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // bottom-left
+	 1.0f,  1.0f,  1.0f, 0.0f, 0.0f, 1.0f, // top-right
+	 1.0f, 0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // bottom-right        
+	 1.0f,  1.0f,  1.0f, 0.0f, 0.0f, 1.0f, // top-right
+	 0.0f, 0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // bottom-left
+	 0.0f,  1.0f,  1.0f, 0.0f, 0.0f, 1.0f, // top-left        
+	// Left face
+	 0.0f,  1.0f,  1.0f,  -1.0f, 0.0f, 0.0f, // top-right
+	 0.0f, 0.0f, 0.0f,  -1.0f, 0.0f, 0.0f, // bottom-left
+	 0.0f,  1.0f, 0.0f,  -1.0f, 0.0f, 0.0f, // top-left       
+	 0.0f, 0.0f, 0.0f,  -1.0f, 0.0f, 0.0f, // bottom-left
+	 0.0f,  1.0f,  1.0f,  -1.0f, 0.0f, 0.0f, // top-right
+	 0.0f, 0.0f,  1.0f,  -1.0f, 0.0f, 0.0f, // bottom-right
+	// Right face
+	 1.0f,  1.0f,  1.0f,  1.0f, 0.0f, 0.0f, // top-left
+	 1.0f,  1.0f, 0.0f, 1.0f, 0.0f, 0.0f, // top-right      
+	 1.0f, 0.0f, 0.0f,  1.0f, 0.0f, 0.0f, // bottom-right          
+	 1.0f, 0.0f, 0.0f,  1.0f, 0.0f, 0.0f, // bottom-right
+	 1.0f, 0.0f,  1.0f,  1.0f, 0.0f, 0.0f, // bottom-left
+	 1.0f,  1.0f,  1.0f,  1.0f, 0.0f, 0.0f, // top-left
+	// Bottom face          
+	 0.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f, // top-right
+	 1.0f, 0.0f,  1.0f,  0.0f, -1.0f, 0.0f, // bottom-left
+	 1.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f, // top-left        
+	 1.0f, 0.0f,  1.0f,  0.0f, -1.0f, 0.0f, // bottom-left
+	 0.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f, // top-right
+	 0.0f, 0.0f,  1.0f,  0.0f, -1.0f, 0.0f, // bottom-right
+	// Top face
+	 0.0f,  1.0f, 0.0f,  0.0f, 1.0f, 0.0f, // top-left
+	 1.0f,  1.0f, 0.0f,  0.0f, 1.0f, 0.0f, // top-right
+	 1.0f,  1.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right                 
+	 1.0f,  1.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
+	 0.0f,  1.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-left  
+	 0.0f,  1.0f, 0.0f,  0.0f, 1.0f, 0.0f  // top-left     
+	};
 
 	class utilF
 	{

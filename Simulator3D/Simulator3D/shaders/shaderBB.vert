@@ -4,12 +4,16 @@ layout (location = 1) in vec3 normal;
 
 uniform mat4 projectionView;
 uniform vec3 colorBBox;
-uniform vec3 camera;
 
 out vec3 color;
+out vec3 o_normal;
+out vec3 frag_pos;
 
 void main()
 {
-	color = normal * 0.5 + 0.5;
+	color = abs(normal);
+	o_normal = -normal;
+	frag_pos = vertex;
+
     gl_Position = projectionView * vec4(vertex, 1.0);
 }  

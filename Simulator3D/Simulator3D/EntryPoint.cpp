@@ -37,7 +37,9 @@ void processInputLess(GLFWwindow* window);
 
 Shader shader, shaderBB;
 Camera camera(glm::vec3(0.5f, 0.5f, 5.0f));
-glm::vec3 lightPosition(-1.0f, 2.0f, 1.0f);
+glm::vec3 lightPosition(0.5f, 0.5f, 1.5f);
+glm::vec3 lightColor(0.6f, 0.6f, 0.6f);
+glm::vec3 ambientLight(0.2f, 0.2f, 0.2f);
 
 bool firstMouse = true;
 bool doSimulation = false;
@@ -124,18 +126,19 @@ void initArraysBB(GLuint& VAO, GLuint* VBO)
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
 
-	glGenBuffers(2, VBO);
+	glGenBuffers(1, VBO); 
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(utils::CubeVertices), utils::CubeVertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(utils::vertices), utils::vertices, GL_STATIC_DRAW);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (GLvoid*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (GLvoid*)0);
 	glEnableVertexAttribArray(0);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, VBO[1]);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(utils::CubeIndices), utils::CubeIndices, GL_STATIC_DRAW);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (GLvoid*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
 
-	shaderBB = Shader("shaders/shaderBB.vert", "shaders/shaderPoint.frag");
+
+	shaderBB = Shader("shaders/shaderBB.vert", "shaders/shaderBB.frag");
 	const glm::vec3 colorBB = glm::vec3(1.0f, 0.0, 0.0f);
 
 	shaderBB.use();
@@ -149,9 +152,11 @@ void setUniforms(Shader s)
 	const glm::mat4 projection = glm::perspective(glm::radians(camera.m_zoom), static_cast<float>(utils::SCR_WIDTH) / utils::SCR_HEIGHT, 0.1f, 10.0f);
 	const glm::mat4 projectionView = projection * camera.GetViewMatrix();
 	s.setMat4("projectionView", projectionView);
-
+	s.setMat4("view", camera.GetViewMatrix());
 	s.setVec3("camera", camera.m_position);
 	s.setVec3("lightPos", lightPosition);
+	s.setVec3("lightColor", lightColor);
+	s.setVec3("ambientLight", ambientLight);
 }
 
 
@@ -167,8 +172,7 @@ void drawBBWireframe(const GLuint VAO, const GLuint* VBO)
 
 	glBindVertexArray(VAO);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, VBO[1]);
-	glDrawElements(GL_TRIANGLES, sizeof(utils::CubeIndices), GL_UNSIGNED_BYTE, 0);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
@@ -184,9 +188,7 @@ void drawBBFilled(const GLuint VAO, const GLuint* VBO)
 
 	glBindVertexArray(VAO);
 
-	glCullFace(GL_FRONT);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
-	glCullFace(GL_BACK);
 }
 
 void drawParticles(const GLuint VAO, const GLuint* VBO, const Simulator_3D& sim, float* particleDump)
@@ -215,8 +217,8 @@ int main()
 		return -1;
 
 	glClearColor(0.2f, 0.3f, 0.3f, 1.0f); // Clear color state
-	glEnable(GL_DEPTH_TEST | GL_CULL_FACE);
-
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
 	setCallbacks(window);
 
 	float* p_pos;

@@ -52,5 +52,8 @@
     <None Include="shaders\shaderPoint.vert">
       <Filter>Archivos de recursos</Filter>
     </None>
+    <None Include="shaders\shaderBB.frag">
+      <Filter>Archivos de recursos</Filter>
+    </None>
   </ItemGroup>
 </Project>
