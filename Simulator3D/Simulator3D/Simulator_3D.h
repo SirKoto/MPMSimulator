@@ -35,8 +35,8 @@ private:
 	const float boundary = 0.05f;
 
 
-	float grid_size;
-	float d_size; // derivate of the size
+	const float grid_size;
+	const float d_size; // derivate of the size
 
 	Eigen::Array3f minBorder, maxBorder;
 

@@ -13,18 +13,16 @@
 
 Simulator_3D::Simulator_3D(float E, float nu) :
 	mu_0(E / (2 * (1 + nu))),
-	lambda_0(E* nu / ((1 + nu) * (1 - 2 * nu)))
+	lambda_0(E* nu / ((1 + nu) * (1 - 2 * nu))),
+	grid_size(64), d_size(1.0f / grid_size)
 {
-	grid_size = 128;
-
 	minBorder = Eigen::Array3f::Constant(0.0f + 1.0e-3f);
 	maxBorder = Eigen::Array3f::Constant(1.0f - 1.0e-3f);
 
-	d_size = 1.0f / grid_size;
 
 	//particles = std::vector<Particle>(0);
-	grid = new Eigen::Array4f[(128 * 128 * 128)];
-	std::memset(grid, 0, (128 * 128 * 128 * sizeof(Eigen::Array4f)));
+	grid = new Eigen::Array4f[((int)grid_size * (int)grid_size * (int)grid_size)];
+	std::memset(grid, 0, ((int)grid_size * (int)grid_size * (int)grid_size * sizeof(Eigen::Array4f)));
 
 	//svd = Eigen::JacobiSVD<Eigen::Matrix3f, Eigen::NoQRPreconditioner>(3, 3, Eigen::ComputeFullU | Eigen::ComputeFullV);
 }
@@ -64,7 +62,7 @@ unsigned int Simulator_3D::dumpPositionsNormalized(float* positions) const
 void Simulator_3D::step(float dt)
 {
 	// all grid with 0's, velocity and mass
-	std::memset(grid, 0, (128 * 128 * 128 * sizeof(Eigen::Array4f)));
+	std::memset(grid, 0, ((int)grid_size * (int)grid_size * (int)grid_size * sizeof(Eigen::Array4f)));
 
 #ifdef TIME_COUNT_FLAG
 	auto start = std::chrono::steady_clock::now();
