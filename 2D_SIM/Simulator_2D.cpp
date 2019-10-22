@@ -98,19 +98,19 @@ void Simulator_2D::step(float dt)
 
 
 		//Corotated constitucional model     // [http://mpm.graphics Eqn. 52]
-		const Eigen::Matrix2f PF = 2.0f * mu * (p.F - r) * (p.F).transpose() + Eigen::Matrix2f::Constant(lambda * (J - 1.0f) * J); //TODO: he invertit el simbol de * i + ???
+		const Eigen::Matrix2f PF = 2.0f * mu * (p.F - r) * (p.F).transpose() + (Eigen::Matrix2f::Identity() * (lambda * (J - 1.0f) * J));
 
 		//const glm::vec2 Dinv = 4.0f * grid_size * grid_size;
 		// Identity sclae by inverse derivate
 		//const glm::mat2 DinvM = glm::mat2(Dinv.x(), 0.0f, 0.0f, Dinv.y());
 		//EQn. 173
-		const Eigen::Matrix2f stress = - (dt * volume) * (4.0f * grid_size * grid_size * PF); // eq_16_term_0
+		const Eigen::Matrix2f stress = - (dt * volume * 4.0f * grid_size * grid_size * PF); // eq_16_term_0
 
 		const Eigen::Matrix2f affine = stress + mass * p.C;
 
 		//P2G
 		const Eigen::Array2i cell_x0 = cell_idx + Eigen::Array2i(-1, -1);
-		const Eigen::Vector2f cell_dist0 = ((cell_x0.cast<float>() - (p.pos * grid_size)) + 0.5f);
+		const Eigen::Vector2f cell_dist0 =  ((cell_x0.cast<float>() - (p.pos * grid_size)) + 0.5f);
 
 		{
 			Eigen::Array3f moment_mass0 = (Eigen::Array3f() << p.v * mass, mass).finished(); // moment and particle mass

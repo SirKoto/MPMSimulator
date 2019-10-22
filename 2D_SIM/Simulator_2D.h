@@ -40,7 +40,7 @@ private:
 	const float hardening = 10.0f;
 	const float volume = 1.0f;
 	const float mass = 1.0f; // massa
-	const Eigen::Array2f g = Eigen::Array2f(0.0f, -10.0f);
+	const Eigen::Array2f g = Eigen::Array2f(0.0f, -20.0f);
 	
 	struct Particle
 	{

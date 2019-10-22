@@ -113,7 +113,7 @@ int main()
 
 	glPointSize(4.0f); // Drawing points
 
-	int n_particles = 3000;
+	int n_particles = 500;
 
 	// Create simulator and add points
 	Simulator_2D sim;
@@ -155,7 +155,7 @@ int main()
 		processInput(window);
 
 
-		for(int i = 0; i < 10; ++i) sim.step(0.00006f);
+		for(int i = 0; i < 15; ++i) sim.step(0.00006f);
 
 		n_particles = sim.dumpPositions(p_pos);
 
