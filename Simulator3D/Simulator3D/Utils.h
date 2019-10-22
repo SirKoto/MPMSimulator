@@ -23,7 +23,7 @@ namespace utils
 
 	static float DeltaTime = 0.0f;
 	static float LastFrame = 0.0f;
-	const static unsigned int maxParticles = 300;
+	constexpr unsigned int maxParticles = 300;
 
 	constexpr unsigned int sizG = 1;
 
