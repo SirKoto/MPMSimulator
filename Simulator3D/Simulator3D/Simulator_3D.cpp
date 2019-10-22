@@ -101,7 +101,7 @@ void Simulator_3D::step(float dt)
 
 
 		//Corotated constitucional model     // [http://mpm.graphics Eqn. 52]
-		const Eigen::Matrix3f PF = 2.0f * mu * (p.F - r) * (p.F).transpose() + Eigen::Matrix3f::Constant(lambda * (J - 1.0f) * J);
+		const Eigen::Matrix3f PF_t = (2.0f * mu * (p.F - r) * (p.F).transpose()) + (Eigen::Matrix3f::Identity() * (lambda * (J - 1.0f) * J));
 
 
 		//EQn. 173
@@ -257,7 +257,7 @@ void Simulator_3D::step(float dt)
 		{
 			for (int j = -1; j < 2; ++j)
 			{
-				for (int k = -1; k < 2; k++)
+				for (int k = -1; k < 2; ++k)
 				{
 					const Eigen::Array3i cell_x = cell_idx + Eigen::Array3i(i, j, k);
 					const Eigen::Vector3f cell_dist = (cell_x.cast<float>() - (p.pos * grid_size)) + 0.5f;
@@ -268,14 +268,12 @@ void Simulator_3D::step(float dt)
 					p.v += w * cell_v;
 
 					// apic, eq 10
-					//TODO sum outer product to p.C
 					utils::SumOuterProduct(p.C, w * cell_v, cell_dist);
 				}
 			}
 		}
 
 		p.C *= 4.0f * grid_size;
-
 #if defined(TIME_COUNT_FLAG) && defined(G2P_FLAG)
 		end = std::chrono::steady_clock::now();
 		v2 += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start_in).count();
