@@ -253,7 +253,7 @@ void Simulator_3D::step(float dt)
 
 #pragma omp parallel for reduction(+:v1,v2,v3,v4)
 #else
-#pragma omp parallel for
+#pragma omp parallel for num_threads(4)
 #endif
 
 	// Grid to particle
@@ -318,19 +318,15 @@ void Simulator_3D::step(float dt)
 		// advect particles
 		p.pos += dt * p.v;
 
-
-
-		// safety clamp!!
-		//p.pos = maxBorder.cwiseMin(minBorder.cwiseMax(p.pos)); // clamp!!!!
-
 		assert(p.pos.x() > 0.0f && p.pos.x() < 1.0f &&
 			p.pos.y() > 0.0f && p.pos.y() < 1.0f &&
 			p.pos.z() > 0.0f && p.pos.z() < 1.0f);
 
-		// update F gradient
+		// update F gradient (mls Eq. 17)
 		Eigen::Matrix3f F = (Eigen::Matrix3f::Identity() + (dt * p.C)) * p.F;
 		// avoid infinities and NaNs
 		assert(_finite(F(0, 0)) && _finite(F(0, 1)) && _finite(F(1, 0)) & _finite(F(1, 1)));
+
 
 		Eigen::JacobiSVD<Eigen::Matrix3f, Eigen::NoQRPreconditioner> svd(F, Eigen::ComputeFullU | Eigen::ComputeFullV);
 

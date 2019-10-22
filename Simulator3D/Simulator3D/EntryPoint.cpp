@@ -36,7 +36,7 @@ void processInputLess(GLFWwindow* window);
 
 
 Shader shader, shaderBB;
-Camera camera(glm::vec3(0.5f, 0.0f, 10.0f));
+Camera camera(glm::vec3(0.5f, 0.5f, 5.0f));
 
 bool firstMouse = true;
 bool doSimulation = false;
