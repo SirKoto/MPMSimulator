@@ -37,6 +37,7 @@ void processInputLess(GLFWwindow* window);
 
 Shader shader, shaderBB;
 Camera camera(glm::vec3(0.5f, 0.5f, 5.0f));
+glm::vec3 lightPosition(-1.0f, 2.0f, 1.0f);
 
 bool firstMouse = true;
 bool doSimulation = false;
@@ -142,14 +143,25 @@ void initArraysBB(GLuint& VAO, GLuint* VBO)
 
 }
 
-void drawBB(const GLuint VAO, const GLuint* VBO)
+void setUniforms(Shader s)
+{
+	s.use();
+	const glm::mat4 projection = glm::perspective(glm::radians(camera.m_zoom), static_cast<float>(utils::SCR_WIDTH) / utils::SCR_HEIGHT, 0.1f, 10.0f);
+	const glm::mat4 projectionView = projection * camera.GetViewMatrix();
+	s.setMat4("projectionView", projectionView);
+
+	s.setVec3("camera", camera.m_position);
+	s.setVec3("lightPos", lightPosition);
+}
+
+
+void drawBBWireframe(const GLuint VAO, const GLuint* VBO)
 {
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	shaderBB.use();
 
-	const glm::mat4 projection = glm::perspective(glm::radians(camera.m_zoom), static_cast<float>(utils::SCR_WIDTH) / utils::SCR_HEIGHT, 0.1f, 10.0f);
-	const glm::mat4 projectionView = projection * camera.GetViewMatrix();
-	shaderBB.setMat4("projectionView", projectionView);
+	setUniforms(shaderBB);
+
 	const glm::vec3 colorBB = glm::vec3(1.0f, 0.0, 0.0f);
 	shaderBB.setVec3("colorBBox", colorBB);
 
@@ -158,6 +170,23 @@ void drawBB(const GLuint VAO, const GLuint* VBO)
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, VBO[1]);
 	glDrawElements(GL_TRIANGLES, sizeof(utils::CubeIndices), GL_UNSIGNED_BYTE, 0);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+}
+
+void drawBBFilled(const GLuint VAO, const GLuint* VBO)
+{
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	shaderBB.use();
+
+	setUniforms(shaderBB);
+
+	const glm::vec3 colorBB = glm::vec3(1.0f, 0.0, 0.0f);
+	shaderBB.setVec3("colorBBox", colorBB);
+
+	glBindVertexArray(VAO);
+
+	glCullFace(GL_FRONT);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+	glCullFace(GL_BACK);
 }
 
 void drawParticles(const GLuint VAO, const GLuint* VBO, const Simulator_3D& sim, float* particleDump)
@@ -172,12 +201,12 @@ void drawParticles(const GLuint VAO, const GLuint* VBO, const Simulator_3D& sim,
 	glBufferSubData(GL_ARRAY_BUFFER, 0, n * (3 * sizeof(float)), particleDump);
 
 	shader.use();
-	const glm::mat4 projection = glm::perspective(glm::radians(camera.m_zoom), static_cast<float>(utils::SCR_WIDTH) / utils::SCR_HEIGHT, 0.1f, 10.0f);
-	const glm::mat4 projectionView = projection * camera.GetViewMatrix();
-	shader.setMat4("projectionView", projectionView);
+	setUniforms(shader);
 
 	glDrawArrays(GL_POINTS, 0, n);
 }
+
+
 
 int main()
 {
@@ -186,6 +215,7 @@ int main()
 		return -1;
 
 	glClearColor(0.2f, 0.3f, 0.3f, 1.0f); // Clear color state
+	glEnable(GL_DEPTH_TEST | GL_CULL_FACE);
 
 	setCallbacks(window);
 
@@ -236,9 +266,10 @@ int main()
 		float currentFrame = utils::updateTime();
 
 		processInput(window);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		drawBB(VAO_BB, VBO_BB);
+		drawBBFilled(VAO_BB, VBO_BB);
+
 		drawParticles(VAO_particles, VBO_particles, sim, p_pos);
 		//MSG(camera.m_position.x << " " << camera.m_position.y << " " << camera.m_position.z << ", " << camera.m_front.x << " " << camera.m_front.y << " " << camera.m_front.z);
 
@@ -261,8 +292,9 @@ int main()
 
 		for(int i = 0; i < 10; ++i) sim.step(0.00006f);
 
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		drawBBFilled(VAO_BB, VBO_BB);
 		drawParticles(VAO_particles, VBO_particles, sim, p_pos);
 
 		std::cerr << "Draw " << 1.0f/utils::DeltaTime << std::endl;
