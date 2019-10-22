@@ -22,7 +22,7 @@ Simulator_3D::Simulator_3D(float E, float nu) :
 
 	//particles = std::vector<Particle>(0);
 	grid = new Eigen::Array4f[((int)grid_size * (int)grid_size * (int)grid_size)];
-	std::memset(grid, 0, ((int)grid_size * (int)grid_size * (int)grid_size * sizeof(Eigen::Array4f)));
+	std::memset(grid, 0, (static_cast<int>(grid_size * grid_size * grid_size) * static_cast<int>(sizeof(Eigen::Array4f))));
 
 	//svd = Eigen::JacobiSVD<Eigen::Matrix3f, Eigen::NoQRPreconditioner>(3, 3, Eigen::ComputeFullU | Eigen::ComputeFullV);
 }
@@ -62,7 +62,7 @@ unsigned int Simulator_3D::dumpPositionsNormalized(float* positions) const
 void Simulator_3D::step(float dt)
 {
 	// all grid with 0's, velocity and mass
-	std::memset(grid, 0, ((int)grid_size * (int)grid_size * (int)grid_size * sizeof(Eigen::Array4f)));
+	std::memset(grid, 0, (static_cast<int>(grid_size * grid_size * grid_size) * static_cast<int>(sizeof(Eigen::Array4f))));
 
 #ifdef TIME_COUNT_FLAG
 	auto start = std::chrono::steady_clock::now();
@@ -102,22 +102,26 @@ void Simulator_3D::step(float dt)
 		const Eigen::Matrix3f PF_t = (2.0f * mu * (p.F - r) * (p.F).transpose()) + (Eigen::Matrix3f::Identity() * (lambda * (J - 1.0f) * J));
 
 
+		const float DinvSQ = (4.0f * grid_size * grid_size);
 		//EQn. 173
-		const Eigen::Matrix3f stress = -(dt * volume) * (4.0f * grid_size * grid_size * PF); // eq_16_term_0
+		const Eigen::Matrix3f stress = (- dt * volume * DinvSQ) * PF_t; // eq_16_term_0
 
-		const Eigen::Matrix3f affine = 0.0f * (stress + mass * p.C);
+		const Eigen::Matrix3f affine = stress  + mass * p.C;
 
 		//P2G
+#if true // optimization
+		{
 		const Eigen::Array3i cell_x0 = cell_idx + Eigen::Array3i::Constant(-1);
 		const Eigen::Vector3f cell_dist0 = ((cell_x0.cast<float>() - (p.pos * grid_size)) + 0.5f);
 
-		{
+
 			Eigen::Array4f moment_mass0 = (Eigen::Array4f() << p.v * mass, mass).finished(); // moment and particle mass
 			moment_mass0.head<3>() += d_size * (affine * cell_dist0).array();
 
 			const Eigen::Array3f kstep = affine.col(2) * d_size;
-			const Eigen::Array3f jstep = (affine.col(1) * d_size).array() - (3.0f * kstep);
-			const Eigen::Array3f istep = (affine.col(0) * d_size).array() - (3.0f * jstep);
+			const Eigen::Array3f jSemiStep = (affine.col(1) * d_size).array();
+			const Eigen::Array3f jstep = jSemiStep - (3.0f * kstep);
+			const Eigen::Array3f istep = (affine.col(0) * d_size).array() - (3.0f * jSemiStep);
 
 			for (int i = -1; i < 2; ++i)
 			{
@@ -137,6 +141,35 @@ void Simulator_3D::step(float dt)
 				moment_mass0.head<3>() += istep;
 			}
 		}
+#else
+		{
+			for (int i = -1; i < 2; ++i)
+			{
+				for (int j = -1; j < 2; ++j)
+				{
+					for (int k = -1; k < 2; ++k)
+					{
+						// cell_x is the idx of the selected cell to update
+						const Eigen::Array3i cell_x = cell_idx + Eigen::Array3i(i, j, k);
+
+						// cell_distance to the particle in the corresponding updating cell
+						const Eigen::Vector3f cell_dist = d_size * ((cell_x.cast<float>() - (p.pos * grid_size)) + 0.5f);
+
+						const float w = weights[i + 1].x() * weights[j + 1].y() * weights[k + 1].z();
+						const int index = getInd(cell_x.x(), cell_x.y(), cell_x.z());
+
+						//TODO: optimitzar multiplicant w nomes per mass
+						Eigen::Array4f moment_mass = (Eigen::Array4f() << p.v * mass, mass).finished(); // moment and particle mass
+
+						moment_mass.head<3>() += (affine * cell_dist).array();
+
+						grid[index] += w * moment_mass;
+
+					}
+				}
+			}
+		}
+#endif
 	}
 
 #ifdef TIME_COUNT_FLAG
