@@ -259,7 +259,7 @@ int main()
 
 		processInputLess(window);
 
-		for(int i = 0; i < 5; ++i) sim.step(0.0002f);
+		for(int i = 0; i < 10; ++i) sim.step(0.00006f);
 
 		glClear(GL_COLOR_BUFFER_BIT);
 
