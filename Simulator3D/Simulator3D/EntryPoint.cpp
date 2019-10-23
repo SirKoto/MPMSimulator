@@ -100,13 +100,14 @@ void initArraysParticles(GLuint& VAO, GLuint* VBO, float* &positions, glm::vec3*
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
 
-	glGenBuffers(2, VBO);
-
+	glGenBuffers(3, VBO); 
+	//Attribs [0] vertex, [1] color, [2] offset, [3] normal
 	glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
 	glBufferData(GL_ARRAY_BUFFER, utils::maxParticles * 3 * sizeof(float), positions, GL_DYNAMIC_DRAW);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (GLvoid*)0);
-	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (GLvoid*)0);
+	glEnableVertexAttribArray(2);
+	glVertexAttribDivisor(2, 1);
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
 	glBufferData(GL_ARRAY_BUFFER, utils::maxParticles * sizeof(glm::vec3), colors, GL_STATIC_DRAW);
@@ -114,9 +115,19 @@ void initArraysParticles(GLuint& VAO, GLuint* VBO, float* &positions, glm::vec3*
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (GLvoid*)0);
 	glEnableVertexAttribArray(1);
 
+	glBindBuffer(GL_ARRAY_BUFFER, VBO[2]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(utils::vertices), utils::vertices, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (GLvoid*)0);
+	glEnableVertexAttribArray(0);
+
+	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (GLvoid*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(3);
+
+
 	shader = Shader("shaders/shaderPoint.vert", "shaders/shaderPoint.frag");
 
-	glPointSize(2.0f); // Drawing points
+	//glPointSize(2.0f); // Drawing points
 }
 
 
@@ -188,6 +199,7 @@ void drawBBFilled(const GLuint VAO, const GLuint* VBO)
 
 	glBindVertexArray(VAO);
 
+	glCullFace(GL_BACK);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 }
 
@@ -205,7 +217,8 @@ void drawParticles(const GLuint VAO, const GLuint* VBO, const Simulator_3D& sim,
 	shader.use();
 	setUniforms(shader);
 
-	glDrawArrays(GL_POINTS, 0, n);
+	glCullFace(GL_FRONT);
+	glDrawArraysInstanced(GL_TRIANGLES, 0, 36, n);
 }
 
 
