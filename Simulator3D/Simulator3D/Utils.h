@@ -23,7 +23,7 @@ namespace utils
 
 	static float DeltaTime = 0.0f;
 	static float LastFrame = 0.0f;
-	constexpr unsigned int maxParticles = 300;
+	constexpr unsigned int maxParticles = 1000;
 
 	constexpr float sizG = 1;
 
@@ -103,47 +103,52 @@ namespace utils
 
 	constexpr GLfloat vertices[] = {
 		// Back face
+	 1.0f,  1.0f, 0.0f, 0.0f, 0.0f, -1.0f, // top-right             
+	 1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f, // bottom-right  
 	 0.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f, // Bottom-left
-	 1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f, // bottom-right    
-	 1.0f,  1.0f, 0.0f, 0.0f, 0.0f, -1.0f, // top-right              
-	 1.0f,  1.0f, 0.0f, 0.0f, 0.0f, -1.0f, // top-right
-	 0.0f,  1.0f, 0.0f, 0.0f, 0.0f, -1.0f, // top-left
 	 0.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f, // bottom-left                
+	 0.0f,  1.0f, 0.0f, 0.0f, 0.0f, -1.0f, // top-left
+	 1.0f,  1.0f, 0.0f, 0.0f, 0.0f, -1.0f, // top-right
+
 	// Front face
+	 1.0f, 0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // bottom-right
+	 1.0f,  1.0f,  1.0f, 0.0f, 0.0f, 1.0f, // top-right
+	 0.0f, 0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // bottom-left	         
+	 0.0f,  1.0f,  1.0f, 0.0f, 0.0f, 1.0f, // top-left
 	 0.0f, 0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // bottom-left
 	 1.0f,  1.0f,  1.0f, 0.0f, 0.0f, 1.0f, // top-right
-	 1.0f, 0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // bottom-right        
-	 1.0f,  1.0f,  1.0f, 0.0f, 0.0f, 1.0f, // top-right
-	 0.0f, 0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // bottom-left
-	 0.0f,  1.0f,  1.0f, 0.0f, 0.0f, 1.0f, // top-left        
+	         
 	// Left face
-	 0.0f,  1.0f,  1.0f,  -1.0f, 0.0f, 0.0f, // top-right
-	 0.0f, 0.0f, 0.0f,  -1.0f, 0.0f, 0.0f, // bottom-left
 	 0.0f,  1.0f, 0.0f,  -1.0f, 0.0f, 0.0f, // top-left       
 	 0.0f, 0.0f, 0.0f,  -1.0f, 0.0f, 0.0f, // bottom-left
 	 0.0f,  1.0f,  1.0f,  -1.0f, 0.0f, 0.0f, // top-right
 	 0.0f, 0.0f,  1.0f,  -1.0f, 0.0f, 0.0f, // bottom-right
+	 0.0f,  1.0f,  1.0f,  -1.0f, 0.0f, 0.0f, // top-right
+	 0.0f, 0.0f, 0.0f,  -1.0f, 0.0f, 0.0f, // bottom-left
+
 	// Right face
+	 1.0f, 0.0f, 0.0f,  1.0f, 0.0f, 0.0f, // bottom-right  
+	 1.0f,  1.0f, 0.0f, 1.0f, 0.0f, 0.0f, // top-right 
 	 1.0f,  1.0f,  1.0f,  1.0f, 0.0f, 0.0f, // top-left
-	 1.0f,  1.0f, 0.0f, 1.0f, 0.0f, 0.0f, // top-right      
-	 1.0f, 0.0f, 0.0f,  1.0f, 0.0f, 0.0f, // bottom-right          
-	 1.0f, 0.0f, 0.0f,  1.0f, 0.0f, 0.0f, // bottom-right
+	 1.0f,  1.0f,  1.0f,  1.0f, 0.0f, 0.0f, // top-left
 	 1.0f, 0.0f,  1.0f,  1.0f, 0.0f, 0.0f, // bottom-left
-	 1.0f,  1.0f,  1.0f,  1.0f, 0.0f, 0.0f, // top-left
+	 1.0f, 0.0f, 0.0f,  1.0f, 0.0f, 0.0f, // bottom-right
+
 	// Bottom face          
-	 0.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f, // top-right
-	 1.0f, 0.0f,  1.0f,  0.0f, -1.0f, 0.0f, // bottom-left
-	 1.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f, // top-left        
+	 1.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f, // top-left
 	 1.0f, 0.0f,  1.0f,  0.0f, -1.0f, 0.0f, // bottom-left
 	 0.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f, // top-right
 	 0.0f, 0.0f,  1.0f,  0.0f, -1.0f, 0.0f, // bottom-right
+	 0.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f, // top-right
+	 1.0f, 0.0f,  1.0f,  0.0f, -1.0f, 0.0f, // bottom-left
+
 	// Top face
-	 0.0f,  1.0f, 0.0f,  0.0f, 1.0f, 0.0f, // top-left
-	 1.0f,  1.0f, 0.0f,  0.0f, 1.0f, 0.0f, // top-right
-	 1.0f,  1.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right                 
 	 1.0f,  1.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
+	 1.0f,  1.0f, 0.0f,  0.0f, 1.0f, 0.0f, // top-right
+	 0.0f,  1.0f, 0.0f,  0.0f, 1.0f, 0.0f, // top-left                 
+	 0.0f,  1.0f, 0.0f,  0.0f, 1.0f, 0.0f,  // top-left
 	 0.0f,  1.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-left  
-	 0.0f,  1.0f, 0.0f,  0.0f, 1.0f, 0.0f  // top-left     
+	 1.0f,  1.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right      
 	};
 
 	class utilF

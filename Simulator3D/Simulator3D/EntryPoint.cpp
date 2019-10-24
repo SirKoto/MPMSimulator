@@ -126,8 +126,6 @@ void initArraysParticles(GLuint& VAO, GLuint* VBO, float* &positions, glm::vec3*
 
 
 	shader = Shader("shaders/shaderPoint.vert", "shaders/shaderPoint.frag");
-
-	//glPointSize(2.0f); // Drawing points
 }
 
 
@@ -199,8 +197,10 @@ void drawBBFilled(const GLuint VAO, const GLuint* VBO)
 
 	glBindVertexArray(VAO);
 
-	glCullFace(GL_BACK);
+	glCullFace(GL_FRONT);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
+	glCullFace(GL_BACK);
+
 }
 
 void drawParticles(const GLuint VAO, const GLuint* VBO, const Simulator_3D& sim, float* particleDump)
@@ -217,7 +217,6 @@ void drawParticles(const GLuint VAO, const GLuint* VBO, const Simulator_3D& sim,
 	shader.use();
 	setUniforms(shader);
 
-	glCullFace(GL_FRONT);
 	glDrawArraysInstanced(GL_TRIANGLES, 0, 36, n);
 }
 
@@ -232,6 +231,7 @@ int main()
 	glClearColor(0.2f, 0.3f, 0.3f, 1.0f); // Clear color state
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
+	glFrontFace(GL_CCW);
 	setCallbacks(window);
 
 	float* p_pos;
@@ -317,7 +317,7 @@ int main()
 
 #ifdef PRINT_IMAGES_FLAG
 		{
-			char *data = new char[3 * utils::SCR_WIDTH * utils::SCR_HEIGHT];
+			char *data = new char[3u * utils::SCR_WIDTH * utils::SCR_HEIGHT];
 
 			glReadPixels(0, 0, utils::SCR_WIDTH, utils::SCR_HEIGHT, GL_RGB, GL_UNSIGNED_BYTE, data);
 
