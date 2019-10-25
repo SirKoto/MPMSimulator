@@ -27,6 +27,8 @@ namespace utils
 	static float LastFrame = 0.0f;
 	constexpr unsigned int maxParticles = 1000;
 
+	constexpr float particleSize = 5e-3;
+
 	constexpr float sizG = 1;
 
 	inline float updateTime()

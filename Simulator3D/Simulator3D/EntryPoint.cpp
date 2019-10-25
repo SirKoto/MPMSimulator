@@ -102,6 +102,11 @@ void deactivateCallbacks(GLFWwindow* window)
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL); // disable dissapearing cursor
 }
 
+glm::mat4 getParticleModel()
+{
+	return glm::scale(glm::mat4(1.0f), glm::vec3(utils::particleSize));
+}
+
 void initArraysParticles(GLuint& VAO, GLuint* VBO, float* &positions, glm::vec3* &colors)
 {
 	positions = new float[utils::maxParticles * 3];
@@ -136,11 +141,13 @@ void initArraysParticles(GLuint& VAO, GLuint* VBO, float* &positions, glm::vec3*
 
 #ifdef SHADOWS
 	shader = Shader("shadersShadows/shaderPoint.vert", "shadersShadows/shaderPoint.frag");
+	shader.use();
 	shader.setInt("shadowMap", 0);
 #else
 	shader = Shader("shaders/shaderPoint.vert", "shaders/shaderPoint.frag");
+	shader.use();
 #endif
-
+	shader.setMat4("model", getParticleModel());
 }
 
 
@@ -214,7 +221,7 @@ void initFBOShadows() {
 	shaderShadow.use();
 	// Set light matrix
 	shaderShadow.setMat4("lightSpaceMatrix", lightSpaceMatrix);
-
+	shaderShadow.setMat4("model", getParticleModel());
 	// set light matrix to all the other shaders
 	shaderBB.use();
 	shaderBB.setMat4("lightSpaceMatrix", lightSpaceMatrix);
