@@ -15,12 +15,14 @@ out vec4 fposLightSpace;
 
 void main()
 {
+
 	vec4 v = model * vec4(vertex, 1.0);
-	
 	color = colorParticle;
 	normal = aNormal;
+	
 	v = v + vec4(offset, 0.0);
 	fpos = v.xyz;
+
 	fposLightSpace = lightSpaceMatrix * v;
 
     gl_Position = projectionView * v;

@@ -38,7 +38,7 @@ void processInputLess(GLFWwindow* window);
 
 Shader shader, shaderBB, shaderShadow;
 Camera camera(glm::vec3(0.5f, 0.5f, 5.0f));
-glm::vec3 lightPosition(0.5f, 1.0f, 1.5f);
+glm::vec3 lightPosition(0.5f, 1.0f, 3.0f);
 glm::vec3 lightColor(0.6f, 0.6f, 0.6f);
 glm::vec3 ambientLight(0.2f, 0.2f, 0.2f);
 
@@ -193,7 +193,7 @@ void initFBOShadows() {
 	glGenTextures(1, &depthMapTex);
 	glBindTexture(GL_TEXTURE_2D, depthMapTex);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, utils::SHADOW_WIDTH, utils::SHADOW_HEIGHT, 0,
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, utils::SHADOW_WIDTH, utils::SHADOW_HEIGHT, 0,
 		GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -212,8 +212,7 @@ void initFBOShadows() {
 	// unbind
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-
-	const glm::mat4 lightProjection = glm::perspective(glm::radians(72.0f), static_cast<float>(utils::SHADOW_WIDTH) / utils::SHADOW_HEIGHT, 0.01f, 3.5f);
+	const glm::mat4 lightProjection = glm::ortho(-0.5f, 0.5f, -0.6f, 0.6f, 1.522f, 3.01f);//glm::perspective(glm::radians(72.0f), static_cast<float>(utils::SHADOW_WIDTH) / utils::SHADOW_HEIGHT, 0.01f, 3.5f);
 	const glm::mat4 lightView = glm::lookAt(lightPosition, glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(0.0f, 1.0f, 0.0f));
 	const glm::mat4 lightSpaceMatrix = lightProjection * lightView;
 
@@ -242,10 +241,7 @@ void setUniforms(Shader s, const glm::mat4& projectionView)
 	s.setVec3("lightPos", lightPosition);
 	s.setVec3("lightColor", lightColor);
 	s.setVec3("ambientLight", ambientLight);
-#ifdef SHADOWS
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, depthMapTex);
-#endif
+
 }
 
 
@@ -256,6 +252,11 @@ void drawBBFilled(const GLuint VAO, const Shader& shr = shaderBB)
 	shr.use();
 
 	glBindVertexArray(VAO);
+
+#ifdef SHADOWS
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, depthMapTex);
+#endif
 
 	glCullFace(GL_FRONT);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -282,6 +283,12 @@ void drawParticles(const GLuint VAO, const unsigned int num_particles, const Sha
 	// Draw
 	glBindVertexArray(VAO);
 	shr.use();
+
+#ifdef SHADOWS
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, depthMapTex);
+#endif
+
 	glDrawArraysInstanced(GL_TRIANGLES, 0, 36, num_particles);
 }
 
@@ -294,8 +301,9 @@ void drawShadowMap(const int num_particles)
 	// clear depth
 	glClear(GL_DEPTH_BUFFER_BIT);
 
+	glCullFace(GL_FRONT);
 	drawParticles(VAO_particles, num_particles, shaderShadow);
-
+	glCullFace(GL_BACK);
 
 	// unbind and set normal viewport
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);

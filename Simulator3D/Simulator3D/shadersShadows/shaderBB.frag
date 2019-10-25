@@ -12,16 +12,14 @@ in vec3 o_normal;
 in vec3 frag_pos;
 in vec4 fPosLightSpace;
 
+
 float shadowCompute(vec4 fragLightSpace)
 {
 	vec3 projCoord = fragLightSpace.stp / fragLightSpace.q;
 	projCoord = projCoord * 0.5 + 0.5;
 
-	if(projCoord.z > 1.0)
-		return 1.0;
-
 	float closestDepth = texture(shadowMap, projCoord.st).r;
-
+	return closestDepth;
 	float currDepth = projCoord.p;
 	return currDepth > closestDepth ? 0.0 : 1.0;
 }
