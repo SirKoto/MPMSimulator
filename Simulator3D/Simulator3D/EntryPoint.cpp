@@ -22,6 +22,7 @@
 
 
 // #define PRINT_IMAGES_FLAG
+#define SHADOWS
 
 struct ParticlePos
 {
@@ -35,9 +36,9 @@ void processInput(GLFWwindow* window);
 void processInputLess(GLFWwindow* window);
 
 
-Shader shader, shaderBB;
+Shader shader, shaderBB, shaderShadow;
 Camera camera(glm::vec3(0.5f, 0.5f, 5.0f));
-glm::vec3 lightPosition(0.5f, 0.5f, 1.5f);
+glm::vec3 lightPosition(0.5f, 1.0f, 1.5f);
 glm::vec3 lightColor(0.6f, 0.6f, 0.6f);
 glm::vec3 ambientLight(0.2f, 0.2f, 0.2f);
 
@@ -49,7 +50,10 @@ float lastX, lastY;
 GLuint VAO_particles, VBO_particles[2];
 GLuint VAO_BB, VBO_BB[2];
 
-
+#ifdef SHADOWS
+GLuint depthFBO;
+GLuint depthMapTex;
+#endif
 
 bool initGLFW(GLFWwindow *&window)
 {
@@ -130,8 +134,13 @@ void initArraysParticles(GLuint& VAO, GLuint* VBO, float* &positions, glm::vec3*
 	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (GLvoid*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(3);
 
-
+#ifdef SHADOWS
+	shader = Shader("shadersShadows/shaderPoint.vert", "shadersShadows/shaderPoint.frag");
+	shader.setInt("shadowMap", 0);
+#else
 	shader = Shader("shaders/shaderPoint.vert", "shaders/shaderPoint.frag");
+#endif
+
 }
 
 
@@ -152,45 +161,87 @@ void initArraysBB(GLuint& VAO, GLuint* VBO)
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (GLvoid*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
-
+#ifdef SHADOWS
+	shaderBB = Shader("shadersShadows/shaderBB.vert", "shadersShadows/shaderBB.frag");
+#else
 	shaderBB = Shader("shaders/shaderBB.vert", "shaders/shaderBB.frag");
-	const glm::vec3 colorBB = glm::vec3(1.0f, 0.0, 0.0f);
+#endif
 
+	const glm::vec3 colorBB = glm::vec3(1.0f, 0.0, 0.0f);
 	shaderBB.use();
 	shaderBB.setVec3("colorBBox", colorBB);
 
+#ifdef SHADOWS
+	shaderBB.setInt("shadowMap", 0);
+#endif
 }
 
-void setUniforms(Shader s)
+#ifdef SHADOWS
+void initFBOShadows() {
+
+	// Generate the framebuffer
+	glGenFramebuffers(1, &depthFBO);
+
+	// texture to store the depth
+	glGenTextures(1, &depthMapTex);
+	glBindTexture(GL_TEXTURE_2D, depthMapTex);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, utils::SHADOW_WIDTH, utils::SHADOW_HEIGHT, 0,
+		GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+	// Bind texture to framebuffer
+	glBindFramebuffer(GL_FRAMEBUFFER, depthFBO);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMapTex, 0);
+	// prevent from writting or reading the color buffer
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		MSG("Error creating frameBuffer");
+	// unbind
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+	const glm::mat4 lightProjection = glm::perspective(glm::radians(72.0f), static_cast<float>(utils::SHADOW_WIDTH) / utils::SHADOW_HEIGHT, 0.01f, 3.5f);
+	const glm::mat4 lightView = glm::lookAt(lightPosition, glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(0.0f, 1.0f, 0.0f));
+	const glm::mat4 lightSpaceMatrix = lightProjection * lightView;
+
+	shaderShadow = Shader("shadersShadows/shaderShadowMap.vert", "shadersShadows/shaderShadowMap.frag");
+	shaderShadow.use();
+	// Set light matrix
+	shaderShadow.setMat4("lightSpaceMatrix", lightSpaceMatrix);
+
+	// set light matrix to all the other shaders
+	shaderBB.use();
+	shaderBB.setMat4("lightSpaceMatrix", lightSpaceMatrix);
+
+	shader.use();
+	shader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
+
+}
+#endif
+
+void setUniforms(Shader s, const glm::mat4& projectionView)
 {
 	s.use();
-	const glm::mat4 projection = glm::perspective(glm::radians(camera.m_zoom), static_cast<float>(utils::SCR_WIDTH) / utils::SCR_HEIGHT, 0.1f, 10.0f);
-	const glm::mat4 projectionView = projection * camera.GetViewMatrix();
+	
 	s.setMat4("projectionView", projectionView);
 	s.setMat4("view", camera.GetViewMatrix());
 	s.setVec3("camera", camera.m_position);
 	s.setVec3("lightPos", lightPosition);
 	s.setVec3("lightColor", lightColor);
 	s.setVec3("ambientLight", ambientLight);
+#ifdef SHADOWS
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, depthMapTex);
+#endif
 }
 
-/*
-void drawBBWireframe(const GLuint VAO, const GLuint* VBO)
-{
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	shaderBB.use();
 
-	setUniforms(shaderBB);
-
-	const glm::vec3 colorBB = glm::vec3(1.0f, 0.0, 0.0f);
-	shaderBB.setVec3("colorBBox", colorBB);
-
-	glBindVertexArray(VAO);
-
-	glDrawArrays(GL_TRIANGLES, 0, 36);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-}
-*/
 
 void drawBBFilled(const GLuint VAO, const Shader& shr = shaderBB)
 {
@@ -227,10 +278,30 @@ void drawParticles(const GLuint VAO, const unsigned int num_particles, const Sha
 	glDrawArraysInstanced(GL_TRIANGLES, 0, 36, num_particles);
 }
 
+#ifdef SHADOWS
+void drawShadowMap(const int num_particles)
+{
+	// Set framebuffer
+	glViewport(0, 0, utils::SHADOW_WIDTH, utils::SHADOW_HEIGHT);
+	glBindFramebuffer(GL_FRAMEBUFFER, depthFBO);
+	// clear depth
+	glClear(GL_DEPTH_BUFFER_BIT);
+
+	drawParticles(VAO_particles, num_particles, shaderShadow);
+
+
+	// unbind and set normal viewport
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glViewport(0, 0, utils::SCR_WIDTH, utils::SCR_HEIGHT);
+}
+#endif
+
 void updateUniforms()
 {
-	setUniforms(shader);
-	setUniforms(shaderBB);
+	const glm::mat4 projection = glm::perspective(glm::radians(camera.m_zoom), static_cast<float>(utils::SCR_WIDTH) / utils::SCR_HEIGHT, 0.1f, 10.0f);
+	const glm::mat4 projectionView = projection * camera.GetViewMatrix();
+	setUniforms(shader, projectionView);
+	setUniforms(shaderBB, projectionView);
 }
 
 void draw(const Simulator_3D& sim, float* buff)
@@ -238,7 +309,12 @@ void draw(const Simulator_3D& sim, float* buff)
 	const int n = updateParticles(VAO_particles, VBO_particles[0], sim, buff);
 
 	updateUniforms();
-	
+#ifdef SHADOWS
+	// Draw texture of shadow map
+	drawShadowMap(n);
+#endif
+	// Clear before drawing
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	drawBBFilled(VAO_BB);
 	drawParticles(VAO_particles, n);
 }
@@ -262,7 +338,9 @@ int main()
 
 	initArraysBB(VAO_BB, VBO_BB);
 
-	
+#ifdef SHADOWS
+	initFBOShadows();
+#endif
 
 	int n_particles = utils::maxParticles;
 
@@ -301,7 +379,6 @@ int main()
 		float currentFrame = utils::updateTime();
 
 		processInput(window);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		draw(sim, p_pos);
 
@@ -323,8 +400,6 @@ int main()
 		processInputLess(window);
 
 		for(int i = 0; i < 10; ++i) sim.step(0.00006f);
-
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		draw(sim, p_pos);
 

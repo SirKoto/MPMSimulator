@@ -31,6 +31,12 @@
     <ClInclude Include="Utils.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="shadersShadows\shaderBB.frag" />
+    <None Include="shadersShadows\shaderBB.vert" />
+    <None Include="shadersShadows\shaderPoint.frag" />
+    <None Include="shadersShadows\shaderPoint.vert" />
+    <None Include="shadersShadows\shaderShadowMap.frag" />
+    <None Include="shadersShadows\shaderShadowMap.vert" />
     <None Include="shaders\shaderBB.frag" />
     <None Include="shaders\shaderBB.vert" />
     <None Include="shaders\shaderPoint.frag" />
