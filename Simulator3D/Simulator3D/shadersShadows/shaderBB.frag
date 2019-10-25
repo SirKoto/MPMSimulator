@@ -18,10 +18,20 @@ float shadowCompute(vec4 fragLightSpace)
 	vec3 projCoord = fragLightSpace.stp / fragLightSpace.q;
 	projCoord = projCoord * 0.5 + 0.5;
 
-	float closestDepth = texture(shadowMap, projCoord.st).r;
-	return closestDepth;
-	float currDepth = projCoord.p;
-	return currDepth > closestDepth ? 0.0 : 1.0;
+	float currDepth = projCoord.z;
+
+	float shadow = 0.0;
+	vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
+	for(int x = -1; x < 2; ++x)
+	{
+		for(int y = -1; y < 2; ++y)
+		{
+			float pcfDepth = texture(shadowMap, projCoord.st + vec2(x,y) * texelSize).r;
+			shadow += currDepth > pcfDepth ? 0.0 : 1.0;
+		}
+	}
+
+	return shadow * (1.0/9.0);
 }
 
 void main()

@@ -21,7 +21,7 @@ namespace utils
 	static unsigned int SCR_WIDTH = 800;
 	static unsigned int SCR_HEIGHT = 600;
 
-	constexpr unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
+	constexpr unsigned int SHADOW_WIDTH = 2048, SHADOW_HEIGHT = 2048;
 
 	static float DeltaTime = 0.0f;
 	static float LastFrame = 0.0f;
