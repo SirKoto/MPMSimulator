@@ -45,6 +45,12 @@ bool firstMouse = true;
 bool doSimulation = false;
 float lastX, lastY;
 
+
+GLuint VAO_particles, VBO_particles[2];
+GLuint VAO_BB, VBO_BB[2];
+
+
+
 bool initGLFW(GLFWwindow *&window)
 {
 	glfwInit();
@@ -168,7 +174,7 @@ void setUniforms(Shader s)
 	s.setVec3("ambientLight", ambientLight);
 }
 
-
+/*
 void drawBBWireframe(const GLuint VAO, const GLuint* VBO)
 {
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -184,16 +190,12 @@ void drawBBWireframe(const GLuint VAO, const GLuint* VBO)
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
+*/
 
-void drawBBFilled(const GLuint VAO, const GLuint* VBO)
+void drawBBFilled(const GLuint VAO, const Shader& shr = shaderBB)
 {
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	shaderBB.use();
-
-	setUniforms(shaderBB);
-
-	const glm::vec3 colorBB = glm::vec3(1.0f, 0.0, 0.0f);
-	shaderBB.setVec3("colorBBox", colorBB);
+	shr.use();
 
 	glBindVertexArray(VAO);
 
@@ -203,24 +205,43 @@ void drawBBFilled(const GLuint VAO, const GLuint* VBO)
 
 }
 
-void drawParticles(const GLuint VAO, const GLuint* VBO, const Simulator_3D& sim, float* particleDump)
+unsigned int updateParticles(const GLuint VAO, const GLuint VBO, const Simulator_3D& sim, float* particleDump)
 {
+
 	unsigned int n = sim.dumpPositionsNormalized(particleDump);
 
-	// Draw
 	glBindVertexArray(VAO);
 
 	// update positions
-	glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, n * (3 * sizeof(float)), particleDump);
 
-	shader.use();
-	setUniforms(shader);
-
-	glDrawArraysInstanced(GL_TRIANGLES, 0, 36, n);
+	return n;
 }
 
+void drawParticles(const GLuint VAO, const unsigned int num_particles, const Shader& shr = shader)
+{
+	// Draw
+	glBindVertexArray(VAO);
+	shr.use();
+	glDrawArraysInstanced(GL_TRIANGLES, 0, 36, num_particles);
+}
 
+void updateUniforms()
+{
+	setUniforms(shader);
+	setUniforms(shaderBB);
+}
+
+void draw(const Simulator_3D& sim, float* buff)
+{
+	const int n = updateParticles(VAO_particles, VBO_particles[0], sim, buff);
+
+	updateUniforms();
+	
+	drawBBFilled(VAO_BB);
+	drawParticles(VAO_particles, n);
+}
 
 int main()
 {
@@ -237,10 +258,8 @@ int main()
 	float* p_pos;
 	glm::vec3* p_col;
 	// VBO[0] := positions, VBO[1] := color
-	GLuint VAO_particles, VBO_particles[2];
 	initArraysParticles(VAO_particles, VBO_particles, p_pos, p_col);
 
-	GLuint VAO_BB, VBO_BB[2];
 	initArraysBB(VAO_BB, VBO_BB);
 
 	
@@ -270,6 +289,7 @@ int main()
 			glBindBuffer(GL_ARRAY_BUFFER, VBO_particles[1]);
 			glBufferData(GL_ARRAY_BUFFER, utils::maxParticles * sizeof(glm::vec3), p_col, GL_STATIC_DRAW);
 		}
+		delete[] p_col;
 	}
 
 	n_particles = sim.dumpPositionsNormalized(p_pos);
@@ -283,10 +303,7 @@ int main()
 		processInput(window);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		drawBBFilled(VAO_BB, VBO_BB);
-
-		drawParticles(VAO_particles, VBO_particles, sim, p_pos);
-		//MSG(camera.m_position.x << " " << camera.m_position.y << " " << camera.m_position.z << ", " << camera.m_front.x << " " << camera.m_front.y << " " << camera.m_front.z);
+		draw(sim, p_pos);
 
 		glBindVertexArray(0);
 
@@ -309,8 +326,7 @@ int main()
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		drawBBFilled(VAO_BB, VBO_BB);
-		drawParticles(VAO_particles, VBO_particles, sim, p_pos);
+		draw(sim, p_pos);
 
 		std::cerr << "Draw " << 1.0f/utils::DeltaTime << std::endl;
 		glBindVertexArray(0);
@@ -332,7 +348,6 @@ int main()
 	}
 
 	delete[] p_pos;
-	delete[] p_col;
 	
 	glfwTerminate();
 
