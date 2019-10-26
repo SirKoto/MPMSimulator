@@ -20,6 +20,9 @@
 #include "Simulator_3D.h"
 #include "Camera.h"
 
+#include "IO/WriteSBF.h"
+#include "IO/ReadSBF.h"
+
 
 // #define PRINT_IMAGES_FLAG
 #define SHADOWS
