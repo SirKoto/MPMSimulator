@@ -14,7 +14,7 @@ public:
 	
 	~ReadSBF();
 
-	bool ReadData3f(float* data);
+	char ReadData(float* data);
 
 	inline unsigned long GetNumberParticles() const
 	{
@@ -29,6 +29,8 @@ private:
 	unsigned long it;
 	unsigned long rest;
 	std::ifstream stream;
+
+	void ReadData3f(float* data);
 
 };
 

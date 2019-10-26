@@ -16,6 +16,11 @@
 
 #define MSG(m) std::cout << m << std::endl 
 #define TMSG(m) std::cout << "\t" << m << std::endl
+
+#define SBF_DATA 0xFF
+#define SBF_EOF 0x00
+#define SBF_HEADER 0x01
+
 namespace utils
 {
 	static unsigned int SCR_WIDTH = 800;

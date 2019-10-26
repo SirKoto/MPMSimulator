@@ -1,4 +1,5 @@
 #include "WriteSBF.h"
+#include "../Utils.h"
 
 WriteSBF::WriteSBF(const std::string& path, const unsigned long n_particles) :
 	stream(path.c_str(), std::ios::out | std::ios::trunc | std::ios_base::binary),
@@ -19,7 +20,7 @@ WriteSBF::~WriteSBF()
 {
 	// write EOF 
 	{
-		char flag = 0x00;
+		char flag = SBF_EOF;
 		stream.write(&flag, 1);
 	}
 	stream.flush();
@@ -32,7 +33,7 @@ void WriteSBF::writeData3f(const float* data)
 
 	// write some flag at the start
 	{
-		char flag = 0xFF;
+		char flag = SBF_DATA;
 		stream.write(&flag, 1);
 	}
 

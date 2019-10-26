@@ -1,4 +1,5 @@
 #include "ReadSBF.h"
+#include "../Utils.h"
 
 ReadSBF::ReadSBF(const std::string& path) :
 	stream(path.c_str(), std::ios::in | std::ios_base::binary)
@@ -19,16 +20,31 @@ ReadSBF::~ReadSBF()
 	stream.close();
 }
 
-bool ReadSBF::ReadData3f(float* data)
+char ReadSBF::ReadData(float* data)
 {
 
 	// read first flag
+	char flag;
+	stream.read(&flag, 1);
+
+
+	switch (flag)
 	{
-		char flag;
-		stream.read(&flag, 1);
-		if (!flag)
-			return false;
+	case SBF_DATA:
+		ReadData3f(data);
+		break;
+
+	case SBF_EOF:
+
+	default:
+		break;
 	}
+
+	return flag;
+}
+
+void ReadSBF::ReadData3f(float* data)
+{
 	char bloat[sizeof(float) * 3 * size_bulk];
 	//copy data
 	unsigned long i;
@@ -42,6 +58,4 @@ bool ReadSBF::ReadData3f(float* data)
 	// copy the rest
 	stream.read(bloat, sizeof(float) * 3 * rest);
 	std::memcpy((data + (3 * i * size_bulk)), bloat, sizeof(float) * 3 * rest);
-
-	return true;
 }
