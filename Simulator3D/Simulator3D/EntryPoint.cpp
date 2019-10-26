@@ -411,13 +411,14 @@ int main()
 	int iteration = -1;
 	while (!glfwWindowShouldClose(window) && doSimulation)
 	{
+		if (iteration > 300) break;
 		++iteration;
 
 		float currentFrame = utils::updateTime();
 
 		processInputLess(window);
 
-		for(int i = 0; i < 10; ++i) sim.step(0.00006f);
+		for(int i = 0; i < 200; ++i) sim.step(0.00006f);
 
 		draw(sim, p_pos);
 
