@@ -27,7 +27,7 @@ namespace utils
 	static float LastFrame = 0.0f;
 	constexpr unsigned int maxParticles = 100000;
 
-	constexpr float particleSize = 5e-3;
+	constexpr float particleSize = 5e-3f;
 
 	constexpr float sizG = 1;
 

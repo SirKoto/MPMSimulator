@@ -25,6 +25,7 @@
 
 
 // #define PRINT_IMAGES_FLAG
+#define WRITE_DATA_SBF
 #define SHADOWS
 
 struct ParticlePos
@@ -395,6 +396,16 @@ int main()
 	MSG(n_particles);
 	utils::LastFrame = (float)glfwGetTime();
 
+#ifdef WRITE_DATA_SBF
+	// create writter
+	if (!CreateDirectory("sim_files", NULL) && !ERROR_ALREADY_EXISTS == GetLastError())
+	{
+		MSG("ERROR::CANNOT CREATE DIRECTORY FOR FILES");
+		return -1;
+	}
+	WriteSBF writter("sim_files/data.sbf", n_particles);
+#endif
+
 	while (!glfwWindowShouldClose(window) && !doSimulation) 
 	{
 		float currentFrame = utils::updateTime();
@@ -438,7 +449,9 @@ int main()
 			delete[] data;
 		}
 #endif // PRINT_IMAGES_FLAG
-
+#ifdef WRITE_DATA_SBO
+		writter.writeData3f(p_pos);
+#endif
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
