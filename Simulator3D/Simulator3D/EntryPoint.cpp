@@ -129,6 +129,7 @@ void initArraysParticles(GLuint& VAO, GLuint* VBO, float* &positions, glm::vec3*
 
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (GLvoid*)0);
 	glEnableVertexAttribArray(1);
+	glVertexAttribDivisor(1, 1);
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO[2]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(utils::vertices), utils::vertices, GL_STATIC_DRAW);
@@ -365,17 +366,19 @@ int main()
 		// add random particles
 
 		std::mt19937 mt_rng(42);
-		std::uniform_real_distribution<float> dis(0.4f, 0.6f);
+		std::uniform_real_distribution<float> disX(0.1f, 0.9f);
+		std::uniform_real_distribution<float> disZ(0.3f, 0.7f);
+		std::uniform_real_distribution<float> disY(0.4f, 0.8f);
 
-
+		float dy = (0.8f - 0.4f) / 3;
 		for (int i = 0; i < n_particles; ++i)
 		{
-			float x = dis(mt_rng);
-			float y = dis(mt_rng);
-			float z = dis(mt_rng);
+			float x = disX(mt_rng);
+			float y = disY(mt_rng);
+			float z = disZ(mt_rng);
 			sim.addParticleNormalized(glm::vec3(x, y, z));
 
-			p_col[i] = y > 8.0f ? glm::vec3(0.0f, 1.0f, 0.0f) : y < -8.0f ? glm::vec3(0.0f,1.0f,1.0f): glm::vec3(1.0f, 0.0f, 1.0f); // color according to height
+			p_col[i] = y > 0.4f + 2.f * dy ? glm::vec3(0.0f, 1.0f, 0.0f) : y < 0.4f + dy ? glm::vec3(0.0f, 1.0f, 1.0f) : glm::vec3(1.0f, 0.0f, 1.0f); // color according to height
 		}
 
 		{ // add the color into the buffer for each particle
