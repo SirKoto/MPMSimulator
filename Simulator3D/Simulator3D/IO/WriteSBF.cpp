@@ -1,7 +1,7 @@
 #include "WriteSBF.h"
 
 WriteSBF::WriteSBF(const std::string& path, const unsigned long n_particles) :
-	stream(path.c_str(), std::ios::out | std::ios::trunc),
+	stream(path.c_str(), std::ios::out | std::ios::trunc | std::ios_base::binary),
 	n(n_particles), rest(n_particles % size_bulk), it(n_particles / size_bulk)
 {
 	// write number of particles
@@ -41,12 +41,12 @@ void WriteSBF::writeData3f(const float* data)
 	for (i = 0; i < it; ++i)
 	{
 		// use pointer arithmetic to add to the float array
-		std::memcpy(bloat, data + i, sizeof(float) * 3 * size_bulk);
+		std::memcpy(bloat, (data + (3 * i * size_bulk)), sizeof(float) * 3 * size_bulk);
 		stream.write(bloat, sizeof(float) * 3 * size_bulk);
 	}
 
 	// copy the rest
-	std::memcpy(bloat, data + i, sizeof(float) * 3 * rest);
+	std::memcpy(bloat, (data + (3 * i * size_bulk)), sizeof(float) * 3 * rest);
 	stream.write(bloat, sizeof(float) * 3 * rest);
 
 	stream.flush();

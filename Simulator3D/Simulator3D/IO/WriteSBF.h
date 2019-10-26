@@ -18,7 +18,7 @@ public:
 
 private:
 
-	static constexpr unsigned int size_bulk = 100;
+	static constexpr unsigned long size_bulk = 100;
 
 	const unsigned long n;
 	const unsigned long rest;
