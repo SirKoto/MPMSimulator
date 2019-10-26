@@ -253,7 +253,7 @@ void Simulator_3D::step(float dt)
 
 #pragma omp parallel for reduction(+:v1,v2,v3,v4)
 #else
-#pragma omp parallel for num_threads(4)
+#pragma omp parallel for
 #endif
 
 	// Grid to particle

@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Archivos de recursos\Normal">
+      <UniqueIdentifier>{c5ebe27f-d41b-4704-8272-8685bd99cce8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de recursos\Shadows">
+      <UniqueIdentifier>{a63bcd18-f5f7-4776-9a0c-4661c46782e7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EntryPoint.cpp">
@@ -43,14 +49,35 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <None Include="shaders\shaderBB.frag">
+      <Filter>Archivos de recursos\Normal</Filter>
+    </None>
     <None Include="shaders\shaderBB.vert">
-      <Filter>Archivos de recursos</Filter>
+      <Filter>Archivos de recursos\Normal</Filter>
     </None>
     <None Include="shaders\shaderPoint.frag">
-      <Filter>Archivos de recursos</Filter>
+      <Filter>Archivos de recursos\Normal</Filter>
     </None>
     <None Include="shaders\shaderPoint.vert">
-      <Filter>Archivos de recursos</Filter>
+      <Filter>Archivos de recursos\Normal</Filter>
+    </None>
+    <None Include="shadersShadows\shaderPoint.frag">
+      <Filter>Archivos de recursos\Shadows</Filter>
+    </None>
+    <None Include="shadersShadows\shaderPoint.vert">
+      <Filter>Archivos de recursos\Shadows</Filter>
+    </None>
+    <None Include="shadersShadows\shaderShadowMap.frag">
+      <Filter>Archivos de recursos\Shadows</Filter>
+    </None>
+    <None Include="shadersShadows\shaderShadowMap.vert">
+      <Filter>Archivos de recursos\Shadows</Filter>
+    </None>
+    <None Include="shadersShadows\shaderBB.frag">
+      <Filter>Archivos de recursos\Shadows</Filter>
+    </None>
+    <None Include="shadersShadows\shaderBB.vert">
+      <Filter>Archivos de recursos\Shadows</Filter>
     </None>
   </ItemGroup>
 </Project>

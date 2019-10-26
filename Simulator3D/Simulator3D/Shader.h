@@ -94,7 +94,7 @@ public:
 		glDeleteShader(fragment);
 	}
 
-	void use() {
+	void use() const {
 		glUseProgram(ID);
 	}
 	void setBool(const std::string& name, bool value) const
