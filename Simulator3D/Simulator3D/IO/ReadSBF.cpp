@@ -19,8 +19,7 @@ ReadSBF::~ReadSBF()
 {
 	stream.close();
 }
-
-char ReadSBF::ReadData(float* data)
+char ReadSBF::ReadData(FrameSBF<float>& frame)
 {
 
 	// read first flag
@@ -28,27 +27,27 @@ char ReadSBF::ReadData(float* data)
 	stream.read(&flag, 1);
 
 
-	switch (flag)
+	if (flag == SBF_DATA)
 	{
-	case SBF_DATA:
-		ReadData3f(data);
-		break;
-
-	case SBF_COLOR:
-		ReadData3f(data);
-		break;
-
-	case SBF_EOF:
-
-	default:
-		break;
+		ReadData3f(frame);
+	}
+	else if (flag == SBF_COLOR)
+	{
+		ReadData3f(frame);
+	}
+	else if (flag == SBF_EOF)
+	{
+		//NOTHING
 	}
 
 	return flag;
 }
 
-void ReadSBF::ReadData3f(float* data)
+void ReadSBF::ReadData3f(FrameSBF<float>& frame)
 {
+	//create and reserve memory for frame
+	frame.prepareData(3 * n * sizeof(float));
+
 	char bloat[sizeof(float) * 3 * size_bulk];
 	//copy data
 	unsigned long i;
@@ -56,10 +55,10 @@ void ReadSBF::ReadData3f(float* data)
 	{
 		stream.read(bloat, sizeof(float) * 3 * size_bulk);
 
-		std::memcpy((data + (3ULL * i * size_bulk)), bloat, sizeof(float) * 3 * size_bulk);
+		std::memcpy((frame.ptr() + (3ULL * i * size_bulk)), bloat, sizeof(float) * 3 * size_bulk);
 	}
 
 	// copy the rest
 	stream.read(bloat, sizeof(float) * 3 * rest);
-	std::memcpy((data + (3ULL * i * size_bulk)), bloat, sizeof(float) * 3 * rest);
+	std::memcpy((frame.ptr() + (3ULL * i * size_bulk)), bloat, sizeof(float) * 3 * rest);
 }

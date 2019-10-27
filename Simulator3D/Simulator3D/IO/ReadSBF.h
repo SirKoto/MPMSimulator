@@ -7,6 +7,8 @@
 #include <iostream>
 #include <fstream>
 
+#include "FrameSBF.h"
+
 class ReadSBF
 {
 public:
@@ -14,7 +16,7 @@ public:
 	
 	~ReadSBF();
 
-	char ReadData(float* data);
+	char ReadData(FrameSBF<float>& frame);
 
 	inline unsigned long GetNumberParticles() const
 	{
@@ -30,7 +32,7 @@ private:
 	unsigned long rest;
 	std::ifstream stream;
 
-	void ReadData3f(float* data);
+	void ReadData3f(FrameSBF<float>& frame);
 
 };
 

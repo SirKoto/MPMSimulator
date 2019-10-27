@@ -6,8 +6,8 @@
 template<typename T>
 class FrameSBF {
 public:
-	FrameSBF(const unsigned long number_elements) {
-		data = new T[number_elements];
+	FrameSBF() {
+		data = nullptr;
 	}
 
 	~FrameSBF()
@@ -18,6 +18,15 @@ public:
 	// Disable copy constructor
 	FrameSBF(const FrameSBF& f) = delete;
 	FrameSBF& operator=(const FrameSBF& f) = delete;
+
+	void prepareData(const unsigned long number_elements) {
+		if (data != nullptr)
+		{
+			delete[] data;
+		}
+
+		data = new T[number_elements];
+	}
 
 
 	T* ptr()

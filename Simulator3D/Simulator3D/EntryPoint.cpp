@@ -400,11 +400,12 @@ int main()
 	// create writter
 	if (!CreateDirectory("sim_files", NULL) && !ERROR_ALREADY_EXISTS == GetLastError())
 	{
-		MSG("ERROR::CANNOT CREATE DIRECTORY FOR FILES");
+		MSG("ERROR::SBF::CANNOT CREATE DIRECTORY FOR FILES");
 		return -1;
 	}
 	WriteSBF writter("sim_files/data.sbf", n_particles);
 #endif
+
 
 	while (!glfwWindowShouldClose(window) && !doSimulation) 
 	{
@@ -449,7 +450,7 @@ int main()
 			delete[] data;
 		}
 #endif // PRINT_IMAGES_FLAG
-#ifdef WRITE_DATA_SBO
+#ifdef WRITE_DATA_SBF
 		writter.writeData3f(p_pos);
 #endif
 

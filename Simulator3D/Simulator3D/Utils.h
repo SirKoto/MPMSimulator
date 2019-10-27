@@ -17,9 +17,10 @@
 #define MSG(m) std::cout << m << std::endl 
 #define TMSG(m) std::cout << "\t" << m << std::endl
 
-#define SBF_DATA 0xFF
-#define SBF_EOF 0x00
-#define SBF_COLOR 0x01
+ 
+const char SBF_DATA = (0xFFu);
+const char SBF_EOF = (0x00u);
+const char SBF_COLOR = (0x01u);
 
 namespace utils
 {
