@@ -59,6 +59,9 @@
     <ClInclude Include="IO\ReadSBF.h">
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>
+    <ClInclude Include="IO\FrameSBF.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\shaderBB.frag">
