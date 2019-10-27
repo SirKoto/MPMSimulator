@@ -34,6 +34,10 @@ char ReadSBF::ReadData(float* data)
 		ReadData3f(data);
 		break;
 
+	case SBF_COLOR:
+		ReadData3f(data);
+		break;
+
 	case SBF_EOF:
 
 	default:
@@ -52,10 +56,10 @@ void ReadSBF::ReadData3f(float* data)
 	{
 		stream.read(bloat, sizeof(float) * 3 * size_bulk);
 
-		std::memcpy((data + (3 * i * size_bulk)), bloat, sizeof(float) * 3 * size_bulk);
+		std::memcpy((data + (3ULL * i * size_bulk)), bloat, sizeof(float) * 3 * size_bulk);
 	}
 
 	// copy the rest
 	stream.read(bloat, sizeof(float) * 3 * rest);
-	std::memcpy((data + (3 * i * size_bulk)), bloat, sizeof(float) * 3 * rest);
+	std::memcpy((data + (3ULL * i * size_bulk)), bloat, sizeof(float) * 3 * rest);
 }

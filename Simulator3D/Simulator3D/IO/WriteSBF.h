@@ -7,6 +7,8 @@
 #include <iostream>
 #include <fstream>
 
+#include "../Utils.h"
+
 class WriteSBF
 {
 public:
@@ -14,7 +16,7 @@ public:
 	
 	~WriteSBF();
 
-	void writeData3f(const float* data);
+	void writeData3f(const float* data, const char flag = SBF_DATA);
 
 private:
 

@@ -19,7 +19,7 @@
 
 #define SBF_DATA 0xFF
 #define SBF_EOF 0x00
-#define SBF_HEADER 0x01
+#define SBF_COLOR 0x01
 
 namespace utils
 {

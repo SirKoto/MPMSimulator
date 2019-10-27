@@ -27,13 +27,12 @@ WriteSBF::~WriteSBF()
 	stream.close();
 }
 
-void WriteSBF::writeData3f(const float* data)
+void WriteSBF::writeData3f(const float* data, const char flag)
 {
 	char bloat[sizeof(float) * 3 * size_bulk];
 
 	// write some flag at the start
 	{
-		char flag = SBF_DATA;
 		stream.write(&flag, 1);
 	}
 
@@ -42,12 +41,12 @@ void WriteSBF::writeData3f(const float* data)
 	for (i = 0; i < it; ++i)
 	{
 		// use pointer arithmetic to add to the float array
-		std::memcpy(bloat, (data + (3 * i * size_bulk)), sizeof(float) * 3 * size_bulk);
+		std::memcpy(bloat, (data + (3ULL * i * size_bulk)), sizeof(float) * 3 * size_bulk);
 		stream.write(bloat, sizeof(float) * 3 * size_bulk);
 	}
 
 	// copy the rest
-	std::memcpy(bloat, (data + (3 * i * size_bulk)), sizeof(float) * 3 * rest);
+	std::memcpy(bloat, (data + (3ULL * i * size_bulk)), sizeof(float) * 3 * rest);
 	stream.write(bloat, sizeof(float) * 3 * rest);
 
 	stream.flush();
