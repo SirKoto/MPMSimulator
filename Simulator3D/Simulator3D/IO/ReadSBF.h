@@ -33,6 +33,7 @@ private:
 	std::ifstream stream;
 
 	void ReadData3f(FrameSBF<float>& frame);
+	void ReadData3f(float* data);
 
 };
 

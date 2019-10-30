@@ -43,11 +43,8 @@ char ReadSBF::ReadData(FrameSBF<float>& frame)
 	return flag;
 }
 
-void ReadSBF::ReadData3f(FrameSBF<float>& frame)
+void ReadSBF::ReadData3f(float* data)
 {
-	//create and reserve memory for frame
-	frame.prepareData(3 * n * sizeof(float));
-
 	char bloat[sizeof(float) * 3 * size_bulk];
 	//copy data
 	unsigned long i;
@@ -55,10 +52,17 @@ void ReadSBF::ReadData3f(FrameSBF<float>& frame)
 	{
 		stream.read(bloat, sizeof(float) * 3 * size_bulk);
 
-		std::memcpy((frame.ptr() + (3ULL * i * size_bulk)), bloat, sizeof(float) * 3 * size_bulk);
+		std::memcpy((data + (3ULL * i * size_bulk)), bloat, sizeof(float) * 3 * size_bulk);
 	}
 
 	// copy the rest
 	stream.read(bloat, sizeof(float) * 3 * rest);
-	std::memcpy((frame.ptr() + (3ULL * i * size_bulk)), bloat, sizeof(float) * 3 * rest);
+	std::memcpy((data + (3ULL * i * size_bulk)), bloat, sizeof(float) * 3 * rest);
+}
+
+void ReadSBF::ReadData3f(FrameSBF<float>& frame)
+{
+	//create and reserve memory for frame
+	frame.prepareData(3 * n * sizeof(float));
+	ReadData3f(frame.ptr());
 }
