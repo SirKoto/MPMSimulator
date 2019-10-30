@@ -16,7 +16,8 @@ public:
 	
 	~ReadSBF();
 
-	char ReadData(FrameSBF<float>& frame);
+
+	char ReadNextFlag();
 
 	inline unsigned long GetNumberParticles() const
 	{
@@ -32,9 +33,11 @@ private:
 	unsigned long rest;
 	std::ifstream stream;
 
+	char ReadNextFlag(bool KeepPosition);
+
+	float ReadDataf();
 	void ReadData3f(FrameSBF<float>& frame);
 	void ReadData3f(float* data);
-
 };
 
 #endif // !_READSBF_

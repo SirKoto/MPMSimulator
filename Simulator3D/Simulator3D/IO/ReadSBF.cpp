@@ -19,27 +19,22 @@ ReadSBF::~ReadSBF()
 {
 	stream.close();
 }
-char ReadSBF::ReadData(FrameSBF<float>& frame)
-{
 
+char ReadSBF::ReadNextFlag()
+{
+	return ReadNextFlag(true);
+}
+
+char ReadSBF::ReadNextFlag(bool KeepPosition)
+{
 	// read first flag
 	char flag;
 	stream.read(&flag, 1);
 
-
-	if (flag == SBF_DATA)
+	if (KeepPosition)
 	{
-		ReadData3f(frame);
+		stream.unget();
 	}
-	else if (flag == SBF_COLOR)
-	{
-		ReadData3f(frame);
-	}
-	else if (flag == SBF_EOF)
-	{
-		//NOTHING
-	}
-
 	return flag;
 }
 
@@ -58,6 +53,15 @@ void ReadSBF::ReadData3f(float* data)
 	// copy the rest
 	stream.read(bloat, sizeof(float) * 3 * rest);
 	std::memcpy((data + (3ULL * i * size_bulk)), bloat, sizeof(float) * 3 * rest);
+}
+
+float ReadSBF::ReadDataf()
+{
+	char buff[sizeof(float)];
+	stream.read(buff, sizeof(float));
+	float ret;
+	std::memcpy(&ret, buff, sizeof(float));
+	return ret;
 }
 
 void ReadSBF::ReadData3f(FrameSBF<float>& frame)

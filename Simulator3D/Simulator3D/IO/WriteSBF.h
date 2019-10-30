@@ -16,6 +16,8 @@ public:
 	
 	~WriteSBF();
 
+	void writeDataf(const float data, const char flag);
+
 	void writeData3f(const float* data, const char flag = SBF_DATA);
 
 private:

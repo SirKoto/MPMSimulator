@@ -27,6 +27,16 @@ WriteSBF::~WriteSBF()
 	stream.close();
 }
 
+void WriteSBF::writeDataf(const float data, const char flag)
+{
+	stream.write(&flag, 1);
+
+	char buff[sizeof(float)];
+	std::memcpy(buff, &data, sizeof(float));
+
+	stream.write(buff, sizeof(float));
+}
+
 void WriteSBF::writeData3f(const float* data, const char flag)
 {
 	char bloat[sizeof(float) * 3 * size_bulk];

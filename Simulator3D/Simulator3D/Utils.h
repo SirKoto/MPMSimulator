@@ -21,6 +21,11 @@
 const char SBF_DATA = (0xFFu);
 const char SBF_EOF = (0x00u);
 const char SBF_COLOR = (0x01u);
+const char SBF_PARAM_E = (0x02u);
+const char SBF_PARAM_NU = (0x03u);
+const char SBF_DT_FRAMES = (0x04u);
+
+
 
 namespace utils
 {
