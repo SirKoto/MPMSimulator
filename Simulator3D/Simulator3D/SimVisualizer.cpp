@@ -1,9 +1,11 @@
 #include "SimVisualizer.h"
 
-#include <glad/glad.h>
 
 #include <glm/gtc/matrix_transform.hpp>
 	
+#include <functional>   // std::bind
+
+#include "Utils.h"
 
 
 SimVisualizer::SimVisualizer(size_t num_particles, bool shadows,
@@ -65,4 +67,96 @@ bool SimVisualizer::initGLFW()
 	glViewport(0, 0, m_SCR_WIDTH, m_SCR_HEIGHT);
 
 	return true;
+}
+
+bool SimVisualizer::initOpenGL()
+{
+	SetClearColor(glm::vec3(0.2f, 0.3f, 0.3f));
+
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
+	// Triangles must be counterclockwise
+	glFrontFace(GL_CCW);
+	// set callbacks
+
+	return true;
+}
+
+void SimVisualizer::setMouseInteractive(bool interactive)
+{
+	if (interactive)
+	{
+		auto f_cursorPositionCallback = [](GLFWwindow* window, double xpos, double ypos)
+		{
+			static_cast<SimVisualizer*>(glfwGetWindowUserPointer(window))->mouse_callback(window, xpos, ypos);
+		};
+
+		glfwSetCursorPosCallback(m_window, f_cursorPositionCallback);
+
+		auto f_scrollCallback = [](GLFWwindow* window, double xoffset, double yoffset)
+		{
+			static_cast<SimVisualizer*>(glfwGetWindowUserPointer(window))->scroll_callback(window, xoffset, yoffset);
+		};
+
+		glfwSetScrollCallback(m_window, f_scrollCallback);
+		glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	}
+	else
+	{
+		glfwSetScrollCallback(m_window, NULL);
+		glfwSetCursorPosCallback(m_window, NULL);
+
+		glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+	}
+}
+
+void SimVisualizer::setCallbacks()
+{
+	using namespace std::placeholders;
+
+	// store the window with the viewer class
+	glfwSetWindowUserPointer(m_window, this);
+
+	auto f_framebuffer_callback = [](GLFWwindow* w, int width, int height)
+	{
+		static_cast<SimVisualizer*>(glfwGetWindowUserPointer(w))->framebuffer_size_callback(w, width, height);
+	};
+
+	glfwSetFramebufferSizeCallback(m_window, f_framebuffer_callback);
+
+	setMouseInteractive(true);
+}
+
+void SimVisualizer::framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+	glViewport(0, 0, width, height);
+	m_SCR_WIDTH = width;
+	m_SCR_HEIGHT = height;
+}
+
+void SimVisualizer::mouse_callback(GLFWwindow* window, double xpos, double ypos)
+{
+	float xposf = static_cast<float>(xpos);
+	float yposf = static_cast<float>(ypos);
+
+	if (m_firstMouse)
+	{
+		m_lastX = xposf;
+		m_lastY = yposf;
+
+		m_firstMouse = false;
+	}
+
+	float xoffset = xposf - m_lastX;
+	float yoffset = yposf - m_lastY;
+
+	m_lastX = xposf;
+	m_lastY = yposf;
+
+	m_camera.ProcessMouseMovement(xoffset, yoffset);
+}
+
+void SimVisualizer::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+	m_camera.ProcessMouseScroll(static_cast<float>(yoffset));
 }

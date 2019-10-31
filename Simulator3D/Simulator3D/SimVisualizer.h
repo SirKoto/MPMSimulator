@@ -3,6 +3,7 @@
 #ifndef _SIMVISUALIZER_
 #define _SIMVISUALIZER_
 
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
 #include <glm/gtc/type_ptr.hpp>
@@ -51,6 +52,15 @@ private:
 
 
 	bool initGLFW();
+	bool initOpenGL();
+
+	void setMouseInteractive(bool interactive);
+
+	void setCallbacks();
+	// CALLBACKS
+	void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+	void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+	void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
 };
 
