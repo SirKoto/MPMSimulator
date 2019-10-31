@@ -18,7 +18,11 @@ SimVisualizer::SimVisualizer(size_t num_particles, bool shadows,
 		ERROR = true;
 		return;
 	}
-
+	if (!initOpenGL())
+	{
+		ERROR = true;
+		return;
+	}
 }
 
 SimVisualizer::~SimVisualizer()
@@ -45,7 +49,10 @@ bool SimVisualizer::initGLFW()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	m_window = glfwCreateWindow(m_SCR_WIDTH, m_SCR_HEIGHT, "3D Simulation Visualizer", NULL, NULL);
+	m_window = glfwCreateWindow(
+		static_cast<int>(m_SCR_WIDTH), 
+		static_cast<int>(m_SCR_HEIGHT), 
+		"3D Simulation Visualizer", NULL, NULL);
 
 	if (m_window == NULL)
 	{
@@ -64,7 +71,9 @@ bool SimVisualizer::initGLFW()
 	}
 
 	// set viewport
-	glViewport(0, 0, m_SCR_WIDTH, m_SCR_HEIGHT);
+	glViewport(0, 0, 
+		static_cast<GLsizei>(m_SCR_WIDTH), 
+		static_cast<GLsizei>(m_SCR_HEIGHT));
 
 	return true;
 }
@@ -78,6 +87,11 @@ bool SimVisualizer::initOpenGL()
 	// Triangles must be counterclockwise
 	glFrontFace(GL_CCW);
 	// set callbacks
+	setCallbacks();
+
+	initArraysParticles();
+	initArraysBB();
+	initFBOShadows();
 
 	return true;
 }
@@ -112,8 +126,6 @@ void SimVisualizer::setMouseInteractive(bool interactive)
 
 void SimVisualizer::setCallbacks()
 {
-	using namespace std::placeholders;
-
 	// store the window with the viewer class
 	glfwSetWindowUserPointer(m_window, this);
 
@@ -159,4 +171,97 @@ void SimVisualizer::mouse_callback(GLFWwindow* window, double xpos, double ypos)
 void SimVisualizer::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
 	m_camera.ProcessMouseScroll(static_cast<float>(yoffset));
+}
+
+/**
+Attribs are [0] vertex, [1] color, [2] offset, [3] normal
+*/
+void SimVisualizer::initArraysParticles()
+{
+	float* tmp = new float[3 * m_num_p];
+	glGenVertexArrays(1, &m_VAO_particles);
+	glBindVertexArray(m_VAO_particles);
+
+	glGenBuffers(3, m_VBO_particles);
+
+	// VBO 0 is the position of the particles. or offset of the cubes
+	glBindBuffer(GL_ARRAY_BUFFER, m_VBO_particles[0]);
+	// must buffer junk data because of dynamic array
+	glBufferData(GL_ARRAY_BUFFER, m_num_p * 3 * sizeof(float), tmp, GL_DYNAMIC_DRAW);
+
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (GLvoid*)0);
+	glEnableVertexAttribArray(2);
+	glVertexAttribDivisor(2, 1);
+
+	// VBO 1 is color of the particle to draw
+	glBindBuffer(GL_ARRAY_BUFFER, m_VBO_particles[1]);
+
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (GLvoid*)0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribDivisor(1, 1);
+
+	// VBO 2 is the vertices and the normal
+	glBindBuffer(GL_ARRAY_BUFFER, m_VBO_particles[2]);
+	// buffer static data
+	glBufferData(GL_ARRAY_BUFFER, sizeof(utils::vertices), utils::vertices, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (GLvoid*)0);
+	glEnableVertexAttribArray(0);
+
+	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (GLvoid*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(3);
+
+
+	delete[] tmp;
+}
+
+// ATTRIBS [0] vertex [1] normal
+void SimVisualizer::initArraysBB()
+{
+	glGenVertexArrays(1, &m_VAO_BB);
+	glBindVertexArray(m_VAO_BB);
+
+	glGenBuffers(1, &m_VBO_BB);
+
+	glBindBuffer(GL_ARRAY_BUFFER, m_VBO_BB);
+	// Buffer vertices position of the BB
+	glBufferData(GL_ARRAY_BUFFER, sizeof(utils::vertices), utils::vertices, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (GLvoid*)0);
+	glEnableVertexAttribArray(0);
+
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (GLvoid*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+}
+
+void SimVisualizer::initFBOShadows()
+{
+
+	// Generate the framebuffer
+	glGenFramebuffers(1, &m_depthFBO);
+
+	// texture to store the depth
+	glGenTextures(1, &m_depthMapTex);
+	glBindTexture(GL_TEXTURE_2D, m_depthMapTex);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, 
+		static_cast<GLsizei>(m_shadowTex_w), 
+		static_cast<GLsizei>(m_shadowTex_h), 
+		0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+	// Bind texture to framebuffer
+	glBindFramebuffer(GL_FRAMEBUFFER, m_depthFBO);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_depthMapTex, 0);
+	// prevent from writting or reading the color buffer
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		MSG("Error creating frameBuffer");
+	// unbind
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

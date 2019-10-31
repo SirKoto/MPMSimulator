@@ -44,9 +44,10 @@ private:
 	float m_lastX, m_lastY;
 
 	size_t m_SCR_WIDTH, m_SCR_HEIGHT;
+	size_t m_shadowTex_w = 2048, m_shadowTex_h = 2048;
 
-	GLuint m_VAO_particles, m_VBO_particles[2];
-	GLuint m_m_VAO_BB, m_VBO_BB[2];
+	GLuint m_VAO_particles, m_VBO_particles[3];
+	GLuint m_VAO_BB, m_VBO_BB;
 	GLuint m_depthFBO;
 	GLuint m_depthMapTex;
 
@@ -62,6 +63,10 @@ private:
 	void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 	void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
+	// ARRAYS
+	void initArraysParticles();
+	void initArraysBB();
+	void initFBOShadows();
 };
 
 #endif // !_SIMVISUALIZER_
