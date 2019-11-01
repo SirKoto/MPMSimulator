@@ -11,6 +11,7 @@
 
 #include "Shader.h"
 #include "Camera.h"
+#include "IO/FrameSBF.h"
 
 class SimVisualizer
 {
@@ -29,9 +30,16 @@ public:
 
 	void reloadShaders();
 
-	bool ErrorHappened();
+	const bool ErrorHappened() const;
 
-	void draw();
+	void updateParticlePositions(const float* pos);
+
+	void updateParticlePositions(const FrameSBF<float>& frame);
+
+	void updateParticlesColor(const float* color);
+
+	void draw() const;
+
 
 private:
 
@@ -81,14 +89,14 @@ private:
 	void initFBOShadows();
 
 	// Shaders
-	void updateUniforms();
-	void updateModelMatrix();
-	void setUniforms(Shader s, const glm::mat4& projectionView);
+	void updateUniforms() const;
+	void updateModelMatrix() const;
+	void setUniforms(Shader s, const glm::mat4& projectionView) const;
 
 	// Draw calls
-	void drawBB();
-	void drawParticles();
-	void drawShadowMap();
+	void drawBB() const;
+	void drawParticles() const;
+	void drawShadowMap() const;
 };
 
 #endif // !_SIMVISUALIZER_

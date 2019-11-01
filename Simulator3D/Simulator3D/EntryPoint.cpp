@@ -25,7 +25,7 @@
 
 
 // #define PRINT_IMAGES_FLAG
-#define WRITE_DATA_SBF
+// #define WRITE_DATA_SBF
 #define SHADOWS
 
 struct ParticlePos
@@ -129,7 +129,6 @@ void initArraysParticles(GLuint& VAO, GLuint* VBO, float* &positions, glm::vec3*
 	glVertexAttribDivisor(2, 1);
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
-	glBufferData(GL_ARRAY_BUFFER, utils::maxParticles * sizeof(glm::vec3), colors, GL_STATIC_DRAW);
 
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (GLvoid*)0);
 	glEnableVertexAttribArray(1);

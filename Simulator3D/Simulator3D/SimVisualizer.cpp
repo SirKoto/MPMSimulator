@@ -84,12 +84,34 @@ void SimVisualizer::reloadShaders()
 	updateUniforms();
 }
 
-bool SimVisualizer::ErrorHappened()
+const bool SimVisualizer::ErrorHappened() const
 {
 	return ERROR;
 }
 
-void SimVisualizer::draw()
+void SimVisualizer::updateParticlePositions(const float* pos)
+{
+	glBindVertexArray(m_VAO_particles);
+	glBindBuffer(GL_ARRAY_BUFFER, m_VBO_particles[0]);
+
+	glBufferSubData(GL_ARRAY_BUFFER, 0, 3 * m_num_p * sizeof(float), pos);
+
+}
+
+void SimVisualizer::updateParticlePositions(const FrameSBF<float>& frame)
+{
+	updateParticlePositions(frame.const_ptr());
+}
+
+void SimVisualizer::updateParticlesColor(const float* color)
+{
+	glBindVertexArray(m_VAO_particles);
+	glBindBuffer(GL_ARRAY_BUFFER, m_VBO_particles[1]);
+
+	glBufferData(GL_ARRAY_BUFFER, 3 * m_num_p * sizeof(float), color, GL_STATIC_DRAW);
+}
+
+void SimVisualizer::draw() const
 {
 	// Update uniforms of all shaders
 	updateUniforms();
@@ -339,7 +361,7 @@ void SimVisualizer::initFBOShadows()
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void SimVisualizer::updateUniforms()
+void SimVisualizer::updateUniforms() const
 {
 	const glm::mat4 projection = glm::perspective(glm::radians(m_camera.m_zoom), static_cast<float>(m_SCR_WIDTH) / m_SCR_HEIGHT, 0.1f, 10.0f);
 	const glm::mat4 projectionView = projection * m_camera.GetViewMatrix();
@@ -348,7 +370,7 @@ void SimVisualizer::updateUniforms()
 	updateModelMatrix();
 }
 
-void SimVisualizer::updateModelMatrix()
+void SimVisualizer::updateModelMatrix() const
 {
 	// modify particle shader
 	m_shaders[0].use();
@@ -362,7 +384,7 @@ void SimVisualizer::updateModelMatrix()
 	}
 }
 
-void SimVisualizer::setUniforms(Shader s, const glm::mat4& projectionView)
+void SimVisualizer::setUniforms(Shader s, const glm::mat4& projectionView) const
 {
 	s.use();
 
@@ -374,7 +396,7 @@ void SimVisualizer::setUniforms(Shader s, const glm::mat4& projectionView)
 	s.setMat4("projectionView", projectionView);
 }
 
-void SimVisualizer::drawBB()
+void SimVisualizer::drawBB() const
 {
 	glBindVertexArray(m_VAO_BB);
 	
@@ -389,7 +411,7 @@ void SimVisualizer::drawBB()
 	glCullFace(GL_BACK);
 }
 
-void SimVisualizer::drawParticles()
+void SimVisualizer::drawParticles() const
 {	
 	glBindVertexArray(m_VAO_particles);
 	if (m_shadowsEnabled)
@@ -399,13 +421,13 @@ void SimVisualizer::drawParticles()
 	}
 
 	// Draw instancing different offsets with the same model
-	glDrawArraysInstanced(GL_TRIANGLES, 0, 36, m_num_p);
+	glDrawArraysInstanced(GL_TRIANGLES, 0, 36, static_cast<GLsizei>(m_num_p));
 }
 
-void SimVisualizer::drawShadowMap()
+void SimVisualizer::drawShadowMap() const
 {
 	// Set framebuffer
-	glViewport(0, 0, m_shadowTex_w, m_shadowTex_h);
+	glViewport(0, 0, static_cast<GLsizei>(m_shadowTex_w), static_cast<GLsizei>(m_shadowTex_h));
 	glBindFramebuffer(GL_FRAMEBUFFER, m_depthFBO);
 	// clear depth
 	glClear(GL_DEPTH_BUFFER_BIT);
@@ -417,5 +439,5 @@ void SimVisualizer::drawShadowMap()
 
 	// unbind and set normal viewport
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glViewport(0, 0, m_SCR_WIDTH, m_SCR_HEIGHT);
+	glViewport(0, 0, static_cast<GLsizei>(m_SCR_WIDTH), static_cast<GLsizei>(m_SCR_HEIGHT));
 }

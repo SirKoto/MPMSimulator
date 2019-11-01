@@ -34,6 +34,10 @@ public:
 		return data;
 	}
 
+	const T* const_ptr() const {
+		return data;
+	}
+
 	T& operator[](const std::size_t pos)
 	{
 		return data[pos];
