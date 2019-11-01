@@ -21,8 +21,6 @@ SimVisualizer::SimVisualizer(size_t num_particles, bool shadows,
 		ERROR = true;
 		return;
 	}
-
-
 }
 
 SimVisualizer::~SimVisualizer()
@@ -84,7 +82,7 @@ void SimVisualizer::reloadShaders()
 	updateUniforms();
 }
 
-const bool SimVisualizer::ErrorHappened() const
+bool SimVisualizer::ErrorHappened() const
 {
 	return ERROR;
 }
@@ -127,6 +125,14 @@ void SimVisualizer::draw() const
 
 	m_shaders[0].use();
 	drawParticles();
+
+	glfwSwapBuffers(m_window);
+	glfwPollEvents();
+}
+
+bool SimVisualizer::shouldApplicationClose()
+{
+	return glfwWindowShouldClose(m_window);
 }
 
 bool SimVisualizer::initGLFW()
@@ -179,7 +185,7 @@ bool SimVisualizer::initOpenGL()
 	setCallbacks();
 
 	// default particle size
-	setScaleParticles(glm::vec3(5e-3f));
+	setScaleParticles(m_particleScale);
 
 	initArraysParticles();
 	initArraysBB();
@@ -216,6 +222,49 @@ void SimVisualizer::setMouseInteractive(bool interactive)
 		glfwSetCursorPosCallback(m_window, NULL);
 
 		glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+	}
+}
+
+void SimVisualizer::processKeyboardInput()
+{
+	if (glfwGetKey(m_window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+		glfwSetWindowShouldClose(m_window, GLFW_TRUE);
+
+	float d = GLFW_PRESS == glfwGetKey(m_window, GLFW_KEY_LEFT_SHIFT) ? 0.3f : 1.0f;
+
+	if (glfwGetKey(m_window, GLFW_KEY_ENTER) == GLFW_PRESS)
+		m_enterPressed = true;
+
+	float cameraSpeed = 2.5f * utils::DeltaTime;
+	if (glfwGetKey(m_window, GLFW_KEY_W) == GLFW_PRESS)
+		m_camera.ProcessKeyboard(FORWARD, utils::DeltaTime * d);
+	if (glfwGetKey(m_window, GLFW_KEY_S) == GLFW_PRESS)
+		m_camera.ProcessKeyboard(BACKWARD, utils::DeltaTime * d);
+	if (glfwGetKey(m_window, GLFW_KEY_A) == GLFW_PRESS)
+		m_camera.ProcessKeyboard(RIGHT, utils::DeltaTime * d);
+	if (glfwGetKey(m_window, GLFW_KEY_D) == GLFW_PRESS)
+		m_camera.ProcessKeyboard(LEFT, utils::DeltaTime * d);
+
+	if (glfwGetKey(m_window, GLFW_KEY_R) == GLFW_PRESS)
+		reloadShaders();
+
+	if (glfwGetKey(m_window, GLFW_KEY_T) == GLFW_PRESS)
+	{
+		m_shadowsEnabled = !m_shadowsEnabled;
+		reloadShaders();
+	}
+
+	if (glfwGetKey(m_window, GLFW_KEY_KP_ADD) == GLFW_PRESS)
+	{
+		m_particleScale += utils::DeltaTime * d * 5e-1f;
+		glm::clamp(m_particleScale, 1e-6f, 1.0f);
+		setScaleParticles(m_particleScale);
+	}
+	if (glfwGetKey(m_window, GLFW_KEY_KP_SUBTRACT) == GLFW_PRESS)
+	{
+		m_particleScale -= utils::DeltaTime * d * 5e-1f;
+		glm::clamp(m_particleScale, 1e-6f, 1.0f);
+		setScaleParticles(m_particleScale);
 	}
 }
 

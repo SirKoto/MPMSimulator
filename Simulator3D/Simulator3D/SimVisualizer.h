@@ -30,7 +30,7 @@ public:
 
 	void reloadShaders();
 
-	const bool ErrorHappened() const;
+	bool ErrorHappened() const;
 
 	void updateParticlePositions(const float* pos);
 
@@ -40,6 +40,13 @@ public:
 
 	void draw() const;
 
+	bool& getEnterPressed() {
+		return m_enterPressed;
+	}
+
+	bool shouldApplicationClose();
+
+	void processKeyboardInput();
 
 private:
 
@@ -59,8 +66,10 @@ private:
 	glm::vec3 m_ambientLight = glm::vec3(0.2f, 0.2f, 0.2f);
 
 	glm::mat4 m_particleModel;
+	glm::vec3 m_particleScale = glm::vec3(5e-3f);
 
 	bool m_firstMouse = true;
+	bool m_enterPressed = false;
 	float m_lastX, m_lastY;
 
 	size_t m_SCR_WIDTH, m_SCR_HEIGHT;
