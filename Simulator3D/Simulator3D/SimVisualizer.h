@@ -31,6 +31,8 @@ public:
 
 	bool ErrorHappened();
 
+	void draw();
+
 private:
 
 	bool ERROR = false;
@@ -82,6 +84,11 @@ private:
 	void updateUniforms();
 	void updateModelMatrix();
 	void setUniforms(Shader s, const glm::mat4& projectionView);
+
+	// Draw calls
+	void drawBB();
+	void drawParticles();
+	void drawShadowMap();
 };
 
 #endif // !_SIMVISUALIZER_

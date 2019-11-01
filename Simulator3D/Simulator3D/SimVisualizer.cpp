@@ -21,6 +21,8 @@ SimVisualizer::SimVisualizer(size_t num_particles, bool shadows,
 		ERROR = true;
 		return;
 	}
+
+
 }
 
 SimVisualizer::~SimVisualizer()
@@ -87,6 +89,24 @@ bool SimVisualizer::ErrorHappened()
 	return ERROR;
 }
 
+void SimVisualizer::draw()
+{
+	// Update uniforms of all shaders
+	updateUniforms();
+
+	if (m_shadowsEnabled)
+	{
+		drawShadowMap();
+	}
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	
+	m_shaders[1].use();
+	drawBB();
+
+	m_shaders[0].use();
+	drawParticles();
+}
+
 bool SimVisualizer::initGLFW()
 {
 	glfwInit();
@@ -142,6 +162,9 @@ bool SimVisualizer::initOpenGL()
 	initArraysParticles();
 	initArraysBB();
 	initFBOShadows();
+
+	// shaders
+	reloadShaders();
 
 	return true;
 }
@@ -349,4 +372,50 @@ void SimVisualizer::setUniforms(Shader s, const glm::mat4& projectionView)
 	s.setVec3("lightColor", m_lightColor);
 	s.setVec3("ambientLight", m_ambientLight);
 	s.setMat4("projectionView", projectionView);
+}
+
+void SimVisualizer::drawBB()
+{
+	glBindVertexArray(m_VAO_BB);
+	
+	if (m_shadowsEnabled)
+	{
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, m_depthMapTex);
+	}
+
+	glCullFace(GL_FRONT);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+	glCullFace(GL_BACK);
+}
+
+void SimVisualizer::drawParticles()
+{	
+	glBindVertexArray(m_VAO_particles);
+	if (m_shadowsEnabled)
+	{
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, m_depthMapTex);
+	}
+
+	// Draw instancing different offsets with the same model
+	glDrawArraysInstanced(GL_TRIANGLES, 0, 36, m_num_p);
+}
+
+void SimVisualizer::drawShadowMap()
+{
+	// Set framebuffer
+	glViewport(0, 0, m_shadowTex_w, m_shadowTex_h);
+	glBindFramebuffer(GL_FRAMEBUFFER, m_depthFBO);
+	// clear depth
+	glClear(GL_DEPTH_BUFFER_BIT);
+
+	glCullFace(GL_FRONT);
+	m_shaders[2].use(); // draw with shadowMap shader
+	drawParticles();
+	glCullFace(GL_BACK);
+
+	// unbind and set normal viewport
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glViewport(0, 0, m_SCR_WIDTH, m_SCR_HEIGHT);
 }
