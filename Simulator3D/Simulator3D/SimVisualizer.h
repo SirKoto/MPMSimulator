@@ -23,6 +23,12 @@ public:
 
 	void SetClearColor(glm::vec3 rgb);
 
+	void setShadowMapRes(size_t w, size_t h);
+
+	void setScaleParticles(glm::vec3 scale);
+
+	void reloadShaders();
+
 	bool ErrorHappened();
 
 private:
@@ -35,10 +41,14 @@ private:
 
 	bool m_shadowsEnabled;
 
+	Shader m_shaders[3]; // [0] Particle, [1] BB, [2] ShadowMap
 	Camera m_camera = Camera(glm::vec3(0.5f, 0.5f, 5.0f));
+	
 	glm::vec3 m_lightPosition = glm::vec3(0.5f, 1.0f, 3.0f);
 	glm::vec3 m_lightColor = glm::vec3(0.6f, 0.6f, 0.6f);
 	glm::vec3 m_ambientLight = glm::vec3(0.2f, 0.2f, 0.2f);
+
+	glm::mat4 m_particleModel;
 
 	bool m_firstMouse = true;
 	float m_lastX, m_lastY;
@@ -67,6 +77,11 @@ private:
 	void initArraysParticles();
 	void initArraysBB();
 	void initFBOShadows();
+
+	// Shaders
+	void updateUniforms();
+	void updateModelMatrix();
+	void setUniforms(Shader s, const glm::mat4& projectionView);
 };
 
 #endif // !_SIMVISUALIZER_

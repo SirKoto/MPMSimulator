@@ -2,8 +2,6 @@
 
 
 #include <glm/gtc/matrix_transform.hpp>
-	
-#include <functional>   // std::bind
 
 #include "Utils.h"
 
@@ -33,6 +31,55 @@ SimVisualizer::~SimVisualizer()
 void SimVisualizer::SetClearColor(glm::vec3 rgb)
 {
 	glClearColor(rgb.r, rgb.g, rgb.b, 1.0f);
+}
+
+void SimVisualizer::setShadowMapRes(size_t w, size_t h)
+{
+	m_shadowTex_w = w;
+	m_shadowTex_h = h;
+	glBindTexture(GL_TEXTURE_2D, m_depthMapTex);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F,
+		static_cast<GLsizei>(m_shadowTex_w),
+		static_cast<GLsizei>(m_shadowTex_h),
+		0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void SimVisualizer::setScaleParticles(glm::vec3 scale)
+{
+	m_particleModel = glm::scale(glm::mat4(1.0f), scale);
+}
+
+void SimVisualizer::reloadShaders()
+{
+	if (m_shadowsEnabled)
+	{
+		// enable particle shader
+		m_shaders[0] = Shader("shadersShadows/shaderPoint.vert", "shadersShadows/shaderPoint.frag");
+		m_shaders[0].use();
+		m_shaders[0].setInt("shadowMap", 0); // set shadowMap uniform sampler2D
+
+		// enable BB shader
+		m_shaders[1] = Shader("shadersShadows/shaderBB.vert", "shadersShadows/shaderBB.frag");
+		m_shaders[1].use();
+		m_shaders[1].setInt("shadowMap", 0); // set shadowMap uniform
+
+		// enable ShadowMap shader
+		m_shaders[2] = Shader("shadersShadows/shaderShadowMap.vert", "shadersShadows/shaderShadowMap.frag");
+
+
+	}
+	else
+	{
+		// enable particle shader
+		m_shaders[0] = Shader("shaders/shaderPoint.vert", "shaders/shaderPoint.frag");
+
+		m_shaders[1] = Shader("shaders/shaderBB.vert", "shaders/shaderBB.frag");
+
+	}
+
+	updateUniforms();
 }
 
 bool SimVisualizer::ErrorHappened()
@@ -88,6 +135,9 @@ bool SimVisualizer::initOpenGL()
 	glFrontFace(GL_CCW);
 	// set callbacks
 	setCallbacks();
+
+	// default particle size
+	setScaleParticles(glm::vec3(5e-3f));
 
 	initArraysParticles();
 	initArraysBB();
@@ -264,4 +314,39 @@ void SimVisualizer::initFBOShadows()
 		MSG("Error creating frameBuffer");
 	// unbind
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void SimVisualizer::updateUniforms()
+{
+	const glm::mat4 projection = glm::perspective(glm::radians(m_camera.m_zoom), static_cast<float>(m_SCR_WIDTH) / m_SCR_HEIGHT, 0.1f, 10.0f);
+	const glm::mat4 projectionView = projection * m_camera.GetViewMatrix();
+	for (int i = 0; i < 2; i++) setUniforms(m_shaders[i], projectionView);
+
+	updateModelMatrix();
+}
+
+void SimVisualizer::updateModelMatrix()
+{
+	// modify particle shader
+	m_shaders[0].use();
+	m_shaders[0].setMat4("model", m_particleModel);
+
+	if (m_shadowsEnabled)
+	{
+		// modify shadow shader
+		m_shaders[2].use();
+		m_shaders[2].setMat4("model", m_particleModel);
+	}
+}
+
+void SimVisualizer::setUniforms(Shader s, const glm::mat4& projectionView)
+{
+	s.use();
+
+	s.setMat4("view", m_camera.GetViewMatrix());
+	s.setVec3("camera", m_camera.m_position);
+	s.setVec3("lightPos", m_lightPosition);
+	s.setVec3("lightColor", m_lightColor);
+	s.setVec3("ambientLight", m_ambientLight);
+	s.setMat4("projectionView", projectionView);
 }
