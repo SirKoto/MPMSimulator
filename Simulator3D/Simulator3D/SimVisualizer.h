@@ -58,6 +58,7 @@ private:
 
 	float m_dt = 0;
 	float m_t_last = 0;
+	float m_time_press_t = 0;
 
 	bool m_shadowsEnabled;
 
@@ -88,6 +89,8 @@ private:
 	bool initOpenGL();
 
 	void setMouseInteractive(bool interactive);
+
+	void updateDT();
 
 	void setCallbacks();
 	// CALLBACKS

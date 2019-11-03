@@ -169,16 +169,7 @@ void SimVisualizer::updateParticlesColor(const float* color)
 void SimVisualizer::draw()
 {
 
-	int fps_old = 1.0f / m_dt;
-
-	float currentFrame = static_cast<float>(glfwGetTime());
-	m_dt = currentFrame - m_t_last;
-	m_t_last = currentFrame;
-
-	int fps = 1 / m_dt;
-
-	if (fps_old != fps)
-		std::cerr << fps << std::endl;
+	updateDT();
 
 	// Update uniforms of all shaders
 	updateUniforms();
@@ -299,6 +290,13 @@ void SimVisualizer::setMouseInteractive(bool interactive)
 	}
 }
 
+void SimVisualizer::updateDT()
+{
+	float currentFrame = static_cast<float>(glfwGetTime());
+	m_dt = currentFrame - m_t_last;
+	m_t_last = currentFrame;
+}
+
 void SimVisualizer::processKeyboardInput()
 {
 	if (glfwGetKey(m_window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -321,23 +319,27 @@ void SimVisualizer::processKeyboardInput()
 	if (glfwGetKey(m_window, GLFW_KEY_R) == GLFW_PRESS)
 		reloadShaders();
 
-	if (glfwGetKey(m_window, GLFW_KEY_T) == GLFW_PRESS)
+	if (m_time_press_t > 0) {
+		m_time_press_t -= m_dt;
+	}
+	else if (glfwGetKey(m_window, GLFW_KEY_T) == GLFW_PRESS)
 	{
+		m_time_press_t = 0.35f;
 		m_shadowsEnabled = !m_shadowsEnabled;
 		reloadShaders();
 	}
 
 	if (glfwGetKey(m_window, GLFW_KEY_KP_ADD) == GLFW_PRESS)
 	{
-		glm::vec3 tmp = glm::vec3(m_dt * d * 5e-1f);
+		glm::vec3 tmp = glm::vec3(m_dt * d * 5e-3f);
 		m_particleScale += tmp;
-		m_particleScale = glm::clamp(m_particleScale, 1e-6f, 1.0f);
+		m_particleScale = glm::clamp(m_particleScale, 1e-7f, 1e-2f);
 		setScaleParticles(m_particleScale);
 	}
 	if (glfwGetKey(m_window, GLFW_KEY_KP_SUBTRACT) == GLFW_PRESS)
 	{
-		m_particleScale -= glm::vec3(m_dt * d * 5e-1f);
-		m_particleScale = glm::clamp(m_particleScale, 1e-6f, 1.0f);
+		m_particleScale -= glm::vec3(m_dt * d * 5e-3f);
+		m_particleScale = glm::clamp(m_particleScale, 1e-7f, 1e-2f);
 		setScaleParticles(m_particleScale);
 	}
 
