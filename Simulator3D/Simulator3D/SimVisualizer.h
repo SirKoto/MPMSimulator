@@ -9,6 +9,8 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/glm.hpp>
 
+#include <functional>
+
 #include "Shader.h"
 #include "Camera.h"
 #include "IO/FrameSBF.h"
@@ -16,6 +18,11 @@
 class SimVisualizer
 {
 public:
+
+	enum class KEYS
+	{
+		U, I, O, P, K, L, ENTER
+	};
 
 	SimVisualizer(int num_particles, bool shadows = true,
 		int width = 800, int heigth = 600);
@@ -40,13 +47,12 @@ public:
 
 	void draw();
 
-	bool& getEnterPressed() {
-		return m_enterPressed;
-	}
 
 	bool shouldApplicationClose();
 
 	void processKeyboardInput();
+
+	void setKeyCallback(KEYS key, std::function<void()> f);
 
 private:
 
@@ -73,7 +79,6 @@ private:
 	glm::vec3 m_particleScale = glm::vec3(5e-3f);
 
 	bool m_firstMouse = true;
-	bool m_enterPressed = false;
 	float m_lastX, m_lastY;
 
 	int m_SCR_WIDTH, m_SCR_HEIGHT;
@@ -84,6 +89,8 @@ private:
 	GLuint m_depthFBO;
 	GLuint m_depthMapTex;
 
+	// personalizable callbacks U, I, O, P, K, L, ENTER
+	std::function<void()> f_call[7];
 
 	bool initGLFW();
 	bool initOpenGL();
@@ -97,6 +104,11 @@ private:
 	void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 	void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 	void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+
+	void processKeyboardInputCallbacks();
+
+	
+
 
 	// ARRAYS
 	void initArraysParticles();

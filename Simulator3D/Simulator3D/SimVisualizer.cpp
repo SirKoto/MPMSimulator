@@ -304,8 +304,6 @@ void SimVisualizer::processKeyboardInput()
 
 	float d = GLFW_PRESS == glfwGetKey(m_window, GLFW_KEY_LEFT_SHIFT) ? 0.3f : 1.0f;
 
-	if (glfwGetKey(m_window, GLFW_KEY_ENTER) == GLFW_PRESS)
-		m_enterPressed = true;
 
 	if (glfwGetKey(m_window, GLFW_KEY_W) == GLFW_PRESS)
 		m_camera.ProcessKeyboard(Camera::Camera_Movement::FORWARD, m_dt * d);
@@ -352,6 +350,13 @@ void SimVisualizer::processKeyboardInput()
 		setMouseInteractive(false);
 	}
 
+	processKeyboardInputCallbacks();
+
+}
+
+void SimVisualizer::setKeyCallback(KEYS key, std::function<void()> f)
+{
+	f_call[static_cast<int>(key)] = f;
 }
 
 void SimVisualizer::setCallbacks()
@@ -401,6 +406,51 @@ void SimVisualizer::mouse_callback(GLFWwindow* window, double xpos, double ypos)
 void SimVisualizer::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
 	m_camera.ProcessMouseScroll(static_cast<float>(yoffset));
+}
+
+void SimVisualizer::processKeyboardInputCallbacks()
+{
+	if (f_call[static_cast<int>(KEYS::U)] &&
+		glfwGetKey(m_window, GLFW_KEY_U) == GLFW_PRESS)
+	{
+		f_call[static_cast<int>(KEYS::U)]();
+	}
+
+	if (f_call[static_cast<int>(KEYS::I)] &&
+		glfwGetKey(m_window, GLFW_KEY_I) == GLFW_PRESS)
+	{
+		f_call[static_cast<int>(KEYS::I)]();
+	}
+
+	if (f_call[static_cast<int>(KEYS::O)] &&
+		glfwGetKey(m_window, GLFW_KEY_O) == GLFW_PRESS)
+	{
+		f_call[static_cast<int>(KEYS::O)]();
+	}
+
+	if (f_call[static_cast<int>(KEYS::P)] &&
+		glfwGetKey(m_window, GLFW_KEY_P) == GLFW_PRESS)
+	{
+		f_call[static_cast<int>(KEYS::P)]();
+	}
+
+	if (f_call[static_cast<int>(KEYS::K)] &&
+		glfwGetKey(m_window, GLFW_KEY_K) == GLFW_PRESS)
+	{
+		f_call[static_cast<int>(KEYS::K)]();
+	}
+
+	if (f_call[static_cast<int>(KEYS::L)] &&
+		glfwGetKey(m_window, GLFW_KEY_L) == GLFW_PRESS)
+	{
+		f_call[static_cast<int>(KEYS::L)]();
+	}
+
+	if (f_call[static_cast<int>(KEYS::ENTER)] &&
+		glfwGetKey(m_window, GLFW_KEY_ENTER) == GLFW_PRESS)
+	{
+		f_call[static_cast<int>(KEYS::ENTER)]();
+	}
 }
 
 /**
@@ -480,8 +530,8 @@ void SimVisualizer::initFBOShadows()
 		static_cast<GLsizei>(m_shadowTex_w), 
 		static_cast<GLsizei>(m_shadowTex_h), 
 		0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 

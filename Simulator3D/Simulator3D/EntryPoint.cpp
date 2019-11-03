@@ -413,7 +413,7 @@ int main()
 #endif
 
 
-	while (!viewer.shouldApplicationClose() && !viewer.getEnterPressed()) 
+	while (!viewer.shouldApplicationClose()) 
 	{
 		viewer.processKeyboardInput();
 
