@@ -17,14 +17,14 @@ class SimVisualizer
 {
 public:
 
-	SimVisualizer(size_t num_particles, bool shadows = true,
-		size_t width = 800, size_t heigth = 600);
+	SimVisualizer(int num_particles, bool shadows = true,
+		int width = 800, int heigth = 600);
 
 	~SimVisualizer();
 
 	void SetClearColor(glm::vec3 rgb);
 
-	void setShadowMapRes(size_t w, size_t h);
+	void setShadowMapRes(int w, int h);
 
 	void setScaleParticles(glm::vec3 scale);
 
@@ -48,9 +48,6 @@ public:
 
 	void processKeyboardInput();
 
-	void setDT(const float dt) {
-		m_dt = dt;
-	}
 private:
 
 	bool m_ERROR = false;
@@ -59,7 +56,8 @@ private:
 
 	const int m_num_p;
 
-	float m_dt;
+	float m_dt = 0;
+	float m_t_last = 0;
 
 	bool m_shadowsEnabled;
 
@@ -109,7 +107,7 @@ private:
 
 	// Draw calls
 	void drawBB() const;
-	void drawParticles() const;
+	void drawParticles(bool enable = true) const;
 	void drawShadowMap() const;
 };
 

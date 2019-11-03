@@ -6,7 +6,6 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/glm.hpp>
 #include <glad/glad.h>
-#include <GLFW/glfw3.h>
 
 #include <Eigen/Dense>
 
@@ -42,13 +41,6 @@ namespace utils
 
 	constexpr float sizG = 1;
 
-	inline float updateTime()
-	{
-		float currentFrame = (float)glfwGetTime();
-		utils::DeltaTime = currentFrame - utils::LastFrame;
-		utils::LastFrame = currentFrame;
-		return currentFrame;
-	}
 
 	inline void SumOuterProduct(Eigen::Matrix2f& r, const Eigen::Array2f& a, const Eigen::Array2f& b)
 	{
@@ -116,56 +108,7 @@ namespace utils
 		}
 	}
 
-	constexpr GLfloat vertices[] = {
-		// Back face
-	 1.0f,  1.0f, 0.0f, 0.0f, 0.0f, -1.0f, // top-right             
-	 1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f, // bottom-right  
-	 0.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f, // Bottom-left
-	 0.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f, // bottom-left                
-	 0.0f,  1.0f, 0.0f, 0.0f, 0.0f, -1.0f, // top-left
-	 1.0f,  1.0f, 0.0f, 0.0f, 0.0f, -1.0f, // top-right
-
-	// Front face
-	 1.0f, 0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // bottom-right
-	 1.0f,  1.0f,  1.0f, 0.0f, 0.0f, 1.0f, // top-right
-	 0.0f, 0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // bottom-left	         
-	 0.0f,  1.0f,  1.0f, 0.0f, 0.0f, 1.0f, // top-left
-	 0.0f, 0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // bottom-left
-	 1.0f,  1.0f,  1.0f, 0.0f, 0.0f, 1.0f, // top-right
-	         
-	// Left face
-	 0.0f,  1.0f, 0.0f,  -1.0f, 0.0f, 0.0f, // top-left       
-	 0.0f, 0.0f, 0.0f,  -1.0f, 0.0f, 0.0f, // bottom-left
-	 0.0f,  1.0f,  1.0f,  -1.0f, 0.0f, 0.0f, // top-right
-	 0.0f, 0.0f,  1.0f,  -1.0f, 0.0f, 0.0f, // bottom-right
-	 0.0f,  1.0f,  1.0f,  -1.0f, 0.0f, 0.0f, // top-right
-	 0.0f, 0.0f, 0.0f,  -1.0f, 0.0f, 0.0f, // bottom-left
-
-	// Right face
-	 1.0f, 0.0f, 0.0f,  1.0f, 0.0f, 0.0f, // bottom-right  
-	 1.0f,  1.0f, 0.0f, 1.0f, 0.0f, 0.0f, // top-right 
-	 1.0f,  1.0f,  1.0f,  1.0f, 0.0f, 0.0f, // top-left
-	 1.0f,  1.0f,  1.0f,  1.0f, 0.0f, 0.0f, // top-left
-	 1.0f, 0.0f,  1.0f,  1.0f, 0.0f, 0.0f, // bottom-left
-	 1.0f, 0.0f, 0.0f,  1.0f, 0.0f, 0.0f, // bottom-right
-
-	// Bottom face          
-	 1.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f, // top-left
-	 1.0f, 0.0f,  1.0f,  0.0f, -1.0f, 0.0f, // bottom-left
-	 0.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f, // top-right
-	 0.0f, 0.0f,  1.0f,  0.0f, -1.0f, 0.0f, // bottom-right
-	 0.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f, // top-right
-	 1.0f, 0.0f,  1.0f,  0.0f, -1.0f, 0.0f, // bottom-left
-
-	// Top face
-	 1.0f,  1.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
-	 1.0f,  1.0f, 0.0f,  0.0f, 1.0f, 0.0f, // top-right
-	 0.0f,  1.0f, 0.0f,  0.0f, 1.0f, 0.0f, // top-left                 
-	 0.0f,  1.0f, 0.0f,  0.0f, 1.0f, 0.0f,  // top-left
-	 0.0f,  1.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-left  
-	 1.0f,  1.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right      
-	};
-
+	
 	class utilF
 	{
 	public:

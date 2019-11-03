@@ -56,8 +56,8 @@ constexpr GLfloat vertices[] = {
 
 
 
-SimVisualizer::SimVisualizer(size_t num_particles, bool shadows,
-	size_t width, size_t heigth) :
+SimVisualizer::SimVisualizer(int num_particles, bool shadows,
+	int width, int heigth) :
 	m_num_p(num_particles), m_shadowsEnabled(shadows),
 	m_SCR_WIDTH(width), m_SCR_HEIGHT(heigth)
 {
@@ -83,7 +83,7 @@ void SimVisualizer::SetClearColor(glm::vec3 rgb)
 	glClearColor(rgb.r, rgb.g, rgb.b, 1.0f);
 }
 
-void SimVisualizer::setShadowMapRes(size_t w, size_t h)
+void SimVisualizer::setShadowMapRes(int w, int h)
 {
 	m_shadowTex_w = w;
 	m_shadowTex_h = h;
@@ -168,6 +168,18 @@ void SimVisualizer::updateParticlesColor(const float* color)
 
 void SimVisualizer::draw()
 {
+
+	int fps_old = 1.0f / m_dt;
+
+	float currentFrame = static_cast<float>(glfwGetTime());
+	m_dt = currentFrame - m_t_last;
+	m_t_last = currentFrame;
+
+	int fps = 1 / m_dt;
+
+	if (fps_old != fps)
+		std::cerr << fps << std::endl;
+
 	// Update uniforms of all shaders
 	updateUniforms();
 
@@ -175,6 +187,7 @@ void SimVisualizer::draw()
 	{
 		drawShadowMap();
 	}
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
 	m_shaders[1].use();
@@ -182,6 +195,8 @@ void SimVisualizer::draw()
 
 	m_shaders[0].use();
 	drawParticles();
+
+	glBindVertexArray(0);
 
 	glfwSwapBuffers(m_window);
 	glfwPollEvents();
@@ -200,6 +215,8 @@ bool SimVisualizer::initGLFW()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+	glfwSwapInterval(0);
 
 	m_window = glfwCreateWindow(
 		static_cast<int>(m_SCR_WIDTH), 
@@ -292,7 +309,6 @@ void SimVisualizer::processKeyboardInput()
 	if (glfwGetKey(m_window, GLFW_KEY_ENTER) == GLFW_PRESS)
 		m_enterPressed = true;
 
-	float cameraSpeed = 2.5f * m_dt;
 	if (glfwGetKey(m_window, GLFW_KEY_W) == GLFW_PRESS)
 		m_camera.ProcessKeyboard(Camera::Camera_Movement::FORWARD, m_dt * d);
 	if (glfwGetKey(m_window, GLFW_KEY_S) == GLFW_PRESS)
@@ -530,10 +546,10 @@ void SimVisualizer::drawBB() const
 	glCullFace(GL_BACK);
 }
 
-void SimVisualizer::drawParticles() const
+void SimVisualizer::drawParticles(bool enable) const
 {	
 	glBindVertexArray(m_VAO_particles);
-	if (m_shadowsEnabled)
+	if (m_shadowsEnabled && enable)
 	{
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, m_depthMapTex);
@@ -553,7 +569,7 @@ void SimVisualizer::drawShadowMap() const
 
 	glCullFace(GL_FRONT);
 	m_shaders[2].use(); // draw with shadowMap shader
-	drawParticles();
+	drawParticles(false);
 	glCullFace(GL_BACK);
 
 	// unbind and set normal viewport
