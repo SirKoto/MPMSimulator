@@ -5,9 +5,6 @@
 
 #include <Windows.h>
 
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -16,13 +13,14 @@
 
 #include <random>
 
-#include "Shader.h"
-#include "Simulator_3D.h"
-#include "Camera.h"
+#include <thread>
+#include <chrono>
 
 #include "IO/WriteSBF.h"
 #include "IO/ReadSBF.h"
 
+#include "Simulator_3D.h"
+#include "SimVisualizer.h"
 
 // #define PRINT_IMAGES_FLAG
 // #define WRITE_DATA_SBF
@@ -32,7 +30,7 @@ struct ParticlePos
 {
 	float x, y;
 };
-
+/*
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
@@ -336,11 +334,11 @@ void draw(const Simulator_3D& sim, float* buff)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	drawBBFilled(VAO_BB);
 	drawParticles(VAO_particles, n);
-}
+}*/
 
 int main()
 {
-	GLFWwindow* window = NULL;
+	/*GLFWwindow* window = NULL;
 	if (!initGLFW(window))
 		return -1;
 
@@ -350,8 +348,7 @@ int main()
 	glFrontFace(GL_CCW);
 	setCallbacks(window);
 
-	float* p_pos;
-	glm::vec3* p_col;
+
 	// VBO[0] := positions, VBO[1] := color
 	initArraysParticles(VAO_particles, VBO_particles, p_pos, p_col);
 
@@ -360,9 +357,17 @@ int main()
 #ifdef SHADOWS
 	initFBOShadows();
 #endif
-
+*/
 	int n_particles = utils::maxParticles;
-
+	SimVisualizer viewer(n_particles, false);
+	if (viewer.ErrorHappened())
+	{
+		MSG("ERROR on SimVisualizer creation");
+		return -1;
+	}
+	float* p_pos = new float[utils::maxParticles * 3];
+	glm::vec3* p_col = new glm::vec3[utils::maxParticles];
+	
 	// Create simulator and add points
 	Simulator_3D sim;
 	{
@@ -383,18 +388,20 @@ int main()
 
 			p_col[i] = y > 0.4f + 2.f * dy ? glm::vec3(0.0f, 1.0f, 0.0f) : y < 0.4f + dy ? glm::vec3(0.0f, 1.0f, 1.0f) : glm::vec3(1.0f, 0.0f, 1.0f); // color according to height
 		}
-
-		{ // add the color into the buffer for each particle
-			glBindBuffer(GL_ARRAY_BUFFER, VBO_particles[1]);
-			glBufferData(GL_ARRAY_BUFFER, utils::maxParticles * sizeof(glm::vec3), p_col, GL_STATIC_DRAW);
-		}
-		delete[] p_col;
 	}
+
+	{
+		float* colordata = new float[3 * utils::maxParticles];
+		std::memcpy(colordata, p_col, 3 * utils::maxParticles * sizeof(float));
+		viewer.updateParticlesColor(colordata);
+		delete[] colordata;
+	}
+	delete[] p_col;
 
 	n_particles = sim.dumpPositionsNormalized(p_pos);
 	MSG(n_particles);
-	utils::LastFrame = (float)glfwGetTime();
 
+	viewer.updateParticlePositions(p_pos);
 #ifdef WRITE_DATA_SBF
 	// create writter
 	if (!CreateDirectory("sim_files", NULL) && !ERROR_ALREADY_EXISTS == GetLastError())
@@ -406,22 +413,17 @@ int main()
 #endif
 
 
-	while (!glfwWindowShouldClose(window) && !doSimulation) 
+	while (!viewer.shouldApplicationClose() && !viewer.getEnterPressed()) 
 	{
-		float currentFrame = utils::updateTime();
+		viewer.processKeyboardInput();
 
-		processInput(window);
-
-		draw(sim, p_pos);
-
-		glBindVertexArray(0);
-
-		glfwSwapBuffers(window);
-		glfwPollEvents();
+		viewer.draw();
 	}
 
-	deactivateCallbacks(window);
+	delete[] p_pos;
+	/*
 
+	deactivateCallbacks(window);
 	int iteration = -1;
 	while (!glfwWindowShouldClose(window) && doSimulation)
 	{
@@ -460,10 +462,12 @@ int main()
 	delete[] p_pos;
 	
 	glfwTerminate();
-
+	*/
 	return 0;
 }
 
+
+/*
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
 	glViewport(0, 0, width, height);
@@ -535,3 +539,4 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
 	camera.ProcessMouseScroll(static_cast<float>(yoffset));
 }
+*/
