@@ -3,7 +3,57 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "Utils.h"
+
+constexpr GLfloat vertices[] = {
+	// Back face
+ 1.0f,  1.0f, 0.0f, 0.0f, 0.0f, -1.0f, // top-right             
+ 1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f, // bottom-right  
+ 0.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f, // Bottom-left
+ 0.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f, // bottom-left                
+ 0.0f,  1.0f, 0.0f, 0.0f, 0.0f, -1.0f, // top-left
+ 1.0f,  1.0f, 0.0f, 0.0f, 0.0f, -1.0f, // top-right
+
+// Front face
+ 1.0f, 0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // bottom-right
+ 1.0f,  1.0f,  1.0f, 0.0f, 0.0f, 1.0f, // top-right
+ 0.0f, 0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // bottom-left	         
+ 0.0f,  1.0f,  1.0f, 0.0f, 0.0f, 1.0f, // top-left
+ 0.0f, 0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // bottom-left
+ 1.0f,  1.0f,  1.0f, 0.0f, 0.0f, 1.0f, // top-right
+
+// Left face
+ 0.0f,  1.0f, 0.0f,  -1.0f, 0.0f, 0.0f, // top-left       
+ 0.0f, 0.0f, 0.0f,  -1.0f, 0.0f, 0.0f, // bottom-left
+ 0.0f,  1.0f,  1.0f,  -1.0f, 0.0f, 0.0f, // top-right
+ 0.0f, 0.0f,  1.0f,  -1.0f, 0.0f, 0.0f, // bottom-right
+ 0.0f,  1.0f,  1.0f,  -1.0f, 0.0f, 0.0f, // top-right
+ 0.0f, 0.0f, 0.0f,  -1.0f, 0.0f, 0.0f, // bottom-left
+
+// Right face
+ 1.0f, 0.0f, 0.0f,  1.0f, 0.0f, 0.0f, // bottom-right  
+ 1.0f,  1.0f, 0.0f, 1.0f, 0.0f, 0.0f, // top-right 
+ 1.0f,  1.0f,  1.0f,  1.0f, 0.0f, 0.0f, // top-left
+ 1.0f,  1.0f,  1.0f,  1.0f, 0.0f, 0.0f, // top-left
+ 1.0f, 0.0f,  1.0f,  1.0f, 0.0f, 0.0f, // bottom-left
+ 1.0f, 0.0f, 0.0f,  1.0f, 0.0f, 0.0f, // bottom-right
+
+// Bottom face          
+ 1.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f, // top-left
+ 1.0f, 0.0f,  1.0f,  0.0f, -1.0f, 0.0f, // bottom-left
+ 0.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f, // top-right
+ 0.0f, 0.0f,  1.0f,  0.0f, -1.0f, 0.0f, // bottom-right
+ 0.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f, // top-right
+ 1.0f, 0.0f,  1.0f,  0.0f, -1.0f, 0.0f, // bottom-left
+
+// Top face
+ 1.0f,  1.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
+ 1.0f,  1.0f, 0.0f,  0.0f, 1.0f, 0.0f, // top-right
+ 0.0f,  1.0f, 0.0f,  0.0f, 1.0f, 0.0f, // top-left                 
+ 0.0f,  1.0f, 0.0f,  0.0f, 1.0f, 0.0f,  // top-left
+ 0.0f,  1.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-left  
+ 1.0f,  1.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right      
+};
+
 
 
 SimVisualizer::SimVisualizer(size_t num_particles, bool shadows,
@@ -13,12 +63,12 @@ SimVisualizer::SimVisualizer(size_t num_particles, bool shadows,
 {
 	if (!initGLFW())
 	{
-		ERROR = true;
+		m_ERROR = true;
 		return;
 	}
 	if (!initOpenGL())
 	{
-		ERROR = true;
+		m_ERROR = true;
 		return;
 	}
 }
@@ -55,19 +105,26 @@ void SimVisualizer::reloadShaders()
 {
 	if (m_shadowsEnabled)
 	{
+		const glm::mat4 lightProjection = glm::ortho(-0.5f, 0.5f, -0.6f, 0.6f, 1.522f, 3.522f);//glm::perspective(glm::radians(72.0f), static_cast<float>(utils::SHADOW_WIDTH) / utils::SHADOW_HEIGHT, 0.01f, 3.5f);
+		const glm::mat4 lightView = glm::lookAt(m_lightPosition, glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(0.0f, 1.0f, 0.0f));
+		const glm::mat4 lightSpaceMatrix = lightProjection * lightView;
+
 		// enable particle shader
 		m_shaders[0] = Shader("shadersShadows/shaderPoint.vert", "shadersShadows/shaderPoint.frag");
 		m_shaders[0].use();
 		m_shaders[0].setInt("shadowMap", 0); // set shadowMap uniform sampler2D
+		m_shaders[0].setMat4("lightSpaceMatrix", lightSpaceMatrix);
 
 		// enable BB shader
 		m_shaders[1] = Shader("shadersShadows/shaderBB.vert", "shadersShadows/shaderBB.frag");
 		m_shaders[1].use();
 		m_shaders[1].setInt("shadowMap", 0); // set shadowMap uniform
+		m_shaders[1].setMat4("lightSpaceMatrix", lightSpaceMatrix);
 
 		// enable ShadowMap shader
 		m_shaders[2] = Shader("shadersShadows/shaderShadowMap.vert", "shadersShadows/shaderShadowMap.frag");
-
+		m_shaders[2].use();
+		m_shaders[2].setMat4("lightSpaceMatrix", lightSpaceMatrix);
 
 	}
 	else
@@ -84,7 +141,7 @@ void SimVisualizer::reloadShaders()
 
 bool SimVisualizer::ErrorHappened() const
 {
-	return ERROR;
+	return m_ERROR;
 }
 
 void SimVisualizer::updateParticlePositions(const float* pos)
@@ -109,7 +166,7 @@ void SimVisualizer::updateParticlesColor(const float* color)
 	glBufferData(GL_ARRAY_BUFFER, 3 * m_num_p * sizeof(float), color, GL_STATIC_DRAW);
 }
 
-void SimVisualizer::draw() const
+void SimVisualizer::draw()
 {
 	// Update uniforms of all shaders
 	updateUniforms();
@@ -235,15 +292,15 @@ void SimVisualizer::processKeyboardInput()
 	if (glfwGetKey(m_window, GLFW_KEY_ENTER) == GLFW_PRESS)
 		m_enterPressed = true;
 
-	float cameraSpeed = 2.5f * utils::DeltaTime;
+	float cameraSpeed = 2.5f * m_dt;
 	if (glfwGetKey(m_window, GLFW_KEY_W) == GLFW_PRESS)
-		m_camera.ProcessKeyboard(FORWARD, utils::DeltaTime * d);
+		m_camera.ProcessKeyboard(Camera::Camera_Movement::FORWARD, m_dt * d);
 	if (glfwGetKey(m_window, GLFW_KEY_S) == GLFW_PRESS)
-		m_camera.ProcessKeyboard(BACKWARD, utils::DeltaTime * d);
+		m_camera.ProcessKeyboard(Camera::Camera_Movement::BACKWARD, m_dt * d);
 	if (glfwGetKey(m_window, GLFW_KEY_A) == GLFW_PRESS)
-		m_camera.ProcessKeyboard(RIGHT, utils::DeltaTime * d);
+		m_camera.ProcessKeyboard(Camera::Camera_Movement::RIGHT, m_dt * d);
 	if (glfwGetKey(m_window, GLFW_KEY_D) == GLFW_PRESS)
-		m_camera.ProcessKeyboard(LEFT, utils::DeltaTime * d);
+		m_camera.ProcessKeyboard(Camera::Camera_Movement::LEFT, m_dt * d);
 
 	if (glfwGetKey(m_window, GLFW_KEY_R) == GLFW_PRESS)
 		reloadShaders();
@@ -256,16 +313,27 @@ void SimVisualizer::processKeyboardInput()
 
 	if (glfwGetKey(m_window, GLFW_KEY_KP_ADD) == GLFW_PRESS)
 	{
-		m_particleScale += utils::DeltaTime * d * 5e-1f;
-		glm::clamp(m_particleScale, 1e-6f, 1.0f);
+		glm::vec3 tmp = glm::vec3(m_dt * d * 5e-1f);
+		m_particleScale += tmp;
+		m_particleScale = glm::clamp(m_particleScale, 1e-6f, 1.0f);
 		setScaleParticles(m_particleScale);
 	}
 	if (glfwGetKey(m_window, GLFW_KEY_KP_SUBTRACT) == GLFW_PRESS)
 	{
-		m_particleScale -= utils::DeltaTime * d * 5e-1f;
-		glm::clamp(m_particleScale, 1e-6f, 1.0f);
+		m_particleScale -= glm::vec3(m_dt * d * 5e-1f);
+		m_particleScale = glm::clamp(m_particleScale, 1e-6f, 1.0f);
 		setScaleParticles(m_particleScale);
 	}
+
+	if (glfwGetKey(m_window, GLFW_KEY_M) == GLFW_PRESS)
+	{
+		setMouseInteractive(true);
+	}
+	if (glfwGetKey(m_window, GLFW_KEY_N) == GLFW_PRESS)
+	{
+		setMouseInteractive(false);
+	}
+
 }
 
 void SimVisualizer::setCallbacks()
@@ -322,7 +390,9 @@ Attribs are [0] vertex, [1] color, [2] offset, [3] normal
 */
 void SimVisualizer::initArraysParticles()
 {
-	float* tmp = new float[3 * m_num_p];
+	float* tmp = new float[(3 * m_num_p)];
+	std::memset(tmp, 0, 3 * m_num_p * sizeof(float));
+
 	glGenVertexArrays(1, &m_VAO_particles);
 	glBindVertexArray(m_VAO_particles);
 
@@ -331,7 +401,7 @@ void SimVisualizer::initArraysParticles()
 	// VBO 0 is the position of the particles. or offset of the cubes
 	glBindBuffer(GL_ARRAY_BUFFER, m_VBO_particles[0]);
 	// must buffer junk data because of dynamic array
-	glBufferData(GL_ARRAY_BUFFER, m_num_p * 3 * sizeof(float), tmp, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, m_num_p * (3 * sizeof(float)), tmp, GL_DYNAMIC_DRAW);
 
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (GLvoid*)0);
 	glEnableVertexAttribArray(2);
@@ -340,14 +410,14 @@ void SimVisualizer::initArraysParticles()
 	// VBO 1 is color of the particle to draw
 	glBindBuffer(GL_ARRAY_BUFFER, m_VBO_particles[1]);
 
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (GLvoid*)0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (GLvoid*)0);
 	glEnableVertexAttribArray(1);
 	glVertexAttribDivisor(1, 1);
 
 	// VBO 2 is the vertices and the normal
 	glBindBuffer(GL_ARRAY_BUFFER, m_VBO_particles[2]);
 	// buffer static data
-	glBufferData(GL_ARRAY_BUFFER, sizeof(utils::vertices), utils::vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (GLvoid*)0);
 	glEnableVertexAttribArray(0);
@@ -369,7 +439,7 @@ void SimVisualizer::initArraysBB()
 
 	glBindBuffer(GL_ARRAY_BUFFER, m_VBO_BB);
 	// Buffer vertices position of the BB
-	glBufferData(GL_ARRAY_BUFFER, sizeof(utils::vertices), utils::vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (GLvoid*)0);
 	glEnableVertexAttribArray(0);
@@ -405,12 +475,12 @@ void SimVisualizer::initFBOShadows()
 	glDrawBuffer(GL_NONE);
 	glReadBuffer(GL_NONE);
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-		MSG("Error creating frameBuffer");
+		std::cerr << "ERROR CREATING FRAMEBUFFER" << std::endl;
 	// unbind
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void SimVisualizer::updateUniforms() const
+void SimVisualizer::updateUniforms()
 {
 	const glm::mat4 projection = glm::perspective(glm::radians(m_camera.m_zoom), static_cast<float>(m_SCR_WIDTH) / m_SCR_HEIGHT, 0.1f, 10.0f);
 	const glm::mat4 projectionView = projection * m_camera.GetViewMatrix();
@@ -419,7 +489,7 @@ void SimVisualizer::updateUniforms() const
 	updateModelMatrix();
 }
 
-void SimVisualizer::updateModelMatrix() const
+void SimVisualizer::updateModelMatrix()
 {
 	// modify particle shader
 	m_shaders[0].use();
@@ -433,7 +503,7 @@ void SimVisualizer::updateModelMatrix() const
 	}
 }
 
-void SimVisualizer::setUniforms(Shader s, const glm::mat4& projectionView) const
+void SimVisualizer::setUniforms(Shader& s, const glm::mat4& projectionView)
 {
 	s.use();
 

@@ -10,18 +10,21 @@
 #include <vector>
 
 
-enum Camera_Movement {
-	FORWARD,
-	BACKWARD,
-	LEFT,
-	RIGHT
-};
+
 
 
 
 class Camera
 {
 public:
+
+	enum class Camera_Movement {
+		FORWARD,
+		BACKWARD,
+		LEFT,
+		RIGHT
+	};
+
 	glm::vec3 m_position;
 	glm::vec3 m_front;
 	glm::vec3 m_up;
@@ -58,16 +61,16 @@ public:
 		float v = m_speed * dt;
 		switch (dir)
 		{
-		case FORWARD:
+		case Camera_Movement::FORWARD:
 			m_position += m_front * v;
 			break;
-		case BACKWARD:
+		case Camera_Movement::BACKWARD:
 			m_position -= m_front * v;
 			break;
-		case LEFT:
+		case Camera_Movement::LEFT:
 			m_position += m_right * v;
 			break;
-		case RIGHT:
+		case Camera_Movement::RIGHT:
 			m_position -= m_right * v;
 			break;
 		default:
