@@ -168,8 +168,16 @@ void SimVisualizer::updateParticlesColor(const float* color)
 
 void SimVisualizer::draw()
 {
-
 	updateDT();
+
+	if (m_userInputEnabled)
+	{
+		processKeyboardInput();
+	}
+	else
+	{
+		processKeyboardInputLess();
+	}
 
 	// Update uniforms of all shaders
 	updateUniforms();
@@ -191,6 +199,23 @@ void SimVisualizer::draw()
 
 	glfwSwapBuffers(m_window);
 	glfwPollEvents();
+}
+
+void SimVisualizer::enableUserInput(bool enable)
+{
+	if (m_userInputEnabled == enable)
+		return;
+
+	if (enable)
+	{
+		setCallbacks();
+	}
+	else
+	{
+		unsetCallbacks();
+	}
+
+	m_userInputEnabled = enable;
 }
 
 bool SimVisualizer::shouldApplicationClose()
@@ -222,6 +247,9 @@ bool SimVisualizer::initGLFW()
 	}
 
 	glfwMakeContextCurrent(m_window);
+
+	// store the window with the viewer class
+	glfwSetWindowUserPointer(m_window, this);
 
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
@@ -354,6 +382,12 @@ void SimVisualizer::processKeyboardInput()
 
 }
 
+void SimVisualizer::processKeyboardInputLess()
+{
+	if (glfwGetKey(m_window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+		glfwSetWindowShouldClose(m_window, GLFW_TRUE);
+}
+
 void SimVisualizer::setKeyCallback(KEYS key, std::function<void()> f)
 {
 	f_call[static_cast<int>(key)] = f;
@@ -361,8 +395,6 @@ void SimVisualizer::setKeyCallback(KEYS key, std::function<void()> f)
 
 void SimVisualizer::setCallbacks()
 {
-	// store the window with the viewer class
-	glfwSetWindowUserPointer(m_window, this);
 
 	auto f_framebuffer_callback = [](GLFWwindow* w, int width, int height)
 	{
@@ -372,6 +404,12 @@ void SimVisualizer::setCallbacks()
 	glfwSetFramebufferSizeCallback(m_window, f_framebuffer_callback);
 
 	setMouseInteractive(true);
+}
+
+void SimVisualizer::unsetCallbacks()
+{
+	setMouseInteractive(false);
+	glfwSetFramebufferSizeCallback(m_window, NULL);
 }
 
 void SimVisualizer::framebuffer_size_callback(GLFWwindow* window, int width, int height)

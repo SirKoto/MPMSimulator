@@ -91,8 +91,6 @@ int main()
 
 	while (!viewer.shouldApplicationClose() && ! enterPressed) 
 	{
-		viewer.processKeyboardInput();
-
 		viewer.draw();
 	}
 

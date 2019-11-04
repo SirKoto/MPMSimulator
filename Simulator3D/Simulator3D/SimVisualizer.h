@@ -47,10 +47,9 @@ public:
 
 	void draw();
 
+	void enableUserInput(bool enable);
 
 	bool shouldApplicationClose();
-
-	void processKeyboardInput();
 
 	void setKeyCallback(KEYS key, std::function<void()> f);
 
@@ -67,6 +66,8 @@ private:
 	float m_time_press_t = 0;
 
 	bool m_shadowsEnabled;
+
+	bool m_userInputEnabled = true;
 
 	Shader m_shaders[3]; // [0] Particle, [1] BB, [2] ShadowMap
 	Camera m_camera = Camera(glm::vec3(0.5f, 0.5f, 3.0f));
@@ -97,9 +98,16 @@ private:
 
 	void setMouseInteractive(bool interactive);
 
+	void processKeyboardInput();
+
+	void processKeyboardInputLess();
+
 	void updateDT();
 
 	void setCallbacks();
+
+	void unsetCallbacks();
+
 	// CALLBACKS
 	void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 	void mouse_callback(GLFWwindow* window, double xpos, double ypos);
