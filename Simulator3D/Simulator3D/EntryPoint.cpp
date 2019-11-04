@@ -94,26 +94,19 @@ int main()
 		viewer.draw();
 	}
 
-	delete[] p_pos;
-	/*
 
-	deactivateCallbacks(window);
+	viewer.enableUserInput(false);
 	int iteration = -1;
-	while (!glfwWindowShouldClose(window) && doSimulation)
+	while (!viewer.shouldApplicationClose() && enterPressed)
 	{
 		if (iteration > 300) break;
 		++iteration;
 
-		float currentFrame = utils::updateTime();
+		for(int i = 0; i < 20; ++i) sim.step(0.00006f);
+		sim.dumpPositionsNormalized(p_pos);
+		viewer.updateParticlePositions(p_pos);
 
-		processInputLess(window);
-
-		for(int i = 0; i < 200; ++i) sim.step(0.00006f);
-
-		draw(sim, p_pos);
-
-		std::cerr << "Draw " << 1.0f/utils::DeltaTime << std::endl;
-		glBindVertexArray(0);
+		viewer.draw();
 
 #ifdef PRINT_IMAGES_FLAG
 		{
@@ -128,14 +121,8 @@ int main()
 #ifdef WRITE_DATA_SBF
 		writter.writeData3f(p_pos);
 #endif
-
-		glfwSwapBuffers(window);
-		glfwPollEvents();
 	}
-
 	delete[] p_pos;
-	
-	glfwTerminate();
-	*/
+
 	return 0;
 }
