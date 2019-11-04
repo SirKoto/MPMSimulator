@@ -4,6 +4,9 @@
 ReadSBF::ReadSBF(const std::string& path) :
 	stream(path.c_str(), std::ios::in | std::ios_base::binary)
 {
+	if (!canRead())
+		return;
+
 	// Read number of particles
 	{
 		char data[sizeof(n)];
@@ -25,8 +28,19 @@ char ReadSBF::ReadNextFlag()
 	return ReadNextFlag(true);
 }
 
+bool ReadSBF::canRead() const
+{
+	if (stream)
+		return true;
+	else
+		return false;
+}
+
 char ReadSBF::ReadNextFlag(bool KeepPosition)
 {
+	if (!canRead())
+		return SBF_ERROR;
+
 	// read first flag
 	char flag;
 	stream.read(&flag, 1);
@@ -40,6 +54,9 @@ char ReadSBF::ReadNextFlag(bool KeepPosition)
 
 void ReadSBF::ReadData3f(float* data)
 {
+	if (!canRead())
+		return;
+
 	char bloat[sizeof(float) * 3 * size_bulk];
 	//copy data
 	unsigned long i;
@@ -57,6 +74,9 @@ void ReadSBF::ReadData3f(float* data)
 
 float ReadSBF::ReadDataf()
 {
+	if (!canRead())
+		return 0.0f;
+
 	char buff[sizeof(float)];
 	stream.read(buff, sizeof(float));
 	float ret;

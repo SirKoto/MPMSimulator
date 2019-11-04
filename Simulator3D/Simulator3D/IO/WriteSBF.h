@@ -20,6 +20,8 @@ public:
 
 	void writeData3f(const float* data, const char flag = SBF_DATA);
 
+	bool canWrite() const;
+
 private:
 
 	static constexpr unsigned long size_bulk = 100;

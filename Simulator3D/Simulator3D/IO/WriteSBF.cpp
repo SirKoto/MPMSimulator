@@ -5,6 +5,10 @@ WriteSBF::WriteSBF(const std::string& path, const unsigned long n_particles) :
 	stream(path.c_str(), std::ios::out | std::ios::trunc | std::ios_base::binary),
 	n(n_particles), rest(n_particles % size_bulk), it(n_particles / size_bulk)
 {
+
+	if (!canWrite()) // if the stream does not work... disable
+		return;
+
 	// write number of particles
 	{
 		char data[sizeof(n_particles)];
@@ -19,16 +23,19 @@ WriteSBF::WriteSBF(const std::string& path, const unsigned long n_particles) :
 WriteSBF::~WriteSBF()
 {
 	// write EOF 
+	if(canWrite())
 	{
 		char flag = SBF_EOF;
 		stream.write(&flag, 1);
+		stream.flush();
 	}
-	stream.flush();
 	stream.close();
 }
 
 void WriteSBF::writeDataf(const float data, const char flag)
 {
+	if (!canWrite())
+		return;
 	stream.write(&flag, 1);
 
 	char buff[sizeof(float)];
@@ -39,6 +46,8 @@ void WriteSBF::writeDataf(const float data, const char flag)
 
 void WriteSBF::writeData3f(const float* data, const char flag)
 {
+	if (!canWrite())
+		return;
 	char bloat[sizeof(float) * 3 * size_bulk];
 
 	// write some flag at the start
@@ -60,4 +69,12 @@ void WriteSBF::writeData3f(const float* data, const char flag)
 	stream.write(bloat, sizeof(float) * 3 * rest);
 
 	stream.flush();
+}
+
+bool WriteSBF::canWrite() const
+{
+	if (stream)
+		return true;
+	else 
+		return false;
 }

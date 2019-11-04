@@ -24,6 +24,8 @@ public:
 		return n;
 	}
 
+	bool canRead() const;
+
 private:
 
 	static constexpr unsigned long size_bulk = 100;
