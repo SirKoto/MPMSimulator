@@ -149,7 +149,7 @@ void SimVisualizer::updateParticlePositions(const float* pos)
 	glBindVertexArray(m_VAO_particles);
 	glBindBuffer(GL_ARRAY_BUFFER, m_VBO_particles[0]);
 
-	glBufferSubData(GL_ARRAY_BUFFER, 0, 3 * m_num_p * sizeof(float), pos);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, 3 * static_cast<size_t>(m_num_p) * sizeof(float), pos);
 
 }
 
@@ -163,7 +163,7 @@ void SimVisualizer::updateParticlesColor(const float* color)
 	glBindVertexArray(m_VAO_particles);
 	glBindBuffer(GL_ARRAY_BUFFER, m_VBO_particles[1]);
 
-	glBufferData(GL_ARRAY_BUFFER, 3 * m_num_p * sizeof(float), color, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, 3 * static_cast<size_t>(m_num_p) * sizeof(float), color, GL_STATIC_DRAW);
 }
 
 void SimVisualizer::draw()
@@ -458,8 +458,8 @@ Attribs are [0] vertex, [1] color, [2] offset, [3] normal
 */
 void SimVisualizer::initArraysParticles()
 {
-	float* tmp = new float[(3 * m_num_p)];
-	std::memset(tmp, 0, 3 * m_num_p * sizeof(float));
+	float* tmp = new float[(3 * static_cast<size_t>(m_num_p))];
+	std::memset(tmp, 0, 3 * static_cast<size_t>(m_num_p) * sizeof(float));
 
 	glGenVertexArrays(1, &m_VAO_particles);
 	glBindVertexArray(m_VAO_particles);

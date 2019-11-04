@@ -97,7 +97,7 @@ public:
 
 	void ProcessMouseScroll(float yoffset)
 	{
-		if (m_zoom >= 1.0f && m_zoom < 45.0f)
+		if (m_zoom >= 1.0f && m_zoom <= 45.0f)
 			m_zoom -= yoffset;
 		if (m_zoom <= 1.0f)
 			m_zoom = 1.0f;
