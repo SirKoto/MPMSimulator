@@ -99,6 +99,7 @@ void SimVisualizer::setShadowMapRes(int w, int h)
 void SimVisualizer::setScaleParticles(glm::vec3 scale)
 {
 	m_particleModel = glm::scale(glm::mat4(1.0f), scale);
+	m_particleModel = glm::translate(m_particleModel, glm::vec3(-0.5f));
 }
 
 void SimVisualizer::reloadShaders()
