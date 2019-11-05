@@ -154,6 +154,7 @@ int writeSimulation(Simulator_3D& sim, SimVisualizer& viewer, const int num_p, s
 		{ 
 			sim.step(step_t); 
 
+			viewer.temptateEvents();
 			if (viewer.shouldApplicationClose())
 				break;
 		}

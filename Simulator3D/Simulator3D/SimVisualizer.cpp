@@ -394,6 +394,12 @@ void SimVisualizer::setKeyCallback(KEYS key, std::function<void()> f)
 	f_call[static_cast<int>(key)] = f;
 }
 
+void SimVisualizer::temptateEvents()
+{
+	processKeyboardInputLess();
+	glfwPollEvents();
+}
+
 void SimVisualizer::setCallbacks()
 {
 

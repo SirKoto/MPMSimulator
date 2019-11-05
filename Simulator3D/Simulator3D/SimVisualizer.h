@@ -53,6 +53,7 @@ public:
 
 	void setKeyCallback(KEYS key, std::function<void()> f);
 
+	void temptateEvents();
 private:
 
 	bool m_ERROR = false;
