@@ -3,10 +3,6 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/glm.hpp>
-#include <glad/glad.h>
-
 #include <Eigen/Dense>
 
 #include <iostream>

@@ -24,8 +24,67 @@
 
 // #define PRINT_IMAGES_FLAG
 // #define WRITE_DATA_SBF
-#define SHADOWS
 
+
+int writeSimulation(Simulator_3D& sim, SimVisualizer& viewer, const int num_p, std::string fileName,
+	const int framesToDo = 300)
+{
+	// create directory if it does not exist
+	if (!CreateDirectory("sim_files", NULL) && !ERROR_ALREADY_EXISTS == GetLastError())
+	{
+		MSG("ERROR::SBF::CANNOT CREATE DIRECTORY FOR FILES");
+		return -1;
+	}
+
+	// add sbf to filename if it does not have it
+	if (fileName.size() < 6 || fileName.compare(fileName.size() - 4, 4, ".sbf") != 0) 
+	{
+		fileName.append(".sbf");
+	}
+
+	// create writer
+	WriteSBF writer("sim_files/" + fileName, num_p);
+
+	float* p_pos = new float[3 * static_cast<size_t>(num_p)];
+
+
+	viewer.enableUserInput(false);
+
+	constexpr float step_t = 0.00006f;
+	constexpr float secondsPerFrame = 1 / 60.0f;
+	constexpr int simPerFrame = secondsPerFrame / step_t;
+
+	int frames = 0;
+	while (!viewer.shouldApplicationClose())
+	{
+		// do n frames
+		if (frames++ > framesToDo) break;
+
+		for (int i = 0; i < simPerFrame; ++i) sim.step(step_t);
+		sim.dumpPositionsNormalized(p_pos);
+		viewer.updateParticlePositions(p_pos);
+
+		viewer.draw();
+
+		// write data into file
+		writer.writeData3f(p_pos, SBF_DATA);
+
+#ifdef PRINT_IMAGES_FLAG
+		{
+			char* data = new char[3u * utils::SCR_WIDTH * utils::SCR_HEIGHT];
+
+			glReadPixels(0, 0, utils::SCR_WIDTH, utils::SCR_HEIGHT, GL_RGB, GL_UNSIGNED_BYTE, data);
+
+			utils::utilF::writeImageToDisk("ft_", iteration, utils::SCR_WIDTH, utils::SCR_HEIGHT, 3, data);
+			delete[] data;
+		}
+#endif // PRINT_IMAGES_FLAG
+
+	}
+
+	delete[] p_pos;
+	return 0;
+}
 
 int main()
 {
@@ -73,15 +132,7 @@ int main()
 	MSG(n_particles);
 
 	viewer.updateParticlePositions(p_pos);
-#ifdef WRITE_DATA_SBF
-	// create writter
-	if (!CreateDirectory("sim_files", NULL) && !ERROR_ALREADY_EXISTS == GetLastError())
-	{
-		MSG("ERROR::SBF::CANNOT CREATE DIRECTORY FOR FILES");
-		return -1;
-	}
-	WriteSBF writter("sim_files/data.sbf", n_particles);
-#endif
+	delete[] p_pos;
 
 	bool enterPressed = false;
 	{
@@ -89,40 +140,27 @@ int main()
 		viewer.setKeyCallback(SimVisualizer::KEYS::ENTER, f);
 	}
 
-	while (!viewer.shouldApplicationClose() && ! enterPressed) 
+	while (!viewer.shouldApplicationClose() && !enterPressed)
 	{
 		viewer.draw();
 	}
 
 
-	viewer.enableUserInput(false);
-	int iteration = -1;
-	while (!viewer.shouldApplicationClose() && enterPressed)
+	// if pressed enter, do simulation
+	if (enterPressed)
 	{
-		if (iteration > 300) break;
-		++iteration;
-
-		for(int i = 0; i < 20; ++i) sim.step(0.00006f);
-		sim.dumpPositionsNormalized(p_pos);
-		viewer.updateParticlePositions(p_pos);
-
-		viewer.draw();
-
-#ifdef PRINT_IMAGES_FLAG
+		int res = writeSimulation(sim, viewer, n_particles, "data");
+		// return error if error returned
+		if (res == -1)
 		{
-			char *data = new char[3u * utils::SCR_WIDTH * utils::SCR_HEIGHT];
-
-			glReadPixels(0, 0, utils::SCR_WIDTH, utils::SCR_HEIGHT, GL_RGB, GL_UNSIGNED_BYTE, data);
-
-			utils::utilF::writeImageToDisk("ft_", iteration, utils::SCR_WIDTH, utils::SCR_HEIGHT, 3, data);
-			delete[] data;
+			return -1;
 		}
-#endif // PRINT_IMAGES_FLAG
-#ifdef WRITE_DATA_SBF
-		writter.writeData3f(p_pos);
-#endif
 	}
-	delete[] p_pos;
+
+
+
+
+	
 
 	return 0;
 }
