@@ -22,71 +22,16 @@
 #include "Simulator_3D.h"
 #include "SimVisualizer.h"
 
-// #define PRINT_IMAGES_FLAG
-// #define WRITE_DATA_SBF
-
 
 int writeSimulation(Simulator_3D& sim, SimVisualizer& viewer, const int num_p, std::string fileName,
-	const int framesToDo = 300)
-{
-	// create directory if it does not exist
-	if (!CreateDirectory("sim_files", NULL) && !ERROR_ALREADY_EXISTS == GetLastError())
-	{
-		MSG("ERROR::SBF::CANNOT CREATE DIRECTORY FOR FILES");
-		return -1;
-	}
+	const int framesToDo = 300, const float* colorData = nullptr);
 
-	// add sbf to filename if it does not have it
-	if (fileName.size() < 6 || fileName.compare(fileName.size() - 4, 4, ".sbf") != 0) 
-	{
-		fileName.append(".sbf");
-	}
+int doSimulation();
 
-	// create writer
-	WriteSBF writer("sim_files/" + fileName, num_p);
-
-	float* p_pos = new float[3 * static_cast<size_t>(num_p)];
+int readSimulation();
 
 
-	viewer.enableUserInput(false);
-
-	constexpr float step_t = 0.00006f;
-	constexpr float secondsPerFrame = 1 / 60.0f;
-	constexpr int simPerFrame = secondsPerFrame / step_t;
-
-	int frames = 0;
-	while (!viewer.shouldApplicationClose())
-	{
-		// do n frames
-		if (frames++ > framesToDo) break;
-
-		for (int i = 0; i < simPerFrame; ++i) sim.step(step_t);
-		sim.dumpPositionsNormalized(p_pos);
-		viewer.updateParticlePositions(p_pos);
-
-		viewer.draw();
-
-		// write data into file
-		writer.writeData3f(p_pos, SBF_DATA);
-
-#ifdef PRINT_IMAGES_FLAG
-		{
-			char* data = new char[3u * utils::SCR_WIDTH * utils::SCR_HEIGHT];
-
-			glReadPixels(0, 0, utils::SCR_WIDTH, utils::SCR_HEIGHT, GL_RGB, GL_UNSIGNED_BYTE, data);
-
-			utils::utilF::writeImageToDisk("ft_", iteration, utils::SCR_WIDTH, utils::SCR_HEIGHT, 3, data);
-			delete[] data;
-		}
-#endif // PRINT_IMAGES_FLAG
-
-	}
-
-	delete[] p_pos;
-	return 0;
-}
-
-int main()
+int doSimulation()
 {
 	int n_particles = utils::maxParticles;
 	SimVisualizer viewer(n_particles, false);
@@ -97,7 +42,7 @@ int main()
 	}
 	float* p_pos = new float[utils::maxParticles * 3];
 	glm::vec3* p_col = new glm::vec3[utils::maxParticles];
-	
+
 	// Create simulator and add points
 	Simulator_3D sim;
 	{
@@ -120,11 +65,10 @@ int main()
 		}
 	}
 
+	float* colordata = new float[3 * utils::maxParticles];
 	{
-		float* colordata = new float[3 * utils::maxParticles];
 		std::memcpy(colordata, p_col, 3 * utils::maxParticles * sizeof(float));
 		viewer.updateParticlesColor(colordata);
-		delete[] colordata;
 	}
 	delete[] p_col;
 
@@ -132,6 +76,7 @@ int main()
 	MSG(n_particles);
 
 	viewer.updateParticlePositions(p_pos);
+
 	delete[] p_pos;
 
 	bool enterPressed = false;
@@ -140,27 +85,155 @@ int main()
 		viewer.setKeyCallback(SimVisualizer::KEYS::ENTER, f);
 	}
 
+	// show simulation stopped meanwhile
 	while (!viewer.shouldApplicationClose() && !enterPressed)
 	{
 		viewer.draw();
 	}
 
 
-	// if pressed enter, do simulation
 	if (enterPressed)
 	{
-		int res = writeSimulation(sim, viewer, n_particles, "data");
-		// return error if error returned
-		if (res == -1)
-		{
-			return -1;
-		}
+		//disable user input
+		viewer.enableUserInput(false);
+
+		std::string fileName;
+		MSG("Enter filename");
+		std::cin >> fileName;
+
+		return writeSimulation(sim, viewer, n_particles, fileName, 300, colordata);
+	}
+	return 0;
+}
+
+int writeSimulation(Simulator_3D& sim, SimVisualizer& viewer, const int num_p, std::string fileName,
+	const int framesToDo, const float* colorData)
+{
+	// create directory if it does not exist
+	if (!CreateDirectory("sim_files", NULL) && !ERROR_ALREADY_EXISTS == GetLastError())
+	{
+		MSG("ERROR::SBF::CANNOT CREATE DIRECTORY FOR FILES");
+		return -1;
 	}
 
+	// add sbf to filename if it does not have it
+	if (fileName.size() < 6 || fileName.compare(fileName.size() - 4, 4, ".sbf") != 0)
+	{
+		fileName.append(".sbf");
+	}
+
+	// create writer
+	WriteSBF writer("sim_files/" + fileName, num_p);
+
+	if (!writer.canWrite())
+	{
+		MSG("ERROR::WRITER::CANNOT WRITE");
+		return -1;
+	}
+	if (colorData != nullptr)
+	{
+		writer.writeData3f(colorData, SBF_COLOR);
+	}
+
+	float* p_pos = new float[3 * static_cast<size_t>(num_p)];
 
 
+	viewer.enableUserInput(false);
 
-	
+	constexpr float step_t = 0.00006f;
+	constexpr float secondsPerFrame = 1 / 60.0f;
+	constexpr int simPerFrame = static_cast<int>(secondsPerFrame / step_t);
+
+	int frame = 0;
+	while (!viewer.shouldApplicationClose())
+	{
+		// do n frames
+		if (frame++ > framesToDo) break;
+
+		for (int i = 0; i < simPerFrame; ++i) 
+		{ 
+			sim.step(step_t); 
+
+			if (viewer.shouldApplicationClose())
+				break;
+		}
+		sim.dumpPositionsNormalized(p_pos);
+		viewer.updateParticlePositions(p_pos);
+
+		viewer.draw();
+
+		// write data into file
+		writer.writeData3f(p_pos, SBF_DATA);
+
+		MSG("Frame " << frame);
+
+#ifdef PRINT_IMAGES_FLAG
+		{
+			char* data = new char[3u * utils::SCR_WIDTH * utils::SCR_HEIGHT];
+
+			glReadPixels(0, 0, utils::SCR_WIDTH, utils::SCR_HEIGHT, GL_RGB, GL_UNSIGNED_BYTE, data);
+
+			utils::utilF::writeImageToDisk("ft_", iteration, utils::SCR_WIDTH, utils::SCR_HEIGHT, 3, data);
+			delete[] data;
+		}
+#endif // PRINT_IMAGES_FLAG
+
+	}
 
 	return 0;
+}
+
+int readSimulation()
+{
+	std::string fileName;
+	MSG("Enter filename");
+	std::cin >> fileName;
+
+	// add sbf to filename if it does not have it
+	if (fileName.size() < 6 || fileName.compare(fileName.size() - 4, 4, ".sbf") != 0)
+	{
+		fileName.append(".sbf");
+	}
+
+	// create writer
+	ReadSBF reader("sim_files/" + fileName);
+	if (!reader.canRead())
+	{
+		MSG("ERROR::READER::CANNOT READ");
+		return -1;
+	}
+
+	return 0;
+}
+
+int main()
+{
+	
+	int res;
+	do{
+		MSG("Do you want to do a new simulation or read a sbf file?");
+		TMSG("1 - Do simulation");
+		TMSG("2 - Read simulation");
+		TMSG("3 - Exit");
+		std::cin >> res;
+	} while (res < 1 || res > 3);
+
+
+	switch (res)
+	{
+	case 1:
+		res = doSimulation();
+		break;
+
+	case 2:
+		res = readSimulation();
+		break;
+
+	case 3:
+
+	default:
+		break;
+	}
+
+	return res;
 }
