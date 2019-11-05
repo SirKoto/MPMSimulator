@@ -23,11 +23,6 @@ ReadSBF::~ReadSBF()
 	stream.close();
 }
 
-char ReadSBF::ReadNextFlag()
-{
-	return ReadNextFlag(true);
-}
-
 bool ReadSBF::canRead() const
 {
 	if (stream)

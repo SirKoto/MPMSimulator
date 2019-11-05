@@ -10,13 +10,17 @@ public:
 		data = nullptr;
 	}
 
-	~FrameSBF()
-	{
-		delete[] data;
-	}
+	~FrameSBF() = default;
 
 	// Disable copy constructor
 	FrameSBF(const FrameSBF& f) = delete;
+
+	FrameSBF(const FrameSBF&& f) noexcept
+	{
+		this->data = f.data;
+	}
+
+
 	FrameSBF& operator=(const FrameSBF& f) = delete;
 
 	void prepareData(const unsigned long number_elements) {
@@ -28,6 +32,10 @@ public:
 		data = new T[number_elements];
 	}
 
+	void deleteData()
+	{
+		delete[] this->data;
+	}
 
 	T* ptr()
 	{

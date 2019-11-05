@@ -396,7 +396,15 @@ void SimVisualizer::setKeyCallback(KEYS key, std::function<void()> f)
 
 void SimVisualizer::temptateEvents()
 {
-	processKeyboardInputLess();
+	if (m_userInputEnabled)
+	{
+		processKeyboardInput();
+	}
+	else
+	{
+		processKeyboardInputLess();
+	}
+
 	glfwPollEvents();
 }
 

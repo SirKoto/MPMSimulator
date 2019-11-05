@@ -122,6 +122,7 @@ int writeSimulation(Simulator_3D& sim, SimVisualizer& viewer, const int num_p, s
 		fileName.append(".sbf");
 	}
 
+	MSG("writing on " << fileName);
 	// create writer
 	WriteSBF writer("sim_files/" + fileName, num_p);
 
@@ -204,7 +205,69 @@ int readSimulation()
 		return -1;
 	}
 
-	return 0;
+	const int n_particles = reader.GetNumberParticles();
+
+	float* color = new float[3 * static_cast<size_t>(n_particles)];
+
+	std::vector<FrameSBF<float>> frames(0); // by default 300 frames
+
+	char res = reader.ReadNextFlag(false);
+	while (res != SBF_EOF && res != SBF_ERROR)
+	{
+		switch (res)
+		{
+		case SBF_COLOR:
+			reader.ReadData3f(color);
+			break;
+
+		case SBF_DATA:
+			// put the new frame at the back (constructed)
+			frames.emplace_back();
+			// Reserve memory
+			frames.back().prepareData(3 * n_particles);
+			// dump data
+			reader.ReadData3f(frames.back().ptr());
+			break;
+		default:
+			// read junk data atm
+			reader.ReadDataf();
+			break;
+		}
+		res = reader.ReadNextFlag(false);
+	}
+
+	// show simulation
+	SimVisualizer viewer(n_particles);
+	if (!viewer.ErrorHappened() && !frames.empty())
+	{
+		viewer.enableUserInput(true);
+		viewer.updateParticlesColor(color);
+
+		// set particle positions for frame 0
+		viewer.updateParticlePositions(frames[0]);
+
+		while (!viewer.shouldApplicationClose())
+		{
+			viewer.draw();
+		}
+
+		res = 0;
+	}
+	else
+	{
+		MSG("ERROR::VIEWER");
+		res = -1;
+	}
+
+	// delete all data
+	const int size = static_cast<int>(frames.size());
+	for (int i = 0; i < size; ++i)
+	{
+		frames[i].deleteData();
+	}
+	delete[] color;
+
+	return res;
 }
 
 int main()
