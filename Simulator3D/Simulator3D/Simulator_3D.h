@@ -28,7 +28,13 @@ public:
 
 	void addParticleNormalized(const glm::vec3& pos, const glm::vec3& v = glm::vec3(0));
 
+	float getYoung() { return young; }
+
+	float getNu() { return nu; }
+
 private:
+
+	const float young, nu;
 
 	const float mu_0, lambda_0;
 

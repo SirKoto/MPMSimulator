@@ -32,7 +32,7 @@ namespace utils
 
 	static float DeltaTime = 0.0f;
 	static float LastFrame = 0.0f;
-	constexpr unsigned int maxParticles = 100000;
+	constexpr unsigned int maxParticles = 10000;
 
 	constexpr float particleSize = 5e-3f;
 

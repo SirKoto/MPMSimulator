@@ -61,7 +61,7 @@ int doSimulation()
 	glm::vec3* p_col = new glm::vec3[utils::maxParticles];
 
 	// Create simulator and add points
-	Simulator_3D sim;
+	Simulator_3D sim(1e5f, 0.3f);
 	{
 		// add random particles
 
@@ -118,7 +118,7 @@ int doSimulation()
 		MSG("Enter filename");
 		std::cin >> fileName;
 
-		return writeSimulation(sim, viewer, n_particles, fileName, 300, colordata);
+		return writeSimulation(sim, viewer, n_particles, fileName, 100, colordata);
 	}
 	return 0;
 }
@@ -158,15 +158,22 @@ int writeSimulation(Simulator_3D& sim, SimVisualizer& viewer, const int num_p, s
 
 	viewer.enableUserInput(false);
 
-	constexpr float step_t = 0.00006f;
+	constexpr float step_t = 0.00003f;
 	constexpr float secondsPerFrame = 1 / 60.0f;
 	constexpr int simPerFrame = static_cast<int>(secondsPerFrame / step_t);
+
+	writer.writeDataf(step_t, SBF_DT_FRAMES);
+	writer.writeDataf(sim.getYoung(), SBF_PARAM_E);
+	writer.writeDataf(sim.getNu(), SBF_PARAM_NU);
 
 	int frame = 0;
 	while (!viewer.shouldApplicationClose())
 	{
 		// do n frames
 		if (frame++ > framesToDo) break;
+
+		auto start = std::chrono::high_resolution_clock::now();
+
 		std::cout << std::endl;
 		for (int i = 0; i < simPerFrame; ++i) 
 		{ 
@@ -180,6 +187,9 @@ int writeSimulation(Simulator_3D& sim, SimVisualizer& viewer, const int num_p, s
 			if (viewer.shouldApplicationClose())
 				break;
 		}
+
+		auto end = std::chrono::high_resolution_clock::now();
+
 		sim.dumpPositionsNormalized(p_pos);
 		viewer.updateParticlePositions(p_pos);
 
@@ -188,7 +198,7 @@ int writeSimulation(Simulator_3D& sim, SimVisualizer& viewer, const int num_p, s
 		// write data into file
 		writer.writeData3f(p_pos, SBF_DATA);
 
-		MSG("Frame " << frame);
+		MSG(" " << std::chrono::duration_cast<std::chrono::seconds>(end - start).count() << " s, Frame " << frame);
 
 #ifdef PRINT_IMAGES_FLAG
 		{
@@ -249,9 +259,16 @@ int readSimulation()
 			// dump data
 			reader.ReadData3f(frames.back().ptr());
 			break;
+
+		case SBF_DT_FRAMES:
+			MSG("Dt: " << static_cast<float>(reader.ReadDataf()) << " s");
+			break;
+
+		case SBF_PARAM_E:
+			MSG("Younk modulus: " << static_cast<float>(reader.ReadDataf()));
+			break;
+
 		default:
-			// read junk data atm
-			reader.ReadDataf();
 			break;
 		}
 		res = reader.ReadNextFlag(false);
@@ -266,10 +283,16 @@ int readSimulation()
 
 		// set particle positions for frame 0
 		viewer.updateParticlePositions(frames[0]);
+		int i = -1;
 
 		while (!viewer.shouldApplicationClose())
 		{
+			if (++i >= frames.size())
+				i = 0;
+			viewer.updateParticlePositions(frames[i]);
 			viewer.draw();
+
+			std::this_thread::sleep_for(std::chrono::milliseconds(30));
 		}
 
 		res = 0;
