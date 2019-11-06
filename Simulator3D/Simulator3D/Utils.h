@@ -3,11 +3,6 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/glm.hpp>
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-
 #include <Eigen/Dense>
 
 #include <iostream>
@@ -16,6 +11,18 @@
 
 #define MSG(m) std::cout << m << std::endl 
 #define TMSG(m) std::cout << "\t" << m << std::endl
+
+ 
+const char SBF_DATA = (0xFFu);
+const char SBF_EOF = (0x00u);
+const char SBF_COLOR = (0x01u);
+const char SBF_PARAM_E = (0x02u);
+const char SBF_PARAM_NU = (0x03u);
+const char SBF_DT_FRAMES = (0x04u);
+const char SBF_ERROR = (0xFEu);
+
+
+
 namespace utils
 {
 	static unsigned int SCR_WIDTH = 800;
@@ -25,19 +32,12 @@ namespace utils
 
 	static float DeltaTime = 0.0f;
 	static float LastFrame = 0.0f;
-	constexpr unsigned int maxParticles = 100000;
+	constexpr unsigned int maxParticles = 10000;
 
-	constexpr float particleSize = 5e-3;
+	constexpr float particleSize = 5e-3f;
 
 	constexpr float sizG = 1;
 
-	inline float updateTime()
-	{
-		float currentFrame = (float)glfwGetTime();
-		utils::DeltaTime = currentFrame - utils::LastFrame;
-		utils::LastFrame = currentFrame;
-		return currentFrame;
-	}
 
 	inline void SumOuterProduct(Eigen::Matrix2f& r, const Eigen::Array2f& a, const Eigen::Array2f& b)
 	{
@@ -105,56 +105,7 @@ namespace utils
 		}
 	}
 
-	constexpr GLfloat vertices[] = {
-		// Back face
-	 1.0f,  1.0f, 0.0f, 0.0f, 0.0f, -1.0f, // top-right             
-	 1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f, // bottom-right  
-	 0.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f, // Bottom-left
-	 0.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f, // bottom-left                
-	 0.0f,  1.0f, 0.0f, 0.0f, 0.0f, -1.0f, // top-left
-	 1.0f,  1.0f, 0.0f, 0.0f, 0.0f, -1.0f, // top-right
-
-	// Front face
-	 1.0f, 0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // bottom-right
-	 1.0f,  1.0f,  1.0f, 0.0f, 0.0f, 1.0f, // top-right
-	 0.0f, 0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // bottom-left	         
-	 0.0f,  1.0f,  1.0f, 0.0f, 0.0f, 1.0f, // top-left
-	 0.0f, 0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // bottom-left
-	 1.0f,  1.0f,  1.0f, 0.0f, 0.0f, 1.0f, // top-right
-	         
-	// Left face
-	 0.0f,  1.0f, 0.0f,  -1.0f, 0.0f, 0.0f, // top-left       
-	 0.0f, 0.0f, 0.0f,  -1.0f, 0.0f, 0.0f, // bottom-left
-	 0.0f,  1.0f,  1.0f,  -1.0f, 0.0f, 0.0f, // top-right
-	 0.0f, 0.0f,  1.0f,  -1.0f, 0.0f, 0.0f, // bottom-right
-	 0.0f,  1.0f,  1.0f,  -1.0f, 0.0f, 0.0f, // top-right
-	 0.0f, 0.0f, 0.0f,  -1.0f, 0.0f, 0.0f, // bottom-left
-
-	// Right face
-	 1.0f, 0.0f, 0.0f,  1.0f, 0.0f, 0.0f, // bottom-right  
-	 1.0f,  1.0f, 0.0f, 1.0f, 0.0f, 0.0f, // top-right 
-	 1.0f,  1.0f,  1.0f,  1.0f, 0.0f, 0.0f, // top-left
-	 1.0f,  1.0f,  1.0f,  1.0f, 0.0f, 0.0f, // top-left
-	 1.0f, 0.0f,  1.0f,  1.0f, 0.0f, 0.0f, // bottom-left
-	 1.0f, 0.0f, 0.0f,  1.0f, 0.0f, 0.0f, // bottom-right
-
-	// Bottom face          
-	 1.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f, // top-left
-	 1.0f, 0.0f,  1.0f,  0.0f, -1.0f, 0.0f, // bottom-left
-	 0.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f, // top-right
-	 0.0f, 0.0f,  1.0f,  0.0f, -1.0f, 0.0f, // bottom-right
-	 0.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f, // top-right
-	 1.0f, 0.0f,  1.0f,  0.0f, -1.0f, 0.0f, // bottom-left
-
-	// Top face
-	 1.0f,  1.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
-	 1.0f,  1.0f, 0.0f,  0.0f, 1.0f, 0.0f, // top-right
-	 0.0f,  1.0f, 0.0f,  0.0f, 1.0f, 0.0f, // top-left                 
-	 0.0f,  1.0f, 0.0f,  0.0f, 1.0f, 0.0f,  // top-left
-	 0.0f,  1.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-left  
-	 1.0f,  1.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right      
-	};
-
+	
 	class utilF
 	{
 	public:

@@ -21,13 +21,20 @@
   <ItemGroup>
     <ClCompile Include="EntryPoint.cpp" />
     <ClCompile Include="glad\glad.c" />
+    <ClCompile Include="IO\ReadSBF.cpp" />
+    <ClCompile Include="IO\WriteSBF.cpp" />
     <ClCompile Include="Simulator_3D.cpp" />
+    <ClCompile Include="SimVisualizer.cpp" />
     <ClCompile Include="Utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="IO\FrameSBF.h" />
+    <ClInclude Include="IO\ReadSBF.h" />
+    <ClInclude Include="IO\WriteSBF.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Simulator_3D.h" />
+    <ClInclude Include="SimVisualizer.h" />
     <ClInclude Include="Utils.h" />
   </ItemGroup>
   <ItemGroup>
@@ -117,6 +124,7 @@
       <ConformanceMode>true</ConformanceMode>
       <OpenMPSupport>false</OpenMPSupport>
       <AdditionalOptions>/Zc:twoPhase- %(AdditionalOptions)</AdditionalOptions>
+      <PreprocessorDefinitions>GLFW_INCLUDE_NONE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -131,6 +139,7 @@
       <ConformanceMode>true</ConformanceMode>
       <OpenMPSupport>false</OpenMPSupport>
       <AdditionalOptions>/Zc:twoPhase- %(AdditionalOptions)</AdditionalOptions>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

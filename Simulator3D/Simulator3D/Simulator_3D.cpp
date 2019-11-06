@@ -14,7 +14,7 @@
 Simulator_3D::Simulator_3D(float E, float nu) :
 	mu_0(E / (2 * (1 + nu))),
 	lambda_0(E* nu / ((1 + nu) * (1 - 2 * nu))),
-	grid_size(64), d_size(1.0f / grid_size)
+	grid_size(64), d_size(1.0f / grid_size), young(E), nu(nu)
 {
 	minBorder = Eigen::Array3f::Constant(0.0f + 1.0e-3f);
 	maxBorder = Eigen::Array3f::Constant(1.0f - 1.0e-3f);
