@@ -30,6 +30,23 @@ int doSimulation();
 
 int readSimulation();
 
+void printProgress(float p)
+{
+	float p5 = p * (100 / 5); // 5%
+	std::cout << "\r[ ";
+	for (int i = 0; i < (100 / 5); ++i)
+	{
+		if (p5 >= i)
+		{
+			std::cout << "#";
+		}
+		else
+		{
+			std::cout << " ";
+		}
+	}
+	std::cout << " ]";
+}
 
 int doSimulation()
 {
@@ -150,10 +167,14 @@ int writeSimulation(Simulator_3D& sim, SimVisualizer& viewer, const int num_p, s
 	{
 		// do n frames
 		if (frame++ > framesToDo) break;
-
+		std::cout << std::endl;
 		for (int i = 0; i < simPerFrame; ++i) 
 		{ 
 			sim.step(step_t); 
+
+			float percent = i / static_cast<float>(simPerFrame);
+			printProgress(percent);
+
 
 			viewer.temptateEvents();
 			if (viewer.shouldApplicationClose())
@@ -272,15 +293,13 @@ int readSimulation()
 
 int main()
 {
-	
 	int res;
 	do{
 		MSG("Do you want to do a new simulation or read a sbf file?");
 		TMSG("1 - Do simulation");
 		TMSG("2 - Read simulation");
 		TMSG("3 - Exit");
-		std::cin >> res;
-	} while (res < 1 || res > 3);
+	} while (std::cin >> res && (res < 1 || res > 3));
 
 
 	switch (res)
