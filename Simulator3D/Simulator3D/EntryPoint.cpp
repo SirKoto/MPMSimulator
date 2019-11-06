@@ -285,14 +285,40 @@ int readSimulation()
 		viewer.updateParticlePositions(frames[0]);
 		int i = -1;
 
+		int milisPerFrame = 30;
+		std::function<void()> inc = [&milisPerFrame]() {if(milisPerFrame != 0) milisPerFrame++; };
+		std::function<void()> dec = [&milisPerFrame]() {if(milisPerFrame >= 2) milisPerFrame--; };
+		viewer.setKeyCallback(SimVisualizer::KEYS::K, inc);
+		viewer.setKeyCallback(SimVisualizer::KEYS::L, dec);
+		int buff = 0;
+		std::function<void()> pause = [&milisPerFrame, &buff]() {
+			if (buff == 0)
+				std::swap(buff, milisPerFrame);
+		};
+		std::function<void()> unpause = [&milisPerFrame, &buff]() {
+			if (milisPerFrame == 0)
+				std::swap(buff, milisPerFrame);
+		};
+		viewer.setKeyCallback(SimVisualizer::KEYS::ENTER, unpause);
+		viewer.setKeyCallback(SimVisualizer::KEYS::P, pause);
+
 		while (!viewer.shouldApplicationClose())
 		{
-			if (++i >= frames.size())
+			auto last = std::chrono::high_resolution_clock::now();
+			auto count = std::chrono::milliseconds(milisPerFrame);
+			if (milisPerFrame != 0 && ++i >= frames.size())
 				i = 0;
 			viewer.updateParticlePositions(frames[i]);
 			viewer.draw();
 
-			std::this_thread::sleep_for(std::chrono::milliseconds(30));
+			while (count > std::chrono::high_resolution_clock::duration::zero())
+			{
+				auto now = std::chrono::high_resolution_clock::now();
+				auto dt = now - last;
+				count -= std::chrono::duration_cast<std::chrono::milliseconds>(dt);
+				last = now;
+				viewer.draw();
+			}
 		}
 
 		res = 0;
