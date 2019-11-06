@@ -288,8 +288,12 @@ int readSimulation()
 		int milisPerFrame = 30;
 		std::function<void()> inc = [&milisPerFrame]() {if(milisPerFrame != 0) milisPerFrame++; };
 		std::function<void()> dec = [&milisPerFrame]() {if(milisPerFrame >= 2) milisPerFrame--; };
+		std::function<void()> reset = [&i]() {i = 0; };
+
 		viewer.setKeyCallback(SimVisualizer::KEYS::K, inc);
 		viewer.setKeyCallback(SimVisualizer::KEYS::L, dec);
+		viewer.setKeyCallback(SimVisualizer::KEYS::O, reset);
+
 		int buff = 0;
 		std::function<void()> pause = [&milisPerFrame, &buff]() {
 			if (buff == 0)
