@@ -106,7 +106,7 @@ void SimVisualizer::reloadShaders()
 {
 	if (m_shadowsEnabled)
 	{
-		const glm::mat4 lightProjection = glm::ortho(-0.5f, 0.5f, -0.6f, 0.6f, 1.522f, 3.522f);//glm::perspective(glm::radians(72.0f), static_cast<float>(utils::SHADOW_WIDTH) / utils::SHADOW_HEIGHT, 0.01f, 3.5f);
+		const glm::mat4 lightProjection = glm::perspective(glm::radians(72.0f), static_cast<float>(m_shadowTex_w) / m_shadowTex_h, 1.522f, 3.522f);//glm::ortho(-0.5f, 0.5f, -0.6f, 0.6f, 1.522f, 3.522f);//
 		const glm::mat4 lightView = glm::lookAt(m_lightPosition, glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(0.0f, 1.0f, 0.0f));
 		const glm::mat4 lightSpaceMatrix = lightProjection * lightView;
 
