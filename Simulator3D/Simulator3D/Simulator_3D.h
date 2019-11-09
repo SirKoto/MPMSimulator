@@ -8,6 +8,7 @@
 
 #include "Utils.h"
 
+
 class Simulator_3D
 {
 public:
@@ -80,7 +81,8 @@ private:
 		}
 	};
 
-	#define getInd(x, y, z) (((((x) << 6) | (y)) << 6) | (z))
+	//#define getInd(x, y, z) (((((x) << 6) | (y)) << 6) | (z))
+	#define getInd(x, y, z) (((((x) << 7) | (y)) << 7) | (z))
 
 	std::vector<Particle> particles;
 	Eigen::Array4f* grid;// v.x, v.y, v.z, mass
