@@ -47,44 +47,95 @@ void printProgress(float p)
 	}
 	std::cout << " ]";
 }
+int create3BoxesFilledHomo(Simulator_3D& sim, glm::vec3*& p_col, int _n_particles = utils::maxParticles)
+{
+	int p_perBox = _n_particles / 3;
+	int p_perDimension = static_cast<int>(std::floor(std::cbrt(p_perBox)));
+	p_perBox = static_cast<int>(std::pow(p_perDimension, 3));
+	int n_particles = p_perBox * 3;
+
+	float dx = 0.2f / static_cast<float>(p_perDimension);
+
+	p_col = new glm::vec3[n_particles];
+
+	glm::vec3 inPos[] = { glm::vec3(0.4f), glm::vec3(0.6f), glm::vec3(0.2f) };
+	glm::vec3 color[] = {glm::vec3(1,1,0), glm::vec3(1,0,1), glm::vec3(0,1,1) };
+	for (int p = 0; p < 3; p++)
+	{
+		float x = inPos[p].x;
+
+		for (int i = 0; i < p_perDimension; ++i, x += dx)
+		{
+			float y = inPos[p].y;
+
+			for (int j = 0; j < p_perDimension; ++j, y += dx)
+			{
+				float z = inPos[p].z;
+
+				for (int k = 0; k < p_perDimension; ++k, z += dx)
+				{
+					sim.addParticleNormalized(glm::vec3(x, y, z));
+				}
+			}
+		}
+
+		// fill color
+		for (int i = p * p_perBox; i < (p + 1) * p_perBox; ++i)
+		{
+			p_col[i] = color[p];
+		}
+	}
+
+	return n_particles;
+} 
+
+int createBoxFilled(Simulator_3D &sim, glm::vec3* &p_col, int n_particles = utils::maxParticles)
+{
+	p_col = new glm::vec3[n_particles];
+
+	// add random particles
+	std::mt19937 mt_rng(42);
+	std::uniform_real_distribution<float> disX(0.1f, 0.9f);
+	std::uniform_real_distribution<float> disZ(0.3f, 0.7f);
+	std::uniform_real_distribution<float> disY(0.4f, 0.8f);
+
+	float dy = (0.8f - 0.4f) / 3;
+	for (int i = 0; i < n_particles; ++i)
+	{
+		float x = disX(mt_rng);
+		float y = disY(mt_rng);
+		float z = disZ(mt_rng);
+		sim.addParticleNormalized(glm::vec3(x, y, z));
+
+		p_col[i] = y > 0.4f + 2.f * dy ? glm::vec3(0.0f, 1.0f, 0.0f) : y < 0.4f + dy ? glm::vec3(0.0f, 1.0f, 1.0f) : glm::vec3(1.0f, 0.0f, 1.0f); // color according to height
+	}
+
+	return n_particles;
+}
 
 int doSimulation()
 {
-	int n_particles = utils::maxParticles;
-	SimVisualizer viewer(n_particles, false);
+	// Create simulator and add points
+	Simulator_3D sim(1e6f, 0.3f);
+	glm::vec3* p_col = nullptr;
+
+	//size_t n_particles = createBoxFilled(sim, p_col);
+	size_t n_particles = create3BoxesFilledHomo(sim, p_col);
+
+	// always create color
+	assert(p_col != nullptr);
+
+	SimVisualizer viewer(static_cast<int>(n_particles), false);
 	if (viewer.ErrorHappened())
 	{
 		MSG("ERROR on SimVisualizer creation");
 		return -1;
 	}
-	float* p_pos = new float[utils::maxParticles * 3];
-	glm::vec3* p_col = new glm::vec3[utils::maxParticles];
+	float* p_pos = new float[3 * n_particles];
 
-	// Create simulator and add points
-	Simulator_3D sim(1e5f, 0.3f);
+	float* colordata = new float[3 * n_particles];
 	{
-		// add random particles
-
-		std::mt19937 mt_rng(42);
-		std::uniform_real_distribution<float> disX(0.1f, 0.9f);
-		std::uniform_real_distribution<float> disZ(0.3f, 0.7f);
-		std::uniform_real_distribution<float> disY(0.4f, 0.8f);
-
-		float dy = (0.8f - 0.4f) / 3;
-		for (int i = 0; i < n_particles; ++i)
-		{
-			float x = disX(mt_rng);
-			float y = disY(mt_rng);
-			float z = disZ(mt_rng);
-			sim.addParticleNormalized(glm::vec3(x, y, z));
-
-			p_col[i] = y > 0.4f + 2.f * dy ? glm::vec3(0.0f, 1.0f, 0.0f) : y < 0.4f + dy ? glm::vec3(0.0f, 1.0f, 1.0f) : glm::vec3(1.0f, 0.0f, 1.0f); // color according to height
-		}
-	}
-
-	float* colordata = new float[3 * utils::maxParticles];
-	{
-		std::memcpy(colordata, p_col, 3 * utils::maxParticles * sizeof(float));
+		std::memcpy(colordata, p_col, 3 * n_particles * sizeof(float));
 		viewer.updateParticlesColor(colordata);
 	}
 	delete[] p_col;
@@ -118,7 +169,7 @@ int doSimulation()
 		MSG("Enter filename");
 		std::cin >> fileName;
 
-		return writeSimulation(sim, viewer, n_particles, fileName, 100, colordata);
+		return writeSimulation(sim, viewer, static_cast<int>(n_particles), fileName, 30, colordata);
 	}
 	return 0;
 }
@@ -158,7 +209,7 @@ int writeSimulation(Simulator_3D& sim, SimVisualizer& viewer, const int num_p, s
 
 	viewer.enableUserInput(false);
 
-	constexpr float step_t = 0.00003f;
+	constexpr float step_t = 0.00002f;
 	constexpr float secondsPerFrame = 1 / 60.0f;
 	constexpr int simPerFrame = static_cast<int>(secondsPerFrame / step_t);
 
