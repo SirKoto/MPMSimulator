@@ -89,6 +89,45 @@ int create3BoxesFilledHomo(Simulator_3D& sim, glm::vec3*& p_col, int _n_particle
 	return n_particles;
 } 
 
+int createBoxFilledHomo(Simulator_3D& sim, glm::vec3*& p_col, int _n_particles = utils::maxParticles)
+{
+	// box from (0.1, 0.4, 0.3) to (0.9,0.8,0.7)
+	constexpr float vol = (0.9f - 0.1f) * (0.7f - 0.3f) * (0.8f - 0.4f);
+	const float p = _n_particles * (1 / vol);
+	const float pDim = std::floor(std::cbrtf(p));
+	const float dx = 1 / pDim;
+	int n_particles = 0;
+	for (float x = 0.1f; x < 0.9f; x += dx)
+	{
+		for (float y = 0.4f; y < 0.8f; y += dx)
+		{
+			for (float z = 0.3f; z < 0.7f; z += dx)
+			{
+				++n_particles;
+			}
+		}
+	}
+	p_col = new glm::vec3[n_particles];
+
+	glm::vec3 color[] = { glm::vec3(1,1,0), glm::vec3(1,0,1), glm::vec3(0,1,1) };
+
+	const float dy = (0.8f - 0.4f) / 3;
+	int i = 0;
+	for (float x = 0.1f; x < 0.9f; x += dx)
+	{
+		for (float y = 0.4f; y < 0.8f; y += dx)
+		{
+			for (float z = 0.3f; z < 0.7f; z += dx, i++)
+			{
+				sim.addParticleNormalized(glm::vec3(x, y, z));
+				p_col[i] = color[y > 0.4f + 2.f * dy ? 0 : y > 0.4f + dy ? 1 : 2];
+			}
+		}
+	}
+
+	return n_particles;
+}
+
 int createBoxFilled(Simulator_3D &sim, glm::vec3* &p_col, int n_particles = utils::maxParticles)
 {
 	p_col = new glm::vec3[n_particles];
@@ -99,7 +138,7 @@ int createBoxFilled(Simulator_3D &sim, glm::vec3* &p_col, int n_particles = util
 	std::uniform_real_distribution<float> disZ(0.3f, 0.7f);
 	std::uniform_real_distribution<float> disY(0.4f, 0.8f);
 
-	float dy = (0.8f - 0.4f) / 3;
+	const float dy = (0.8f - 0.4f) / 3;
 	for (int i = 0; i < n_particles; ++i)
 	{
 		float x = disX(mt_rng);
@@ -116,12 +155,12 @@ int createBoxFilled(Simulator_3D &sim, glm::vec3* &p_col, int n_particles = util
 int doSimulation()
 {
 	// Create simulator and add points
-	Simulator_3D sim(1e6f, 0.3f);
+	Simulator_3D sim(3.5e5f, 0.3f, Simulator_3D::HYPERELASTICITY::SAND);
 	glm::vec3* p_col = nullptr;
 
 	//size_t n_particles = createBoxFilled(sim, p_col);
-	size_t n_particles = create3BoxesFilledHomo(sim, p_col);
-
+	//size_t n_particles = create3BoxesFilledHomo(sim, p_col);
+	size_t n_particles = createBoxFilledHomo(sim, p_col);
 	// always create color
 	assert(p_col != nullptr);
 
