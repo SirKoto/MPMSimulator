@@ -8,6 +8,7 @@
 
 #include "Utils.h"
 
+//#define COROTATED // if defined use corotated, else using Neo-hookean
 
 class Simulator_3D
 {

@@ -92,7 +92,7 @@ void Simulator_3D::step(float dt)
 		const float J = (p.F).determinant();
 		// Euler explicit time integration
 		// Looking for stress
-
+#ifdef COROTATED
 		Eigen::JacobiSVD<Eigen::Matrix3f, Eigen::NoQRPreconditioner> svd(p.F, Eigen::ComputeFullU | Eigen::ComputeFullV);
 
 		const Eigen::Matrix3f r = svd.matrixU() * svd.matrixV().transpose();
@@ -101,7 +101,11 @@ void Simulator_3D::step(float dt)
 		//Corotated constitucional model     // [http://mpm.graphics Eqn. 52]
 		const Eigen::Matrix3f PF_t = (2.0f * mu * (p.F - r) * (p.F).transpose()) + (Eigen::Matrix3f::Identity() * (lambda * (J - 1.0f) * J));
 
-
+#else
+		// Neo-hookean multiplyed by F^t
+		const Eigen::Matrix3f PF_t =	(mu * ((p.F * (p.F).transpose()) - Eigen::Matrix3f::Identity())) + 
+										(Eigen::Matrix3f::Identity() * (lambda * std::log(J)));
+#endif
 		const float DinvSQ = (4.0f * grid_size * grid_size);
 		//EQn. 173
 		const Eigen::Matrix3f stress = (- dt * volume * DinvSQ) * PF_t; // eq_16_term_0
