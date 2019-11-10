@@ -13,7 +13,16 @@
 class Simulator_3D
 {
 public:
-	Simulator_3D(float E = 3.5e4f, float nu = 0.42f);
+
+	enum class HYPERELASTICITY
+	{
+		COROTATED,
+		NEOHOOKEAN,
+		SAND
+	};
+
+
+	Simulator_3D(float E = 3.5e4f, float nu = 0.42f, HYPERELASTICITY mode = HYPERELASTICITY::COROTATED);
 
 	~Simulator_3D()
 	{
@@ -35,6 +44,8 @@ public:
 	float getNu() { return nu; }
 
 private:
+
+	const HYPERELASTICITY mode;
 
 	const float young, nu;
 

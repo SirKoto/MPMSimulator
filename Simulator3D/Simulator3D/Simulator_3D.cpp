@@ -11,10 +11,10 @@
 #include <chrono>
 #endif
 
-Simulator_3D::Simulator_3D(float E, float nu) :
+Simulator_3D::Simulator_3D(float E, float nu, HYPERELASTICITY mode) :
 	mu_0(E / (2 * (1 + nu))),
 	lambda_0(E* nu / ((1 + nu) * (1 - 2 * nu))),
-	grid_size(128), d_size(1.0f / grid_size), young(E), nu(nu)
+	grid_size(128), d_size(1.0f / grid_size), young(E), nu(nu), mode(mode)
 {
 	minBorder = Eigen::Array3f::Constant(0.0f + 1.0e-3f);
 	maxBorder = Eigen::Array3f::Constant(1.0f - 1.0e-3f);
@@ -92,26 +92,39 @@ void Simulator_3D::step(float dt)
 		const float J = (p.F).determinant();
 		// Euler explicit time integration
 		// Looking for stress
-#ifdef COROTATED
-		Eigen::JacobiSVD<Eigen::Matrix3f, Eigen::NoQRPreconditioner> svd(p.F, Eigen::ComputeFullU | Eigen::ComputeFullV);
+		Eigen::Matrix3f affine;
+		if (this->mode == HYPERELASTICITY::COROTATED)
+		{
+			Eigen::JacobiSVD<Eigen::Matrix3f, Eigen::NoQRPreconditioner> svd(p.F, Eigen::ComputeFullU | Eigen::ComputeFullV);
 
-		const Eigen::Matrix3f r = svd.matrixU() * svd.matrixV().transpose();
+			const Eigen::Matrix3f r = svd.matrixU() * svd.matrixV().transpose();
 
 
-		//Corotated constitucional model     // [http://mpm.graphics Eqn. 52]
-		const Eigen::Matrix3f PF_t = (2.0f * mu * (p.F - r) * (p.F).transpose()) + (Eigen::Matrix3f::Identity() * (lambda * (J - 1.0f) * J));
+			//Corotated constitucional model     // [http://mpm.graphics Eqn. 52]
+			const Eigen::Matrix3f PF_t = (2.0f * mu * (p.F - r) * (p.F).transpose()) + (Eigen::Matrix3f::Identity() * (lambda * (J - 1.0f) * J));
 
-#else
-		// Neo-hookean multiplyed by F^t
-		const Eigen::Matrix3f PF_t =	(mu * ((p.F * (p.F).transpose()) - Eigen::Matrix3f::Identity())) + 
-										(Eigen::Matrix3f::Identity() * (lambda * std::log(J)));
-#endif
-		const float DinvSQ = (4.0f * grid_size * grid_size);
-		//EQn. 173
-		const Eigen::Matrix3f stress = (- dt * volume * DinvSQ) * PF_t; // eq_16_term_0
+			const float DinvSQ = (4.0f * grid_size * grid_size);
+			//EQn. 173
+			const Eigen::Matrix3f stress = (-dt * volume * DinvSQ) * PF_t; // eq_16_term_0
 
-		const Eigen::Matrix3f affine = stress  + mass * p.C;
+			affine = stress + mass * p.C;
+		}
+		else if (this->mode == HYPERELASTICITY::NEOHOOKEAN)
+		{
+			// Neo-hookean multiplyed by F^t
+			const Eigen::Matrix3f PF_t = (mu * ((p.F * (p.F).transpose()) - Eigen::Matrix3f::Identity())) +
+				(Eigen::Matrix3f::Identity() * (lambda * std::log(J)));
+			const float DinvSQ = (4.0f * grid_size * grid_size);
+			//EQn. 173
+			const Eigen::Matrix3f stress = (-dt * volume * DinvSQ) * PF_t; // eq_16_term_0
 
+			affine = stress + mass * p.C;
+		}
+		else
+		{
+			// SAND
+			affine = mass * p.C;
+		}
 		//P2G
 #if true // optimization
 		{
@@ -307,8 +320,14 @@ void Simulator_3D::step(float dt)
 				}
 			}
 		}
-
-		p.C *= 4.0f * grid_size;
+		if (this->mode == HYPERELASTICITY::SAND)
+		{
+			p.C *= (4.0f * d_size * d_size);
+		}
+		else
+		{
+			p.C *= 4.0f * grid_size;
+		}
 #if defined(TIME_COUNT_FLAG) && defined(G2P_FLAG)
 		end = std::chrono::steady_clock::now();
 		v2 += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start_in).count();
