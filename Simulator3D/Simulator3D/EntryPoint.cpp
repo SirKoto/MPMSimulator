@@ -169,7 +169,7 @@ int doSimulation()
 		MSG("Enter filename");
 		std::cin >> fileName;
 
-		return writeSimulation(sim, viewer, static_cast<int>(n_particles), fileName, 30, colordata);
+		return writeSimulation(sim, viewer, static_cast<int>(n_particles), fileName, 50, colordata);
 	}
 	return 0;
 }
@@ -209,7 +209,7 @@ int writeSimulation(Simulator_3D& sim, SimVisualizer& viewer, const int num_p, s
 
 	viewer.enableUserInput(false);
 
-	constexpr float step_t = 0.00002f;
+	constexpr float step_t = 0.000015f;
 	constexpr float secondsPerFrame = 1 / 60.0f;
 	constexpr int simPerFrame = static_cast<int>(secondsPerFrame / step_t);
 
@@ -230,13 +230,19 @@ int writeSimulation(Simulator_3D& sim, SimVisualizer& viewer, const int num_p, s
 		{ 
 			sim.step(step_t); 
 
-			float percent = i / static_cast<float>(simPerFrame);
-			printProgress(percent);
-
-
 			viewer.temptateEvents();
 			if (viewer.shouldApplicationClose())
 				break;
+
+			if (i % 10 == 0)
+			{
+				float percent = i / static_cast<float>(simPerFrame);
+				printProgress(percent);
+
+				sim.dumpPositionsNormalized(p_pos);
+				viewer.updateParticlePositions(p_pos);
+				viewer.draw();
+			}
 		}
 
 		auto end = std::chrono::high_resolution_clock::now();
