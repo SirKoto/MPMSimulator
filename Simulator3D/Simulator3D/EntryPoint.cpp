@@ -74,7 +74,7 @@ int create3BoxesFilledHomo(Simulator_3D& sim, glm::vec3*& p_col, int _n_particle
 
 				for (int k = 0; k < p_perDimension; ++k, z += dx)
 				{
-					sim.addParticleNormalized(glm::vec3(x, y, z));
+					sim.addParticleNormalized(glm::vec3(x, y, z), glm::vec3(0.0f,1.0f,-2.0f));
 				}
 			}
 		}
@@ -89,19 +89,19 @@ int create3BoxesFilledHomo(Simulator_3D& sim, glm::vec3*& p_col, int _n_particle
 	return n_particles;
 } 
 
-int createBoxFilledHomo(Simulator_3D& sim, glm::vec3*& p_col, int _n_particles = utils::maxParticles)
+int createBoxFilledHomo(Simulator_3D& sim, glm::vec3*& p_col, int _n_particles = utils::maxParticles,
+	float x0 = 0.1f, float x1 = 0.9f, float y0 = 0.4f, float y1 = 0.8f, float z0 = 0.3f, float z1 = 0.7f)
 {
-	// box from (0.1, 0.4, 0.3) to (0.9,0.8,0.7)
-	constexpr float vol = (0.9f - 0.1f) * (0.7f - 0.3f) * (0.8f - 0.4f);
+	const float vol = (x1 - x0) * (y1 - y0) * (z1 - z0);
 	const float p = _n_particles * (1 / vol);
-	const float pDim = std::floor(std::cbrtf(p));
+	const float pDim = std::cbrtf(p);
 	const float dx = 1 / pDim;
 	int n_particles = 0;
-	for (float x = 0.1f; x < 0.9f; x += dx)
+	for (float x =x0; x < x1; x += dx)
 	{
-		for (float y = 0.4f; y < 0.8f; y += dx)
+		for (float y = y0; y < y1; y += dx)
 		{
-			for (float z = 0.3f; z < 0.7f; z += dx)
+			for (float z = z0; z < z1; z += dx)
 			{
 				++n_particles;
 			}
@@ -111,16 +111,16 @@ int createBoxFilledHomo(Simulator_3D& sim, glm::vec3*& p_col, int _n_particles =
 
 	glm::vec3 color[] = { glm::vec3(1,1,0), glm::vec3(1,0,1), glm::vec3(0,1,1) };
 
-	const float dy = (0.8f - 0.4f) / 3;
+	const float dy = (y1 - y0) / 3;
 	int i = 0;
-	for (float x = 0.1f; x < 0.9f; x += dx)
+	for (float x = x0; x < x1; x += dx)
 	{
-		for (float y = 0.4f; y < 0.8f; y += dx)
+		for (float y = y0; y < y1; y += dx)
 		{
-			for (float z = 0.3f; z < 0.7f; z += dx, i++)
+			for (float z = z0; z < z1; z += dx, i++)
 			{
 				sim.addParticleNormalized(glm::vec3(x, y, z));
-				p_col[i] = color[y > 0.4f + 2.f * dy ? 0 : y > 0.4f + dy ? 1 : 2];
+				p_col[i] = color[y > y0 + 2.f * dy ? 0 : y > y0 + dy ? 1 : 2];
 			}
 		}
 	}
@@ -133,7 +133,7 @@ int createBoxFilled(Simulator_3D &sim, glm::vec3* &p_col, int n_particles = util
 	p_col = new glm::vec3[n_particles];
 
 	// add random particles
-	std::mt19937 mt_rng(42);
+	std::mt19937 mt_rng(42+1);
 	std::uniform_real_distribution<float> disX(0.1f, 0.9f);
 	std::uniform_real_distribution<float> disZ(0.3f, 0.7f);
 	std::uniform_real_distribution<float> disY(0.4f, 0.8f);
@@ -155,12 +155,12 @@ int createBoxFilled(Simulator_3D &sim, glm::vec3* &p_col, int n_particles = util
 int doSimulation()
 {
 	// Create simulator and add points
-	Simulator_3D sim(3.5e5f, 0.3f, Simulator_3D::HYPERELASTICITY::SAND);
+	Simulator_3D sim(1e5f, 0.3f, Simulator_3D::HYPERELASTICITY::COROTATED);
 	glm::vec3* p_col = nullptr;
 
-	//size_t n_particles = createBoxFilled(sim, p_col);
-	//size_t n_particles = create3BoxesFilledHomo(sim, p_col);
-	size_t n_particles = createBoxFilledHomo(sim, p_col);
+	//size_t n_particles = createBoxFilled(sim, p_col, 10000);
+	size_t n_particles = create3BoxesFilledHomo(sim, p_col, 50000);
+	//size_t n_particles = createBoxFilledHomo(sim, p_col, 1000, 0.45f, 0.55f, 0.45f, 0.55f, 0.45f, 0.55f);
 	// always create color
 	assert(p_col != nullptr);
 
@@ -248,7 +248,7 @@ int writeSimulation(Simulator_3D& sim, SimVisualizer& viewer, const int num_p, s
 
 	viewer.enableUserInput(false);
 
-	constexpr float step_t = 0.000015f;
+	constexpr float step_t = 1e-5f;
 	constexpr float secondsPerFrame = 1 / 60.0f;
 	constexpr int simPerFrame = static_cast<int>(secondsPerFrame / step_t);
 

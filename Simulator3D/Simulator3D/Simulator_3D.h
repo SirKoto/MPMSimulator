@@ -59,8 +59,8 @@ private:
 
 	Eigen::Array3f minBorder, maxBorder;
 
-	const float hardening = 0.3f;
-	const float volume = 0.3f;
+	const float hardening = 10.0f;
+	const float volume = 1.0f;
 	const float mass = 1.0f; // massa
 	const Eigen::Array3f g = Eigen::Array3f(0.0f, -10.0f, 0.0f);
 	
