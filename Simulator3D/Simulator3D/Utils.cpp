@@ -3,19 +3,35 @@
 // create implementation
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb_image/stb_image_write.h>
-#include <Windows.h>
+
+
+#include <boost/filesystem.hpp>
+
 
 namespace utils {
 
 	
+	bool utilF::createDir(const std::string& dirName)
+	{
+		using namespace boost::filesystem;
+		path path(dirName);
+		bool ret = true;
+		if (!exists(path))
+		{
+			ret = boost::filesystem::create_directory(path);
+		}
+
+		return ret;
+	}
 
 
 	void utilF::writeImageToDisk(char const* filename, int id, int w, int h, int comp, const void* data)
 	{
 		// create dir
-		if (!CreateDirectory("img_out", NULL) && !ERROR_ALREADY_EXISTS == GetLastError())
+		if (!createDir("img_out"))
 		{
-			return; // abort!!
+			std::cout << "ERROR::CANNOT CREATE DIR" << std::endl;
+			return;
 		}
 
 		char concat[100];

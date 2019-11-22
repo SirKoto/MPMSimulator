@@ -1,8 +1,6 @@
 
 #pragma once
 
-#include <Windows.h>
-
 #include "Utils.h"
 
 #include <glm/glm.hpp>
@@ -217,10 +215,9 @@ int writeSimulation(Simulator_3D& sim, SimVisualizer& viewer, const int num_p, s
 	const int framesToDo, const float* colorData)
 {
 	// create directory if it does not exist
-	if (!CreateDirectory("sim_files", NULL) && !ERROR_ALREADY_EXISTS == GetLastError())
+	if (!utils::utilF::createDir("sim_files"))
 	{
-		MSG("ERROR::SBF::CANNOT CREATE DIRECTORY FOR FILES");
-		return -1;
+		std::cout << "ERROR::CANNOT CREATE DIR" << std::endl;
 	}
 
 	// add sbf to filename if it does not have it
