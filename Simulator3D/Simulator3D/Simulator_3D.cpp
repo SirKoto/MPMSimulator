@@ -22,9 +22,10 @@ Simulator_3D::Simulator_3D(float E, float nu, HYPERELASTICITY mode) :
 
 	//particles = std::vector<Particle>(0);
 	grid = new Eigen::Array4f[((int)grid_size * (int)grid_size * (int)grid_size)];
-	std::memset(grid, 0, (static_cast<int>(grid_size * grid_size * grid_size) * static_cast<int>(sizeof(Eigen::Array4f))));
+	std::memset(grid, 0, (static_cast<size_t>(grid_size * grid_size * grid_size) * static_cast<size_t>(sizeof(Eigen::Array4f))));
 
-	//svd = Eigen::JacobiSVD<Eigen::Matrix3f, Eigen::NoQRPreconditioner>(3, 3, Eigen::ComputeFullU | Eigen::ComputeFullV);
+	phisicsGrid = new Eigen::Array3f[((int)grid_size * (int)grid_size * (int)grid_size)];
+	std::memset(phisicsGrid, 0, (static_cast<size_t>(grid_size * grid_size * grid_size)* static_cast<size_t>(sizeof(Eigen::Array4f))));
 }
 
 unsigned int Simulator_3D::dumpPositions(float* positions) const

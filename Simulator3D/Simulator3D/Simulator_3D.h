@@ -26,7 +26,7 @@ public:
 
 	~Simulator_3D()
 	{
-		delete[] grid;
+		delete[] grid, phisicsGrid;
 	}
 	// Returns the number of particles dumped in positions
 	unsigned int dumpPositions(float* positions) const;
@@ -98,7 +98,7 @@ private:
 
 	std::vector<Particle> particles;
 	Eigen::Array4f* grid;// v.x, v.y, v.z, mass
-
+	Eigen::Array3f* phisicsGrid;
 };
 
 
