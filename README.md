@@ -9,6 +9,7 @@ Projecte de Pol Martín Garcia de final de carrera d'informàtica.
 * stb_image
 * OpenGL: min v3.3
 * Eigen
+* Boost
 
 ## Estat actual
 Creant versió bidimensional del simulador de fluids de MPM.
