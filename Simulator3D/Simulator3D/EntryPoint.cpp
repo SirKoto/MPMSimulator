@@ -1,8 +1,6 @@
 
 #pragma once
 
-#include <Windows.h>
-
 #include "Utils.h"
 
 #include <glm/glm.hpp>
@@ -23,11 +21,11 @@
 #include "SimVisualizer.h"
 
 
-int writeSimulation(Simulator_3D& sim, SimVisualizer& viewer, const int num_p, std::string fileName,
+int writeSimulation(Simulator_3D& sim, SimVisualizer* viewer, const int num_p, std::string fileName,
 	const int framesToDo = 300, const float* colorData = nullptr);
 
 int doSimulation();
-
+int doConsoleSimulation();
 int readSimulation();
 
 void printProgress(float p)
@@ -47,7 +45,7 @@ void printProgress(float p)
 	}
 	std::cout << " ]";
 }
-int create3BoxesFilledHomo(Simulator_3D& sim, glm::vec3*& p_col, int _n_particles = utils::maxParticles)
+int create3BoxesFilledHomo(Simulator_3D& sim, glm::vec3*& p_col, int _n_particles = utils::maxParticles, const glm::vec3& velocity = glm::vec3(0.0f))
 {
 	int p_perBox = _n_particles / 3;
 	int p_perDimension = static_cast<int>(std::floor(std::cbrt(p_perBox)));
@@ -74,7 +72,7 @@ int create3BoxesFilledHomo(Simulator_3D& sim, glm::vec3*& p_col, int _n_particle
 
 				for (int k = 0; k < p_perDimension; ++k, z += dx)
 				{
-					sim.addParticleNormalized(glm::vec3(x, y, z), glm::vec3(0.0f,1.0f,-10.0f));
+					sim.addParticleNormalized(glm::vec3(x, y, z), velocity);
 				}
 			}
 		}
@@ -152,15 +150,106 @@ int createBoxFilled(Simulator_3D &sim, glm::vec3* &p_col, int n_particles = util
 	return n_particles;
 }
 
+Simulator_3D loadSimulation(size_t &n_particles, glm::vec3* &p_col)
+{
+	float young, mu;
+	std::cout << "Young Modulus(1e5): ";
+	std::cin >> young;
+	std::cout << "Mu(0.3): ";
+	std::cin >> mu;
+	MSG("Hyperelasticity");
+	TMSG("1 - Corotated");
+	TMSG("2 - Neo-Hookean");
+	TMSG("3 - Sand");
+	int n; std::cin >> n;
+
+	Simulator_3D::HYPERELASTICITY hyper = Simulator_3D::HYPERELASTICITY::COROTATED;;
+	switch (n)
+	{
+	case 1:
+		hyper = Simulator_3D::HYPERELASTICITY::COROTATED;
+		break;
+	case 2:
+		hyper = Simulator_3D::HYPERELASTICITY::NEOHOOKEAN;
+		break;
+	case 3:
+		hyper = Simulator_3D::HYPERELASTICITY::SAND;
+		break;
+	default:
+		break;
+	}
+
+	if(!young || !mu)
+	{
+		young = 1e5f;
+		mu = 0.3f;
+	}
+	Simulator_3D sim(young, mu, hyper);
+
+	int num = 10000;
+	std::cout << "Number of particles: ";
+	std::cin >> num;
+
+	MSG("Model to load");
+	TMSG("1 - Box Filled"); 
+	TMSG("2 - Box Filled Homogen");
+	TMSG("3 - 3 Boxes");
+	std::cin >> n;
+	switch (n)
+	{
+	case 1:
+		n_particles = createBoxFilled(sim, p_col, num);
+		break;
+
+	case 2:
+		n_particles = createBoxFilledHomo(sim, p_col, num);
+		break;
+
+	case 3:
+		std::cout << "Initial velocity x y z: ";
+		float x, y, z;
+		std::cin >> x >> y >> z;
+		n_particles = create3BoxesFilledHomo(sim, p_col, num, glm::vec3(x,y,z));
+		break;
+
+	default:
+		n_particles = createBoxFilled(sim, p_col, num);
+		break;
+	}
+	return sim;
+}
+
+int doConsoleSimulation()
+{
+	glm::vec3* p_col = nullptr;
+	size_t n_particles;
+	Simulator_3D sim = loadSimulation(n_particles, p_col);
+	assert(p_col != nullptr);
+
+	float* colordata = new float[3 * n_particles];
+	std::memcpy(colordata, p_col, 3 * n_particles * sizeof(float));
+	delete[] p_col;
+
+	std::string fileName;
+	MSG("Enter filename:");
+	std::cin >> fileName;
+
+	int n_frames;
+	MSG("Enter number of frames:");
+	std::cin >> n_frames;
+
+	return writeSimulation(sim, nullptr, static_cast<int>(n_particles), fileName, n_frames, colordata);
+
+}
+
+
 int doSimulation()
 {
 	// Create simulator and add points
-	Simulator_3D sim(1e5f, 0.3f, Simulator_3D::HYPERELASTICITY::COROTATED);
 	glm::vec3* p_col = nullptr;
+	size_t n_particles;
+	Simulator_3D sim = loadSimulation(n_particles, p_col);
 
-	//size_t n_particles = createBoxFilled(sim, p_col, 50000);
-	size_t n_particles = create3BoxesFilledHomo(sim, p_col, 50000);
-	//size_t n_particles = createBoxFilledHomo(sim, p_col, 1000, 0.45f, 0.55f, 0.45f, 0.55f, 0.45f, 0.55f);
 	// always create color
 	assert(p_col != nullptr);
 
@@ -208,19 +297,22 @@ int doSimulation()
 		MSG("Enter filename");
 		std::cin >> fileName;
 
-		return writeSimulation(sim, viewer, static_cast<int>(n_particles), fileName, 50, colordata);
+		int n_frames;
+		MSG("Enter number of frames:");
+		std::cin >> n_frames;
+
+		return writeSimulation(sim, &viewer, static_cast<int>(n_particles), fileName, n_frames, colordata);
 	}
 	return 0;
 }
 
-int writeSimulation(Simulator_3D& sim, SimVisualizer& viewer, const int num_p, std::string fileName,
+int writeSimulation(Simulator_3D& sim, SimVisualizer* const viewer, const int num_p, std::string fileName,
 	const int framesToDo, const float* colorData)
 {
 	// create directory if it does not exist
-	if (!CreateDirectory("sim_files", NULL) && !ERROR_ALREADY_EXISTS == GetLastError())
+	if (!utils::utilF::createDir("sim_files"))
 	{
-		MSG("ERROR::SBF::CANNOT CREATE DIRECTORY FOR FILES");
-		return -1;
+		std::cout << "ERROR::CANNOT CREATE DIR" << std::endl;
 	}
 
 	// add sbf to filename if it does not have it
@@ -246,7 +338,7 @@ int writeSimulation(Simulator_3D& sim, SimVisualizer& viewer, const int num_p, s
 	float* p_pos = new float[3 * static_cast<size_t>(num_p)];
 
 
-	viewer.enableUserInput(false);
+	if(viewer) viewer->enableUserInput(false);
 
 	constexpr float step_t = 1e-5f;
 	constexpr float secondsPerFrame = 1 / 60.0f;
@@ -259,7 +351,7 @@ int writeSimulation(Simulator_3D& sim, SimVisualizer& viewer, const int num_p, s
 	writer.writeData3f(p_pos, SBF_DATA);
 
 	int frame = 0;
-	while (!viewer.shouldApplicationClose())
+	while (!viewer || !viewer->shouldApplicationClose())
 	{
 		// do n frames
 		if (frame++ > framesToDo) break;
@@ -271,9 +363,12 @@ int writeSimulation(Simulator_3D& sim, SimVisualizer& viewer, const int num_p, s
 		{ 
 			sim.step(step_t); 
 
-			viewer.temptateEvents();
-			if (viewer.shouldApplicationClose())
-				break;
+			if (viewer)
+			{
+				viewer->temptateEvents();
+				if (viewer->shouldApplicationClose())
+					break;
+			}
 
 			if (i % 10 == 0)
 			{
@@ -281,18 +376,23 @@ int writeSimulation(Simulator_3D& sim, SimVisualizer& viewer, const int num_p, s
 				printProgress(percent);
 
 				sim.dumpPositionsNormalized(p_pos);
-				viewer.updateParticlePositions(p_pos);
-				viewer.draw();
+				if (viewer)
+				{
+					viewer->updateParticlePositions(p_pos);
+					viewer->draw();
+				}
 			}
 		}
 
 		auto end = std::chrono::high_resolution_clock::now();
 
 		sim.dumpPositionsNormalized(p_pos);
-		viewer.updateParticlePositions(p_pos);
+		if (viewer)
+		{
+			viewer->updateParticlePositions(p_pos);
 
-		viewer.draw();
-
+			viewer->draw();
+		}
 		// write data into file
 		writer.writeData3f(p_pos, SBF_DATA);
 
@@ -448,9 +548,10 @@ int main()
 	do{
 		MSG("Do you want to do a new simulation or read a sbf file?");
 		TMSG("1 - Do simulation");
-		TMSG("2 - Read simulation");
-		TMSG("3 - Exit");
-	} while (std::cin >> res && (res < 1 || res > 3));
+		TMSG("2 - Do console simulation");
+		TMSG("3 - Read simulation");
+		TMSG("4 - Exit");
+	} while (std::cin >> res && (res < 1 || res > 4));
 
 
 	switch (res)
@@ -460,10 +561,14 @@ int main()
 		break;
 
 	case 2:
-		res = readSimulation();
+		res = doConsoleSimulation();
 		break;
 
 	case 3:
+		res = readSimulation();
+		break;
+
+	case 4:
 
 	default:
 		break;
