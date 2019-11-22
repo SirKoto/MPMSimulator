@@ -74,7 +74,7 @@ int create3BoxesFilledHomo(Simulator_3D& sim, glm::vec3*& p_col, int _n_particle
 
 				for (int k = 0; k < p_perDimension; ++k, z += dx)
 				{
-					sim.addParticleNormalized(glm::vec3(x, y, z), glm::vec3(0.0f,1.0f,-2.0f));
+					sim.addParticleNormalized(glm::vec3(x, y, z), glm::vec3(0.0f,1.0f,-10.0f));
 				}
 			}
 		}
@@ -144,7 +144,7 @@ int createBoxFilled(Simulator_3D &sim, glm::vec3* &p_col, int n_particles = util
 		float x = disX(mt_rng);
 		float y = disY(mt_rng);
 		float z = disZ(mt_rng);
-		sim.addParticleNormalized(glm::vec3(x, y, z));
+		sim.addParticleNormalized(glm::vec3(x, y, z), glm::vec3(0.0f, 1.0f, -2.0f));
 
 		p_col[i] = y > 0.4f + 2.f * dy ? glm::vec3(0.0f, 1.0f, 0.0f) : y < 0.4f + dy ? glm::vec3(0.0f, 1.0f, 1.0f) : glm::vec3(1.0f, 0.0f, 1.0f); // color according to height
 	}
@@ -158,7 +158,7 @@ int doSimulation()
 	Simulator_3D sim(1e5f, 0.3f, Simulator_3D::HYPERELASTICITY::COROTATED);
 	glm::vec3* p_col = nullptr;
 
-	//size_t n_particles = createBoxFilled(sim, p_col, 10000);
+	//size_t n_particles = createBoxFilled(sim, p_col, 50000);
 	size_t n_particles = create3BoxesFilledHomo(sim, p_col, 50000);
 	//size_t n_particles = createBoxFilledHomo(sim, p_col, 1000, 0.45f, 0.55f, 0.45f, 0.55f, 0.45f, 0.55f);
 	// always create color
@@ -255,6 +255,8 @@ int writeSimulation(Simulator_3D& sim, SimVisualizer& viewer, const int num_p, s
 	writer.writeDataf(step_t, SBF_DT_FRAMES);
 	writer.writeDataf(sim.getYoung(), SBF_PARAM_E);
 	writer.writeDataf(sim.getNu(), SBF_PARAM_NU);
+	sim.dumpPositionsNormalized(p_pos);
+	writer.writeData3f(p_pos, SBF_DATA);
 
 	int frame = 0;
 	while (!viewer.shouldApplicationClose())
