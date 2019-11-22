@@ -25,7 +25,7 @@ int writeSimulation(Simulator_3D& sim, SimVisualizer* viewer, const int num_p, s
 	const int framesToDo = 300, const float* colorData = nullptr);
 
 int doSimulation();
-
+int doConsoleSimulation();
 int readSimulation();
 
 void printProgress(float p)
@@ -206,7 +206,7 @@ Simulator_3D loadSimulation(size_t &n_particles, glm::vec3* &p_col)
 		break;
 
 	case 3:
-		std::cout << "Initial velocity x y z";
+		std::cout << "Initial velocity x y z: ";
 		float x, y, z;
 		std::cin >> x >> y >> z;
 		n_particles = create3BoxesFilledHomo(sim, p_col, num, glm::vec3(x,y,z));
@@ -218,6 +218,30 @@ Simulator_3D loadSimulation(size_t &n_particles, glm::vec3* &p_col)
 	}
 	return sim;
 }
+
+int doConsoleSimulation()
+{
+	glm::vec3* p_col = nullptr;
+	size_t n_particles;
+	Simulator_3D sim = loadSimulation(n_particles, p_col);
+	assert(p_col != nullptr);
+
+	float* colordata = new float[3 * n_particles];
+	std::memcpy(colordata, p_col, 3 * n_particles * sizeof(float));
+	delete[] p_col;
+
+	std::string fileName;
+	MSG("Enter filename:");
+	std::cin >> fileName;
+
+	int n_frames;
+	MSG("Enter number of frames:");
+	std::cin >> n_frames;
+
+	return writeSimulation(sim, nullptr, static_cast<int>(n_particles), fileName, n_frames, colordata);
+
+}
+
 
 int doSimulation()
 {
@@ -273,7 +297,11 @@ int doSimulation()
 		MSG("Enter filename");
 		std::cin >> fileName;
 
-		return writeSimulation(sim, &viewer, static_cast<int>(n_particles), fileName, 50, colordata);
+		int n_frames;
+		MSG("Enter number of frames:");
+		std::cin >> n_frames;
+
+		return writeSimulation(sim, &viewer, static_cast<int>(n_particles), fileName, n_frames, colordata);
 	}
 	return 0;
 }
@@ -533,7 +561,7 @@ int main()
 		break;
 
 	case 2:
-		//res = doConsoleSimulation();
+		res = doConsoleSimulation();
 		break;
 
 	case 3:
