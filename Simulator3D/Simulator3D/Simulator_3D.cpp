@@ -24,8 +24,8 @@ Simulator_3D::Simulator_3D(float E, float nu, HYPERELASTICITY mode) :
 	grid = new Eigen::Array4f[((int)grid_size * (int)grid_size * (int)grid_size)];
 	std::memset(grid, 0, (static_cast<size_t>(grid_size * grid_size * grid_size) * static_cast<size_t>(sizeof(Eigen::Array4f))));
 
-	phisicsGrid = new Eigen::Array3f[((int)grid_size * (int)grid_size * (int)grid_size)];
-	std::memset(phisicsGrid, 0, (static_cast<size_t>(grid_size * grid_size * grid_size)* static_cast<size_t>(sizeof(Eigen::Array4f))));
+	physicsGrid = new Eigen::Array3f[((int)grid_size * (int)grid_size * (int)grid_size)];
+	clearPhysics();
 }
 
 unsigned int Simulator_3D::dumpPositions(float* positions) const
@@ -208,7 +208,8 @@ void Simulator_3D::step(float dt)
 		{
 			for (unsigned int k = 0; k < grid_size; k++)
 			{
-				Eigen::Array4f& cell = grid[getInd(i, j, k)]; // REFERENCE
+				int idx = getInd(i, j, k);
+				Eigen::Array4f& cell = grid[idx]; // REFERENCE
 				// cell is (v.x(), v.y(), mass)
 				// only if there is mass
 				if (cell.w() > 0)
@@ -218,10 +219,6 @@ void Simulator_3D::step(float dt)
 					cell /= cell.w();
 					cell.head<3>() += dt * g;
 
-					//float x = static_cast<float>(i) / height;
-					//float y = static_cast<float>(j) / width;
-					// resolution and borders
-					//if (x < boundary || x > 1 - boundary || y > 1 - boundary)
 					if (i < 2 && cell.x() < 0.0f)
 					{
 						cell.x() = 0.0f;
@@ -248,6 +245,13 @@ void Simulator_3D::step(float dt)
 					else if (k > grid_size - 3 && cell.z() > 0.0f)
 					{
 						cell.z() = 0.0f;
+					}
+
+					const Eigen::Vector3f& normalPhyisics = physicsGrid[idx];
+					float dot = normalPhyisics.dot(cell.head<3>().matrix());
+					if (dot < 0.0f)
+					{
+						cell.head<3>() = cell.head<3>() - (dot * normalPhyisics).array();
 					}
 				}
 			}
@@ -426,5 +430,24 @@ void Simulator_3D::addParticleNormalized(const glm::vec3& pos, const glm::vec3& 
 	Eigen::Array3f Ev(v.x, v.y, v.z);
 	Particle p(Epos, Ev);
 	particles.push_back(p);
+}
+
+void Simulator_3D::clearPhysics()
+{
+	std::memset(physicsGrid, 0, (static_cast<size_t>(grid_size * grid_size * grid_size)* static_cast<size_t>(sizeof(Eigen::Array3f))));
+}
+
+void Simulator_3D::setPhysicsFlat(float height)
+{
+	// convert height from 0-1 to 0-gridsize
+	const int y = static_cast<int>(height * grid_size);
+
+	for (int x = 0; x < grid_size; ++x)
+	{
+		for (int z = 0; z < grid_size; ++z)
+		{
+			physicsGrid[getInd(x, y, z)] = Eigen::Array3f(0.0f, 1.0f, 0.0f);
+		}
+	}
 }
 
