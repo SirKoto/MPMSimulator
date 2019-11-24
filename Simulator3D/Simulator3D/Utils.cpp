@@ -38,10 +38,10 @@ namespace utils {
 		char concat[100];
 		using namespace std;
 
-		strcpy_s(concat, "img_out/");
-		strcat_s(concat, filename);
-		strcat_s(concat, std::to_string(id).c_str());
-		strcat_s(concat, ".png");
+		strcpy(concat, "img_out/");
+		strcat(concat, filename);
+		strcat(concat, std::to_string(id).c_str());
+		strcat(concat, ".png");
 		stbi_flip_vertically_on_write(1);
 		stbi_write_png(concat, w, h, comp, data, 0);
 	}

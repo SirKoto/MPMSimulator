@@ -2,7 +2,7 @@
 
 #include <algorithm>
 #include <iostream>
-
+#include <math.h>
 //#define TIME_COUNT_FLAG
 //#define G2P_FLAG
 
@@ -348,7 +348,7 @@ void Simulator_3D::step(float dt)
 		// update F gradient (mls Eq. 17)
 		Eigen::Matrix3f F = (Eigen::Matrix3f::Identity() + (dt * p.C)) * p.F;
 		// avoid infinities and NaNs
-		assert(_finite(F(0, 0)) && _finite(F(0, 1)) && _finite(F(1, 0)) & _finite(F(1, 1)));
+		assert(isfinite(F(0, 0)) && isfinite(F(0, 1)) && isfinite(F(1, 0)) & isfinite(F(1, 1)));
 
 		
 		Eigen::JacobiSVD<Eigen::Matrix3f, Eigen::NoQRPreconditioner> svd(F, Eigen::ComputeFullU | Eigen::ComputeFullV);
@@ -374,7 +374,7 @@ void Simulator_3D::step(float dt)
 		const float oldJ = F.determinant();
 		F = svd_u * svd_e.asDiagonal() * svd_v.transpose();
 		// avoid infinities and NaNs
-		assert(_finite(F(0, 0)) && _finite(F(0, 1)) && _finite(F(1, 0)) & _finite(F(1, 1)));
+		assert(isfinite(F(0, 0)) && isfinite(F(0, 1)) && isfinite(F(1, 0)) & isfinite(F(1, 1)));
 
 
 
