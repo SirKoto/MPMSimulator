@@ -109,7 +109,7 @@ namespace utils
 	class utilF
 	{
 	public:
-
+		bool static createDir(const std::string& dirName);
 		void static writeImageToDisk(char const* filename, int id, int w, int h, int comp, const void* data);
 	};
 }
