@@ -37,7 +37,6 @@ namespace utils {
 
 		char concat[100];
 		using namespace std;
-
 		strcpy(concat, "img_out/");
 		strcat(concat, filename);
 		strcat(concat, std::to_string(id).c_str());

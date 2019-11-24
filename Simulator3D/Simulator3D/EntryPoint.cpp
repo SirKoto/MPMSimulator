@@ -375,9 +375,9 @@ int writeSimulation(Simulator_3D& sim, SimVisualizer* const viewer, const int nu
 				float percent = i / static_cast<float>(simPerFrame);
 				printProgress(percent);
 
-				sim.dumpPositionsNormalized(p_pos);
 				if (viewer)
 				{
+					sim.dumpPositionsNormalized(p_pos);
 					viewer->updateParticlePositions(p_pos);
 					viewer->draw();
 				}
