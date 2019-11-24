@@ -7,6 +7,7 @@
 
 #include <boost/filesystem.hpp>
 
+#include <cstring>
 
 namespace utils {
 
@@ -35,6 +36,8 @@ namespace utils {
 		}
 
 		char concat[100];
+		using namespace std;
+
 		strcpy_s(concat, "img_out/");
 		strcat_s(concat, filename);
 		strcat_s(concat, std::to_string(id).c_str());
