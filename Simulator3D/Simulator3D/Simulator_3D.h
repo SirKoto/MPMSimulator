@@ -43,6 +43,8 @@ public:
 
 	void setPhysicsFlat(float height);
 
+	void setPhysicsHourglass(float extRadius, float intRadius, float separation);
+
 	float getYoung() { return young; }
 
 	float getNu() { return nu; }
