@@ -42,6 +42,7 @@ void WriteSBF::writeDataf(const float data, const char flag)
 	std::memcpy(buff, &data, sizeof(float));
 
 	stream.write(buff, sizeof(float));
+	stream.flush();
 }
 
 void WriteSBF::writeData3f(const float* data, const char flag)
@@ -75,6 +76,9 @@ bool WriteSBF::canWrite() const
 {
 	if (stream)
 		return true;
-	else 
+	else
+	{
+		std::cerr << "WARNING::UNABLE TO WRITE" << std::endl;
 		return false;
+	}
 }

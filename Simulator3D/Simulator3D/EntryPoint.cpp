@@ -216,6 +216,16 @@ Simulator_3D loadSimulation(size_t &n_particles, glm::vec3* &p_col)
 		n_particles = createBoxFilled(sim, p_col, num);
 		break;
 	}
+
+	std::cout << "Add physics? (0/1): ";
+	int ph; std::cin >> ph;
+	if (ph)
+	{
+		std::cout << "Flat. Set height(0-1): ";
+		float h; std::cin >> h;
+		assert(h >= 0.0f && h <= 1.0f);
+		sim.setPhysicsFlat(h);
+	}
 	return sim;
 }
 
@@ -334,6 +344,8 @@ int writeSimulation(Simulator_3D& sim, SimVisualizer* const viewer, const int nu
 	{
 		writer.writeData3f(colorData, SBF_COLOR);
 	}
+	else
+		MSG("WARNING::WRITER:NO COLOR ASSIGNED");
 
 	float* p_pos = new float[3 * static_cast<size_t>(num_p)];
 
@@ -528,6 +540,7 @@ int readSimulation()
 	else
 	{
 		MSG("ERROR::VIEWER");
+		if (frames.empty()) MSG("NO-FRAMES-TO-SEE");
 		res = -1;
 	}
 
