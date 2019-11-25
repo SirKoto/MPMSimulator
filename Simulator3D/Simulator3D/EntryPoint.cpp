@@ -453,7 +453,7 @@ int readSimulation()
 	std::vector<FrameSBF<float>> frames(0); // by default 300 frames
 
 	char res = reader.ReadNextFlag(false);
-	while (res != SBF_EOF && res != SBF_ERROR)
+	while (res != SBF_ERROR)
 	{
 		switch (res)
 		{
