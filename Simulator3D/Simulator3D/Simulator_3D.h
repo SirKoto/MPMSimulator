@@ -26,7 +26,7 @@ public:
 
 	~Simulator_3D()
 	{
-		delete[] grid;
+		delete[] grid, physicsGrid;
 	}
 	// Returns the number of particles dumped in positions
 	unsigned int dumpPositions(float* positions) const;
@@ -38,6 +38,12 @@ public:
 	void addParticle(const glm::vec3& pos, const glm::vec3& v = glm::vec3(0));
 
 	void addParticleNormalized(const glm::vec3& pos, const glm::vec3& v = glm::vec3(0));
+
+	void clearPhysics();
+
+	void setPhysicsFlat(float height);
+
+	void setPhysicsHourglass(float extRadius, float intRadius, float separation);
 
 	float getYoung() { return young; }
 
@@ -98,7 +104,7 @@ private:
 
 	std::vector<Particle> particles;
 	Eigen::Array4f* grid;// v.x, v.y, v.z, mass
-
+	Eigen::Array3f* physicsGrid;
 };
 
 
