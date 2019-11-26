@@ -54,6 +54,12 @@ public:
 	void setKeyCallback(KEYS key, std::function<void()> f);
 
 	void temptateEvents();
+
+
+
+	inline const int& GetWidth() const { return m_SCR_WIDTH; }
+	inline const int& GetHeight() const { return m_SCR_HEIGHT; }
+
 private:
 
 	bool m_ERROR = false;

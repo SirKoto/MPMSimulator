@@ -8,6 +8,8 @@
 #include <iostream>
 #include <string>
 
+#include "SimVisualizer.h"
+#include "IO/FrameSBF.h"
 
 #define MSG(m) std::cout << m << std::endl 
 #define TMSG(m) std::cout << "\t" << m << std::endl
@@ -111,6 +113,7 @@ namespace utils
 	public:
 		bool static createDir(const std::string& dirName);
 		void static writeImageToDisk(char const* filename, int id, int w, int h, int comp, const void* data);
+		void static writeFramesAsGif(const std::vector < FrameSBF<float>>& frames, SimVisualizer& viewer, int milisPerFrame, std::string fileName);
 	};
 }
 #endif // UTILS_H
