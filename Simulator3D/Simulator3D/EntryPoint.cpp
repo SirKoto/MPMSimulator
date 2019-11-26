@@ -515,6 +515,20 @@ int readSimulation()
 		};
 		viewer.setKeyCallback(SimVisualizer::KEYS::ENTER, unpause);
 		viewer.setKeyCallback(SimVisualizer::KEYS::P, pause);
+		
+		std::function<void()> writeGIf = [&frames, &viewer, &milisPerFrame]() {
+			std::cout << "Enter file name to gif (0 to cancel): ";
+			std::string filename;
+
+			viewer.enableUserInput(false);
+			std::cin >> filename;
+
+			if (filename != "0")
+				utils::utilF::writeFramesAsGif(frames, viewer, milisPerFrame, filename);
+
+			viewer.enableUserInput(true);
+		};
+		viewer.setKeyCallback(SimVisualizer::KEYS::I, writeGIf);
 
 		while (!viewer.shouldApplicationClose())
 		{
