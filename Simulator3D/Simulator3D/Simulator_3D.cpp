@@ -451,3 +451,91 @@ void Simulator_3D::setPhysicsFlat(float height)
 	}
 }
 
+void Simulator_3D::setPhysicSlopes(float height, float initialH, float holeWidth, int depth)
+{
+	const int desp = height * grid_size;
+	const int w = holeWidth * grid_size;
+
+	const int y_max = grid_size * initialH + desp;
+	assert(y_max < grid_size - 1 && w < grid_size * 0.5f - 1);
+
+	Eigen::Vector3f normal;
+	Eigen::Vector3f pointInPlane;
+	{
+		Eigen::Vector3f p0(.0f, height * grid_size, .0f);
+		Eigen::Vector3f p1(grid_size * 0.5f - holeWidth * grid_size, .0f, .0f);
+		Eigen::Vector3f slope = p0 - p1;
+
+		const Eigen::Vector3f tmp(.0f, .0f, -1.0f);
+		normal = tmp.cross(slope);
+		normal.normalize();
+
+		pointInPlane = p0;
+		pointInPlane.y() += grid_size * initialH;
+	}
+
+	auto belowPlane = [&normal, &pointInPlane](Eigen::Vector3f point)
+	{
+		Eigen::Vector3f plan2point = point - pointInPlane;
+		float dot = plan2point.dot(normal);
+
+		return dot < 0;
+	};
+
+	for (int y = grid_size * initialH - 1; y < y_max; ++y)
+	{
+		for (int x = 0; x < grid_size * 0.5f - w; ++x)
+		{
+			for (int z = 0; z < grid_size; ++z)
+			{
+				Eigen::Vector3f p(x, y, z);
+				p += Eigen::Vector3f::Constant(0.5f);
+				if (belowPlane(p))
+				{
+					p += depth * normal;
+					p = p.cwiseMin(grid_size - 1);
+					if (!belowPlane(p))
+					{
+						physicsGrid[getInd(x, y, z)] = normal.array();
+					}
+				}
+			}
+		}
+	}
+
+	{
+		Eigen::Vector3f p0(grid_size - 1, height * grid_size, .0f);
+		Eigen::Vector3f p1(grid_size * 0.5f + holeWidth * grid_size, .0f, .0f);
+		Eigen::Vector3f slope = p1 - p0;
+
+		const Eigen::Vector3f tmp(.0f, .0f, -1.0f);
+		normal = tmp.cross(slope);
+		normal.normalize();
+
+		pointInPlane = p0;
+		pointInPlane.y() += grid_size * initialH;
+
+	}
+
+	for (int y = grid_size * initialH - 1; y < y_max; ++y)
+	{
+		for (int x = grid_size * 0.5f + w; x < grid_size; ++x)
+		{
+			for (int z = 0; z < grid_size; ++z)
+			{
+				Eigen::Vector3f p(x, y, z);
+				p += Eigen::Vector3f::Constant(0.5f);
+				if (belowPlane(p))
+				{
+					p += depth * normal;
+					p = p.cwiseMin(grid_size - 1);
+					if (!belowPlane(p))
+					{
+						physicsGrid[getInd(x, y, z)] = normal.array();
+					}
+				}
+			}
+		}
+	}
+}
+
