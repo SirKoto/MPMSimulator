@@ -45,7 +45,7 @@ public:
 
 	void setPhysicsHourglass(float extRadius, float intRadius, float separation);
 	
-	void setPhisicSlopes(float height, float holeWidth);
+	void setPhisicSlopes(float height, float initialH, float holeWidth, int depth = 1);
 
 	float getYoung() { return young; }
 

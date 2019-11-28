@@ -451,12 +451,12 @@ void Simulator_3D::setPhysicsFlat(float height)
 	}
 }
 
-void Simulator_3D::setPhisicSlopes(float height, float holeWidth)
+void Simulator_3D::setPhisicSlopes(float height, float initialH, float holeWidth, int depth)
 {
 	const int desp = height * grid_size;
 	const int w = holeWidth * grid_size;
 
-	const int y_max = grid_size * 0.5f + desp;
+	const int y_max = grid_size * initialH + desp;
 	assert(y_max < grid_size - 1 && w < grid_size * 0.5f - 1);
 
 	Eigen::Vector3f normal;
@@ -471,6 +471,7 @@ void Simulator_3D::setPhisicSlopes(float height, float holeWidth)
 		normal.normalize();
 
 		pointInPlane = p0;
+		pointInPlane.y() += grid_size * initialH;
 	}
 
 	auto belowPlane = [&normal, &pointInPlane](Eigen::Vector3f point)
@@ -481,7 +482,7 @@ void Simulator_3D::setPhisicSlopes(float height, float holeWidth)
 		return dot < 0;
 	};
 
-	for (int y = grid_size * 0.5f; y < y_max; ++y)
+	for (int y = grid_size * initialH - 1; y < y_max; ++y)
 	{
 		for (int x = 0; x < grid_size * 0.5f - w; ++x)
 		{
@@ -491,7 +492,8 @@ void Simulator_3D::setPhisicSlopes(float height, float holeWidth)
 				p += Eigen::Vector3f::Constant(0.5f);
 				if (belowPlane(p))
 				{
-					p += normal;
+					p += depth * normal;
+					p = p.cwiseMin(grid_size - 1);
 					if (!belowPlane(p))
 					{
 						physicsGrid[getInd(x, y, z)] = normal.array();
@@ -502,18 +504,20 @@ void Simulator_3D::setPhisicSlopes(float height, float holeWidth)
 	}
 
 	{
-		Eigen::Vector3f p0(grid_size, height * grid_size, .0f);
+		Eigen::Vector3f p0(grid_size - 1, height * grid_size, .0f);
 		Eigen::Vector3f p1(grid_size * 0.5f + holeWidth * grid_size, .0f, .0f);
-		Eigen::Vector3f slope = p0 - p1;
+		Eigen::Vector3f slope = p1 - p0;
 
 		const Eigen::Vector3f tmp(.0f, .0f, -1.0f);
 		normal = tmp.cross(slope);
 		normal.normalize();
 
 		pointInPlane = p0;
+		pointInPlane.y() += grid_size * initialH;
+
 	}
 
-	for (int y = grid_size * 0.5f; y < y_max; ++y)
+	for (int y = grid_size * initialH - 1; y < y_max; ++y)
 	{
 		for (int x = grid_size * 0.5f + w; x < grid_size; ++x)
 		{
@@ -523,7 +527,8 @@ void Simulator_3D::setPhisicSlopes(float height, float holeWidth)
 				p += Eigen::Vector3f::Constant(0.5f);
 				if (belowPlane(p))
 				{
-					p += normal;
+					p += depth * normal;
+					p = p.cwiseMin(grid_size - 1);
 					if (!belowPlane(p))
 					{
 						physicsGrid[getInd(x, y, z)] = normal.array();
