@@ -451,7 +451,7 @@ void Simulator_3D::setPhysicsFlat(float height)
 	}
 }
 
-void Simulator_3D::setPhisicSlopes(float height, float initialH, float holeWidth, int depth)
+void Simulator_3D::setPhysicSlopes(float height, float initialH, float holeWidth, int depth)
 {
 	const int desp = height * grid_size;
 	const int w = holeWidth * grid_size;

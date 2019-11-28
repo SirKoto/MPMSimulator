@@ -229,7 +229,7 @@ Simulator_3D loadSimulation(size_t &n_particles, glm::vec3* &p_col)
 		{
 		case 2:
 
-			sim.setPhisicSlopes(0.25f, 0.4, 0.1, 2);
+			sim.setPhysicSlopes(0.25f, 0.4, 0.1, 2);
 			break;
 
 		case 1:
