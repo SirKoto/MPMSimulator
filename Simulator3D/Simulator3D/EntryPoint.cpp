@@ -88,7 +88,7 @@ int create3BoxesFilledHomo(Simulator_3D& sim, glm::vec3*& p_col, int _n_particle
 } 
 
 int createBoxFilledHomo(Simulator_3D& sim, glm::vec3*& p_col, int _n_particles = utils::maxParticles,
-	float x0 = 0.1f, float x1 = 0.9f, float y0 = 0.4f, float y1 = 0.8f, float z0 = 0.3f, float z1 = 0.7f)
+	float x0 = 0.1f, float x1 = 0.9f, float y0 = 0.65f, float y1 = 0.98f, float z0 = 0.3f, float z1 = 0.7f)
 {
 	const float vol = (x1 - x0) * (y1 - y0) * (z1 - z0);
 	const float p = _n_particles * (1 / vol);
@@ -221,10 +221,25 @@ Simulator_3D loadSimulation(size_t &n_particles, glm::vec3* &p_col)
 	int ph; std::cin >> ph;
 	if (ph)
 	{
-		std::cout << "Flat. Set height(0-1): ";
-		float h; std::cin >> h;
-		assert(h >= 0.0f && h <= 1.0f);
-		sim.setPhysicsFlat(h);
+		MSG("Choose shape: ");
+		TMSG("1 - Flat");
+		TMSG("2 - Two slopes");
+		std::cin >> ph;
+		switch (ph)
+		{
+		case 2:
+
+			sim.setPhisicSlopes(0.25f, 0.4, 0.1, 2);
+			break;
+
+		case 1:
+			std::cout << "Flat. Set height(0-1): ";
+			float h; std::cin >> h;
+			assert(h >= 0.0f && h <= 1.0f);
+			sim.setPhysicsFlat(h);
+		default:
+			break;
+		}
 	}
 	return sim;
 }
