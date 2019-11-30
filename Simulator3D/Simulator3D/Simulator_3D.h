@@ -57,6 +57,8 @@ public:
 
 	float getMass(int pos = 0) { return v_properties[pos].mass; }
 
+	int getNumMaterials() { return v_properties.size(); }
+
 	int addNewMaterial(float young, float nu, float hardening, float volume = 1.0f, float mass = 1.0f);
 
 private:

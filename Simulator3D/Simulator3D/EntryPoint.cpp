@@ -372,8 +372,17 @@ int writeSimulation(Simulator_3D& sim, SimVisualizer* const viewer, const int nu
 	constexpr int simPerFrame = static_cast<int>(secondsPerFrame / step_t);
 
 	writer.writeDataf(step_t, SBF_DT_FRAMES);
-	writer.writeDataf(sim.getYoung(), SBF_PARAM_E);
-	writer.writeDataf(sim.getNu(), SBF_PARAM_NU);
+
+	for (int i = 0; i < sim.getNumMaterials(); ++i)
+	{
+		writer.writeDataf(i, SBF_ID);
+		writer.writeDataf(sim.getYoung(i), SBF_PARAM_E);
+		writer.writeDataf(sim.getNu(i), SBF_PARAM_NU);
+		writer.writeDataf(sim.getHardening(i), SBF_PARAM_HARDENING);
+		writer.writeDataf(sim.getVolume(i), SBF_PARAM_VOLUME);
+		writer.writeDataf(sim.getMass(i), SBF_PARAM_MASS);
+	}
+
 	sim.dumpPositionsNormalized(p_pos);
 	writer.writeData3f(p_pos, SBF_DATA);
 
