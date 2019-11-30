@@ -22,7 +22,7 @@ public:
 	};
 
 
-	Simulator_3D(float E = 3.5e4f, float nu = 0.42f, HYPERELASTICITY mode = HYPERELASTICITY::COROTATED);
+	Simulator_3D(HYPERELASTICITY mode = HYPERELASTICITY::COROTATED);
 
 	~Simulator_3D()
 	{

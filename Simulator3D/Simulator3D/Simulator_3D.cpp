@@ -11,7 +11,7 @@
 #include <chrono>
 #endif
 
-Simulator_3D::Simulator_3D(float E, float nu, HYPERELASTICITY mode) :
+Simulator_3D::Simulator_3D(HYPERELASTICITY mode) :
 	grid_size(128), d_size(1.0f / grid_size), mode(mode)
 {
 	minBorder = Eigen::Array3f::Constant(0.0f + 1.0e-3f);
@@ -24,10 +24,6 @@ Simulator_3D::Simulator_3D(float E, float nu, HYPERELASTICITY mode) :
 
 	physicsGrid = new Eigen::Array3f[((int)grid_size * (int)grid_size * (int)grid_size)];
 	clearPhysics();
-
-	property basic(E, nu, 10.0f, 1.0f, 1.0f);
-
-	v_properties.push_back(basic);
 }
 
 unsigned int Simulator_3D::dumpPositions(float* positions) const

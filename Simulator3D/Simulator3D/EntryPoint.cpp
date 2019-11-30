@@ -87,6 +87,56 @@ int create3BoxesFilledHomo(Simulator_3D& sim, glm::vec3*& p_col, int _n_particle
 	return n_particles;
 } 
 
+int create3BoxesSeparatedFilledHomo(Simulator_3D& sim, glm::vec3*& p_col, int _n_particles, const glm::vec3& velocity,
+	const int materials[3])
+{
+	int p_perBox = _n_particles / 3;
+	int p_perDimension = static_cast<int>(std::floor(std::cbrt(p_perBox)));
+	p_perBox = static_cast<int>(std::pow(p_perDimension, 3));
+	int n_particles = p_perBox * 3;
+
+	constexpr float width = .15f;
+	constexpr float dw = 1.0f / 4.0f;
+
+
+	float dx = width / static_cast<float>(p_perDimension);
+
+	constexpr glm::vec3 inPos[] = { glm::vec3(dw, 0.5f, 0.5f) - width * 0.5f,
+		glm::vec3(2 * dw, 0.5f, 0.5f) - width * 0.5f,
+		glm::vec3(3 * dw, 0.5f, 0.5f) - width * 0.5f };
+	constexpr glm::vec3 color[] = { glm::vec3(1,1,0), glm::vec3(1,0,1), glm::vec3(0,1,1) };
+
+	p_col = new glm::vec3[n_particles];
+
+	for (int p = 0; p < 3; p++)
+	{
+		float x = inPos[p].x;
+
+		for (int i = 0; i < p_perDimension; ++i, x += dx)
+		{
+			float y = inPos[p].y;
+
+			for (int j = 0; j < p_perDimension; ++j, y += dx)
+			{
+				float z = inPos[p].z;
+
+				for (int k = 0; k < p_perDimension; ++k, z += dx)
+				{
+					sim.addParticleNormalized(glm::vec3(x, y, z), velocity, materials[p]);
+				}
+			}
+		}
+
+		// fill color
+		for (int i = p * p_perBox; i < (p + 1) * p_perBox; ++i)
+		{
+			p_col[i] = color[p];
+		}
+	}
+
+	return n_particles;
+}
+
 int createBoxFilledHomo(Simulator_3D& sim, glm::vec3*& p_col, int _n_particles = utils::maxParticles,
 	float x0 = 0.1f, float x1 = 0.9f, float y0 = 0.65f, float y1 = 0.98f, float z0 = 0.3f, float z1 = 0.7f)
 {
@@ -152,11 +202,44 @@ int createBoxFilled(Simulator_3D &sim, glm::vec3* &p_col, int n_particles = util
 
 Simulator_3D loadSimulation(size_t &n_particles, glm::vec3* &p_col)
 {
-	float young, mu;
-	std::cout << "Young Modulus(1e5): ";
-	std::cin >> young;
-	std::cout << "Mu(0.3): ";
-	std::cin >> mu;
+	float young, mu, hardening, volume, mass;
+	int another = 0;
+	do
+	{
+		std::cout << "Young Modulus(1e5): ";
+		std::cin >> young;
+		std::cout << "Mu(0.3): ";
+		std::cin >> mu;
+		std::cout << "hardening(10.0): ";
+		std::cin >> hardening;
+		std::cout << "volume(1.0): ";
+		std::cin >> volume;
+		std::cout << "mass(1.0): ";
+		std::cin >> mass;
+		if (!young)
+		{
+			young = 1e5f;
+		}
+		if (!mu)
+		{
+			mu = 0.3f;
+		}
+		if (!hardening)
+		{
+			hardening = 10.f;
+		}
+		if (!volume)
+		{
+			volume = 1.0f;
+		}
+		if (!mass)
+		{
+			mass = 1.0f;
+		}
+		std::cout << "Another material? (0/1): ";
+		std::cin >> another;
+	} while (another);
+
 	MSG("Hyperelasticity");
 	TMSG("1 - Corotated");
 	TMSG("2 - Neo-Hookean");
@@ -179,12 +262,8 @@ Simulator_3D loadSimulation(size_t &n_particles, glm::vec3* &p_col)
 		break;
 	}
 
-	if(!young || !mu)
-	{
-		young = 1e5f;
-		mu = 0.3f;
-	}
-	Simulator_3D sim(young, mu, hyper);
+	
+	Simulator_3D sim(hyper);
 
 	int num = 10000;
 	std::cout << "Number of particles: ";
@@ -193,10 +272,13 @@ Simulator_3D loadSimulation(size_t &n_particles, glm::vec3* &p_col)
 	MSG("Model to load");
 	TMSG("1 - Box Filled"); 
 	TMSG("2 - Box Filled Homogen");
-	TMSG("3 - 3 Boxes");
+	TMSG("3 - 3 Boxes different heights");
+	TMSG("4 - 3 Boxes aligned");
 	std::cin >> n;
 	switch (n)
 	{
+		float x, y, z;
+
 	case 1:
 		n_particles = createBoxFilled(sim, p_col, num);
 		break;
@@ -207,9 +289,19 @@ Simulator_3D loadSimulation(size_t &n_particles, glm::vec3* &p_col)
 
 	case 3:
 		std::cout << "Initial velocity x y z: ";
-		float x, y, z;
 		std::cin >> x >> y >> z;
-		n_particles = create3BoxesFilledHomo(sim, p_col, num, glm::vec3(x,y,z));
+		n_particles = create3BoxesFilledHomo(sim, p_col, num, glm::vec3(x, y, z));
+		break;
+
+	case 4:
+		std::cout << "Initial velocity x y z: ";
+		std::cin >> x >> y >> z;
+		{
+			std::cout << "Enter 3 material id: ";
+			int tmp[3];
+			std::cin >> tmp[0] >> tmp[1] >> tmp[2];
+			n_particles = create3BoxesSeparatedFilledHomo(sim, p_col, num, glm::vec3(x, y, z), tmp);
+		}
 		break;
 
 	default:
