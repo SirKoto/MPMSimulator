@@ -499,7 +499,27 @@ int readSimulation()
 			break;
 
 		case SBF_PARAM_E:
-			MSG("Younk modulus: " << static_cast<float>(reader.ReadDataf()));
+			TMSG("Young modulus: " << static_cast<float>(reader.ReadDataf()));
+			break;
+
+		case SBF_PARAM_NU:
+			TMSG("Nu: " << static_cast<float>(reader.ReadDataf()));
+			break;
+
+		case SBF_PARAM_HARDENING:
+			TMSG("Hardening: " << static_cast<float>(reader.ReadDataf()));
+			break;
+
+		case SBF_PARAM_VOLUME:
+			TMSG("Volume: " << static_cast<float>(reader.ReadDataf()));
+			break;
+
+		case SBF_PARAM_MASS:
+			TMSG("Mass: " << static_cast<float>(reader.ReadDataf()));
+			break;
+
+		case SBF_ID:
+			MSG("Material: " << static_cast<float>(reader.ReadDataf()));
 			break;
 
 		default:
