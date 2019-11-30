@@ -47,17 +47,13 @@ public:
 	
 	void setPhysicSlopes(float height, float initialH, float holeWidth, int depth = 1);
 
-	float getYoung() { return young; }
+	float getYoung(int pos = 0) { return v_properties[pos].young; }
 
-	float getNu() { return nu; }
+	float getNu(int pos = 0) { return v_properties[pos].nu; }
 
 private:
 
 	const HYPERELASTICITY mode;
-
-	const float young, nu;
-
-	const float mu_0, lambda_0;
 
 	const float boundary = 0.05f;
 
@@ -67,12 +63,20 @@ private:
 
 	Eigen::Array3f minBorder, maxBorder;
 
-	const float hardening = 10.0f;
-	const float volume = 1.0f;
-	const float mass = 1.0f; // massa
 	const Eigen::Array3f g = Eigen::Array3f(0.0f, -10.0f, 0.0f);
-	
-	//Eigen::JacobiSVD<Eigen::Matrix3f, Eigen::NoQRPreconditioner> svd;
+
+	struct property
+	{
+		const float young, nu, mu, lambda, hardening, volume, mass;
+
+		property(float young, float nu, float hardening, float volume, float mass)
+			: young(young), nu(nu), hardening(hardening), volume(volume), mass(mass),
+				mu(young / (2 * (1 + nu))),
+				lambda(young * nu / ((1 + nu) * (1 - 2 * nu)))
+		{}
+	};
+
+	std::vector<property> v_properties;
 
 	struct Particle
 	{
@@ -82,7 +86,9 @@ private:
 
 		float J; // Determinat de F (Jacobian) indica la deformacio del volum
 
-		Particle() : J(1.0f)
+		const int prop_id;
+
+		Particle() : J(1.0f), prop_id(0)
 		{
 			pos = Eigen::Array3f::Zero();
 			v = Eigen::Array3f::Zero();
@@ -91,10 +97,11 @@ private:
 			C = Eigen::Matrix3f::Zero();
 		}
 
-		Particle(const Eigen::Array3f& x, Eigen::Array3f& v) :
+		Particle(const Eigen::Array3f& x, Eigen::Array3f& v, int prop_id = 0) :
 			pos(x),
 			v(v),
-			J(1)
+			J(1),
+			prop_id(prop_id)
 		{
 			F = Eigen::Matrix3f::Identity();
 			C = Eigen::Matrix3f::Zero();
