@@ -32,6 +32,7 @@
     <ClInclude Include="IO\FrameSBF.h" />
     <ClInclude Include="IO\ReadSBF.h" />
     <ClInclude Include="IO\WriteSBF.h" />
+    <ClInclude Include="ParticleStructures.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Simulator_3D.h" />
     <ClInclude Include="SimVisualizer.h" />
@@ -48,6 +49,9 @@
     <None Include="shaders\shaderBB.vert" />
     <None Include="shaders\shaderPoint.frag" />
     <None Include="shaders\shaderPoint.vert" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\CMakeLists.txt" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
