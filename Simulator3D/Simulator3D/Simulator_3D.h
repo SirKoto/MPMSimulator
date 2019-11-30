@@ -35,9 +35,9 @@ public:
 
 	void step(float dt);
 
-	void addParticle(const glm::vec3& pos, const glm::vec3& v = glm::vec3(0));
+	void addParticle(const glm::vec3& pos, const glm::vec3& v = glm::vec3(0), int material = 0);
 
-	void addParticleNormalized(const glm::vec3& pos, const glm::vec3& v = glm::vec3(0));
+	void addParticleNormalized(const glm::vec3& pos, const glm::vec3& v = glm::vec3(0), int material = 0);
 
 	void clearPhysics();
 
@@ -50,6 +50,14 @@ public:
 	float getYoung(int pos = 0) { return v_properties[pos].young; }
 
 	float getNu(int pos = 0) { return v_properties[pos].nu; }
+
+	float getHardening(int pos = 0) { return v_properties[pos].hardening; }
+
+	float getVolume(int pos = 0) { return v_properties[pos].volume; }
+
+	float getMass(int pos = 0) { return v_properties[pos].mass; }
+
+	int addNewMaterial(float young, float nu, float hardening, float volume = 1.0f, float mass = 1.0f);
 
 private:
 

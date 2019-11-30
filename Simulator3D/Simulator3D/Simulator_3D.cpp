@@ -419,19 +419,19 @@ void Simulator_3D::step(float dt)
 }
 
 
-void Simulator_3D::addParticle(const glm::vec3& pos, const glm::vec3& v)
+void Simulator_3D::addParticle(const glm::vec3& pos, const glm::vec3& v, int material)
 {
 	Eigen::Array3f Epos(pos.x, pos.y, pos.z);
 	Eigen::Array3f Ev(v.x, v.y, v.z);
-	Particle p(Epos * d_size, Ev);
+	Particle p(Epos * d_size, Ev, material);
 	particles.push_back(p);
 }
 
-void Simulator_3D::addParticleNormalized(const glm::vec3& pos, const glm::vec3& v)
+void Simulator_3D::addParticleNormalized(const glm::vec3& pos, const glm::vec3& v, int material)
 {
 	Eigen::Array3f Epos(pos.x, pos.y, pos.z);
 	Eigen::Array3f Ev(v.x, v.y, v.z);
-	Particle p(Epos, Ev);
+	Particle p(Epos, Ev, material);
 	particles.push_back(p);
 }
 
@@ -540,5 +540,13 @@ void Simulator_3D::setPhysicSlopes(float height, float initialH, float holeWidth
 			}
 		}
 	}
+}
+
+int Simulator_3D::addNewMaterial(float young, float nu, float hardening, float volume, float mass)
+{
+	property prop(young, nu, hardening, volume, mass);
+	v_properties.push_back(prop);
+
+	return v_properties.size() - 1;
 }
 
