@@ -452,10 +452,10 @@ void Simulator_3D::setPhysicsFlat(float height)
 
 void Simulator_3D::setPhysicSlopes(float height, float initialH, float holeWidth, int depth)
 {
-	const int desp = height * grid_size;
-	const int w = holeWidth * grid_size;
+	const int desp = static_cast<int>(height * grid_size);
+	const int w = static_cast<int>(holeWidth * grid_size);
 
-	const int y_max = grid_size * initialH + desp;
+	const int y_max = static_cast<int>(grid_size * initialH) + desp;
 	assert(y_max < grid_size - 1 && w < grid_size * 0.5f - 1);
 
 	Eigen::Vector3f normal;
@@ -481,13 +481,13 @@ void Simulator_3D::setPhysicSlopes(float height, float initialH, float holeWidth
 		return dot < 0;
 	};
 
-	for (int y = grid_size * initialH - 1; y < y_max; ++y)
+	for (int y = static_cast<int>(grid_size * initialH - 1); y < y_max; ++y)
 	{
-		for (int x = 0; x < grid_size * 0.5f - w; ++x)
+		for (int x = 0; x < static_cast<int>(grid_size * 0.5f - w); ++x)
 		{
-			for (int z = 0; z < grid_size; ++z)
+			for (int z = 0; z < static_cast<int>(grid_size); ++z)
 			{
-				Eigen::Vector3f p(x, y, z);
+				Eigen::Vector3f p(static_cast<float>(x), static_cast<float>(y), static_cast<float>(z));
 				p += Eigen::Vector3f::Constant(0.5f);
 				if (belowPlane(p))
 				{
@@ -516,13 +516,13 @@ void Simulator_3D::setPhysicSlopes(float height, float initialH, float holeWidth
 
 	}
 
-	for (int y = grid_size * initialH - 1; y < y_max; ++y)
+	for (int y = static_cast<int>(grid_size * initialH - 1); y < y_max; ++y)
 	{
-		for (int x = grid_size * 0.5f + w; x < grid_size; ++x)
+		for (int x = static_cast<int>(grid_size * 0.5f + w); x < static_cast<int>(grid_size); ++x)
 		{
-			for (int z = 0; z < grid_size; ++z)
+			for (int z = 0; z < static_cast<int>(grid_size); ++z)
 			{
-				Eigen::Vector3f p(x, y, z);
+				Eigen::Vector3f p(static_cast<float>(x), static_cast<float>(y), static_cast<float>(z));
 				p += Eigen::Vector3f::Constant(0.5f);
 				if (belowPlane(p))
 				{
@@ -533,6 +533,26 @@ void Simulator_3D::setPhysicSlopes(float height, float initialH, float holeWidth
 						physicsGrid[getInd(x, y, z)] = normal.array();
 					}
 				}
+			}
+		}
+	}
+}
+
+void Simulator_3D::setPhysicsZWall(float zmin, float zmax, int depth)
+{
+	assert(zmin > 0 && zmax < grid_size && zmin < zmax);
+
+	int z_min = static_cast<int>(grid_size * zmin);
+	int z_max = static_cast<int>(grid_size * zmax);
+	for (int d = 0; d < depth; ++d)
+	{
+		for (int y = 0; y < grid_size; ++y)
+		{
+			for (int x = 0; x < grid_size; ++x)
+			{
+				physicsGrid[getInd(x, y, z_min - d)] = Eigen::Array3f(.0f, .0f, 1.0f);
+				physicsGrid[getInd(x, y, z_max + d)] = Eigen::Array3f(.0f, .0f, -1.0f);
+
 			}
 		}
 	}

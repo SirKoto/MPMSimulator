@@ -47,6 +47,8 @@ public:
 	
 	void setPhysicSlopes(float height, float initialH, float holeWidth, int depth = 1);
 
+	void setPhysicsZWall(float zmin, float zmax, int depth = 1);
+
 	float getYoung(int pos = 0) { return v_properties[pos].young; }
 
 	float getNu(int pos = 0) { return v_properties[pos].nu; }
