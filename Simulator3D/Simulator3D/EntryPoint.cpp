@@ -473,7 +473,7 @@ int writeSimulation(Simulator_3D& sim, SimVisualizer* const viewer, const int nu
 
 	for (int i = 0; i < sim.getNumMaterials(); ++i)
 	{
-		writer.writeDataf(i, SBF_ID);
+		writer.writeDataf(static_cast<float>(i), SBF_ID);
 		writer.writeDataf(sim.getYoung(i), SBF_PARAM_E);
 		writer.writeDataf(sim.getNu(i), SBF_PARAM_NU);
 		writer.writeDataf(sim.getHardening(i), SBF_PARAM_HARDENING);

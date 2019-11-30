@@ -563,6 +563,6 @@ int Simulator_3D::addNewMaterial(float young, float nu, float hardening, float v
 	property prop(young, nu, hardening, volume, mass);
 	v_properties.push_back(prop);
 
-	return v_properties.size() - 1;
+	return static_cast<int>(v_properties.size()) - 1;
 }
 
