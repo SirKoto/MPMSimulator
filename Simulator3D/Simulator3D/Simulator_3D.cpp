@@ -11,10 +11,8 @@
 #include <chrono>
 #endif
 
-Simulator_3D::Simulator_3D(float E, float nu, HYPERELASTICITY mode) :
-	mu_0(E / (2 * (1 + nu))),
-	lambda_0(E* nu / ((1 + nu) * (1 - 2 * nu))),
-	grid_size(128), d_size(1.0f / grid_size), young(E), nu(nu), mode(mode)
+Simulator_3D::Simulator_3D(HYPERELASTICITY mode) :
+	grid_size(128), d_size(1.0f / grid_size), mode(mode)
 {
 	minBorder = Eigen::Array3f::Constant(0.0f + 1.0e-3f);
 	maxBorder = Eigen::Array3f::Constant(1.0f - 1.0e-3f);
@@ -85,10 +83,11 @@ void Simulator_3D::step(float dt)
 		  0.5f * (distFromCenter + 0.5f).square()
 		};
 
+		property& p_prop = v_properties[p.prop_id];
 		// Lame parameters
-		const float e = std::exp(hardening * (1.0f - p.J));
-		const float mu = mu_0 * e;
-		const float lambda = lambda_0 * e;
+		const float e = std::exp(p_prop.hardening * (1.0f - p.J));
+		const float mu = p_prop.mu * e;
+		const float lambda = p_prop.lambda * e;
 
 		const float J = (p.F).determinant();
 		// Euler explicit time integration
@@ -106,9 +105,9 @@ void Simulator_3D::step(float dt)
 
 			const float DinvSQ = (4.0f * grid_size * grid_size);
 			//EQn. 173
-			const Eigen::Matrix3f stress = (-dt * volume * DinvSQ) * PF_t; // eq_16_term_0
+			const Eigen::Matrix3f stress = (-dt * p_prop.volume * DinvSQ) * PF_t; // eq_16_term_0
 
-			affine = stress + mass * p.C;
+			affine = stress + p_prop.mass * p.C;
 		}
 		else if (this->mode == HYPERELASTICITY::NEOHOOKEAN)
 		{
@@ -117,14 +116,14 @@ void Simulator_3D::step(float dt)
 				(Eigen::Matrix3f::Identity() * (lambda * std::log(J)));
 			const float DinvSQ = (4.0f * grid_size * grid_size);
 			//EQn. 173
-			const Eigen::Matrix3f stress = (-dt * volume * DinvSQ) * PF_t; // eq_16_term_0
+			const Eigen::Matrix3f stress = (-dt * p_prop.volume * DinvSQ) * PF_t; // eq_16_term_0
 
-			affine = stress + mass * p.C;
+			affine = stress + p_prop.mass * p.C;
 		}
 		else
 		{
 			// SAND
-			affine = mass * p.C;
+			affine = p_prop.mass * p.C;
 		}
 		//P2G
 #if true // optimization
@@ -133,7 +132,7 @@ void Simulator_3D::step(float dt)
 		const Eigen::Vector3f cell_dist0 = ((cell_x0.cast<float>() - (p.pos * grid_size)) + 0.5f);
 
 
-			Eigen::Array4f moment_mass0 = (Eigen::Array4f() << p.v * mass, mass).finished(); // moment and particle mass
+			Eigen::Array4f moment_mass0 = (Eigen::Array4f() << p.v * p_prop.mass, p_prop.mass).finished(); // moment and particle mass
 			moment_mass0.head<3>() += d_size * (affine * cell_dist0).array();
 
 			const Eigen::Array3f kstep = affine.col(2) * d_size;
@@ -416,19 +415,19 @@ void Simulator_3D::step(float dt)
 }
 
 
-void Simulator_3D::addParticle(const glm::vec3& pos, const glm::vec3& v)
+void Simulator_3D::addParticle(const glm::vec3& pos, const glm::vec3& v, int material)
 {
 	Eigen::Array3f Epos(pos.x, pos.y, pos.z);
 	Eigen::Array3f Ev(v.x, v.y, v.z);
-	Particle p(Epos * d_size, Ev);
+	Particle p(Epos * d_size, Ev, material);
 	particles.push_back(p);
 }
 
-void Simulator_3D::addParticleNormalized(const glm::vec3& pos, const glm::vec3& v)
+void Simulator_3D::addParticleNormalized(const glm::vec3& pos, const glm::vec3& v, int material)
 {
 	Eigen::Array3f Epos(pos.x, pos.y, pos.z);
 	Eigen::Array3f Ev(v.x, v.y, v.z);
-	Particle p(Epos, Ev);
+	Particle p(Epos, Ev, material);
 	particles.push_back(p);
 }
 
@@ -557,6 +556,13 @@ void Simulator_3D::setPhysicsZWall(float zmin, float zmax, int depth)
 			}
 		}
 	}
+}
 
+int Simulator_3D::addNewMaterial(float young, float nu, float hardening, float volume, float mass)
+{
+	property prop(young, nu, hardening, volume, mass);
+	v_properties.push_back(prop);
+
+	return v_properties.size() - 1;
 }
 

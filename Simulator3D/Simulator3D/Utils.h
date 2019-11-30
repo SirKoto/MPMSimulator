@@ -21,6 +21,10 @@ const char SBF_COLOR = (0x01u);
 const char SBF_PARAM_E = (0x02u);
 const char SBF_PARAM_NU = (0x03u);
 const char SBF_DT_FRAMES = (0x04u);
+const char SBF_PARAM_HARDENING = (0x05u);
+const char SBF_PARAM_VOLUME = (0x06u);
+const char SBF_PARAM_MASS = (0x07u);
+const char SBF_ID = (0x08u);
 const char SBF_ERROR = (0xFEu);
 
 
