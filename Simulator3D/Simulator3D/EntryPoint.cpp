@@ -348,7 +348,7 @@ int writeSimulation(Simulator_3D& sim, SimVisualizer* const viewer, const int nu
 					break;
 			}
 
-			if (i % 10 == 0)
+			if (i % 50 == 0)
 			{
 				float percent = i / static_cast<float>(simPerFrame);
 				printProgress(percent);
