@@ -46,44 +46,7 @@ void printProgress(float p)
 
 Simulator_3D loadSimulation(size_t &n_particles, glm::vec3* &p_col)
 {
-	float young, mu, hardening, volume, mass;
-	int another = 0;
-	do
-	{
-		std::cout << "Young Modulus(1e5): ";
-		std::cin >> young;
-		std::cout << "Mu(0.3): ";
-		std::cin >> mu;
-		std::cout << "hardening(10.0): ";
-		std::cin >> hardening;
-		std::cout << "volume(1.0): ";
-		std::cin >> volume;
-		std::cout << "mass(1.0): ";
-		std::cin >> mass;
-		if (!young)
-		{
-			young = 1e5f;
-		}
-		if (!mu)
-		{
-			mu = 0.3f;
-		}
-		if (!hardening)
-		{
-			hardening = 10.f;
-		}
-		if (!volume)
-		{
-			volume = 1.0f;
-		}
-		if (!mass)
-		{
-			mass = 1.0f;
-		}
-		std::cout << "Another material? (0/1): ";
-		std::cin >> another;
-	} while (another);
-
+	
 	MSG("Hyperelasticity");
 	TMSG("1 - Corotated");
 	TMSG("2 - Neo-Hookean");
@@ -108,6 +71,48 @@ Simulator_3D loadSimulation(size_t &n_particles, glm::vec3* &p_col)
 
 	
 	Simulator_3D sim(hyper);
+
+	float young, nu, hardening, volume, mass;
+	int another = 0;
+	do
+	{
+		std::cout << "Young Modulus(1e5): ";
+		std::cin >> young;
+		std::cout << "Nu(0.3): ";
+		std::cin >> nu;
+		std::cout << "hardening(10.0): ";
+		std::cin >> hardening;
+		std::cout << "volume(1.0): ";
+		std::cin >> volume;
+		std::cout << "mass(1.0): ";
+		std::cin >> mass;
+		if (!young)
+		{
+			young = 1e5f;
+		}
+		if (!nu)
+		{
+			nu = 0.3f;
+		}
+		if (!hardening)
+		{
+			hardening = 10.f;
+		}
+		if (!volume)
+		{
+			volume = 1.0f;
+		}
+		if (!mass)
+		{
+			mass = 1.0f;
+		}
+
+		sim.addNewMaterial(young, nu, hardening, volume, mass);
+		std::cout << "Another material? (0/1): ";
+		std::cin >> another;
+	} while (another);
+
+
 
 	int num = 10000;
 	std::cout << "Number of particles: ";
