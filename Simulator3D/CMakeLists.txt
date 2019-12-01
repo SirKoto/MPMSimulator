@@ -23,6 +23,7 @@ set(SRCDIR "Simulator3D")
 set(SOURCE_FILES
 	${SRCDIR}/Shader.h
 	${SRCDIR}/Camera.h
+	${SRCDIR}/ParticleStructures.h
 	${SRCDIR}/Utils.h 	${SRCDIR}/Utils.cpp
 	${SRCDIR}/SimVisualizer.h 	${SRCDIR}/SimVisualizer.cpp
 	${SRCDIR}/Simulator_3D.h 	${SRCDIR}/Simulator_3D.cpp

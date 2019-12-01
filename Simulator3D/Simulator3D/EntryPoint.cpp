@@ -9,9 +9,6 @@
 
 #include <iostream>
 
-#include <random>
-
-#include <thread>
 #include <chrono>
 
 #include "IO/WriteSBF.h"
@@ -20,6 +17,7 @@
 #include "Simulator_3D.h"
 #include "SimVisualizer.h"
 
+#include "ParticleStructures.h"
 
 int writeSimulation(Simulator_3D& sim, SimVisualizer* viewer, const int num_p, std::string fileName,
 	const int framesToDo = 300, const float* colorData = nullptr);
@@ -45,118 +43,47 @@ void printProgress(float p)
 	}
 	std::cout << " ]" << std::flush;
 }
-int create3BoxesFilledHomo(Simulator_3D& sim, glm::vec3*& p_col, int _n_particles = utils::maxParticles, const glm::vec3& velocity = glm::vec3(0.0f))
-{
-	int p_perBox = _n_particles / 3;
-	int p_perDimension = static_cast<int>(std::floor(std::cbrt(p_perBox)));
-	p_perBox = static_cast<int>(std::pow(p_perDimension, 3));
-	int n_particles = p_perBox * 3;
-
-	float dx = 0.2f / static_cast<float>(p_perDimension);
-
-	p_col = new glm::vec3[n_particles];
-
-	glm::vec3 inPos[] = { glm::vec3(0.4f), glm::vec3(0.6f), glm::vec3(0.2f) };
-	glm::vec3 color[] = {glm::vec3(1,1,0), glm::vec3(1,0,1), glm::vec3(0,1,1) };
-	for (int p = 0; p < 3; p++)
-	{
-		float x = inPos[p].x;
-
-		for (int i = 0; i < p_perDimension; ++i, x += dx)
-		{
-			float y = inPos[p].y;
-
-			for (int j = 0; j < p_perDimension; ++j, y += dx)
-			{
-				float z = inPos[p].z;
-
-				for (int k = 0; k < p_perDimension; ++k, z += dx)
-				{
-					sim.addParticleNormalized(glm::vec3(x, y, z), velocity);
-				}
-			}
-		}
-
-		// fill color
-		for (int i = p * p_perBox; i < (p + 1) * p_perBox; ++i)
-		{
-			p_col[i] = color[p];
-		}
-	}
-
-	return n_particles;
-} 
-
-int createBoxFilledHomo(Simulator_3D& sim, glm::vec3*& p_col, int _n_particles = utils::maxParticles,
-	float x0 = 0.1f, float x1 = 0.9f, float y0 = 0.65f, float y1 = 0.98f, float z0 = 0.3f, float z1 = 0.7f)
-{
-	const float vol = (x1 - x0) * (y1 - y0) * (z1 - z0);
-	const float p = _n_particles * (1 / vol);
-	const float pDim = std::cbrtf(p);
-	const float dx = 1 / pDim;
-	int n_particles = 0;
-	for (float x =x0; x < x1; x += dx)
-	{
-		for (float y = y0; y < y1; y += dx)
-		{
-			for (float z = z0; z < z1; z += dx)
-			{
-				++n_particles;
-			}
-		}
-	}
-	p_col = new glm::vec3[n_particles];
-
-	glm::vec3 color[] = { glm::vec3(1,1,0), glm::vec3(1,0,1), glm::vec3(0,1,1) };
-
-	const float dy = (y1 - y0) / 3;
-	int i = 0;
-	for (float x = x0; x < x1; x += dx)
-	{
-		for (float y = y0; y < y1; y += dx)
-		{
-			for (float z = z0; z < z1; z += dx, i++)
-			{
-				sim.addParticleNormalized(glm::vec3(x, y, z));
-				p_col[i] = color[y > y0 + 2.f * dy ? 0 : y > y0 + dy ? 1 : 2];
-			}
-		}
-	}
-
-	return n_particles;
-}
-
-int createBoxFilled(Simulator_3D &sim, glm::vec3* &p_col, int n_particles = utils::maxParticles)
-{
-	p_col = new glm::vec3[n_particles];
-
-	// add random particles
-	std::mt19937 mt_rng(42+1);
-	std::uniform_real_distribution<float> disX(0.1f, 0.9f);
-	std::uniform_real_distribution<float> disZ(0.3f, 0.7f);
-	std::uniform_real_distribution<float> disY(0.4f, 0.8f);
-
-	const float dy = (0.8f - 0.4f) / 3;
-	for (int i = 0; i < n_particles; ++i)
-	{
-		float x = disX(mt_rng);
-		float y = disY(mt_rng);
-		float z = disZ(mt_rng);
-		sim.addParticleNormalized(glm::vec3(x, y, z), glm::vec3(0.0f, 1.0f, -2.0f));
-
-		p_col[i] = y > 0.4f + 2.f * dy ? glm::vec3(0.0f, 1.0f, 0.0f) : y < 0.4f + dy ? glm::vec3(0.0f, 1.0f, 1.0f) : glm::vec3(1.0f, 0.0f, 1.0f); // color according to height
-	}
-
-	return n_particles;
-}
 
 Simulator_3D loadSimulation(size_t &n_particles, glm::vec3* &p_col)
 {
-	float young, mu;
-	std::cout << "Young Modulus(1e5): ";
-	std::cin >> young;
-	std::cout << "Mu(0.3): ";
-	std::cin >> mu;
+	float young, mu, hardening, volume, mass;
+	int another = 0;
+	do
+	{
+		std::cout << "Young Modulus(1e5): ";
+		std::cin >> young;
+		std::cout << "Mu(0.3): ";
+		std::cin >> mu;
+		std::cout << "hardening(10.0): ";
+		std::cin >> hardening;
+		std::cout << "volume(1.0): ";
+		std::cin >> volume;
+		std::cout << "mass(1.0): ";
+		std::cin >> mass;
+		if (!young)
+		{
+			young = 1e5f;
+		}
+		if (!mu)
+		{
+			mu = 0.3f;
+		}
+		if (!hardening)
+		{
+			hardening = 10.f;
+		}
+		if (!volume)
+		{
+			volume = 1.0f;
+		}
+		if (!mass)
+		{
+			mass = 1.0f;
+		}
+		std::cout << "Another material? (0/1): ";
+		std::cin >> another;
+	} while (another);
+
 	MSG("Hyperelasticity");
 	TMSG("1 - Corotated");
 	TMSG("2 - Neo-Hookean");
@@ -179,12 +106,8 @@ Simulator_3D loadSimulation(size_t &n_particles, glm::vec3* &p_col)
 		break;
 	}
 
-	if(!young || !mu)
-	{
-		young = 1e5f;
-		mu = 0.3f;
-	}
-	Simulator_3D sim(young, mu, hyper);
+	
+	Simulator_3D sim(hyper);
 
 	int num = 10000;
 	std::cout << "Number of particles: ";
@@ -193,27 +116,40 @@ Simulator_3D loadSimulation(size_t &n_particles, glm::vec3* &p_col)
 	MSG("Model to load");
 	TMSG("1 - Box Filled"); 
 	TMSG("2 - Box Filled Homogen");
-	TMSG("3 - 3 Boxes");
+	TMSG("3 - 3 Boxes different heights");
+	TMSG("4 - 3 Boxes aligned");
 	std::cin >> n;
 	switch (n)
 	{
+		float x, y, z;
+
 	case 1:
-		n_particles = createBoxFilled(sim, p_col, num);
+		n_particles = ps::createBoxFilled(sim, p_col, num);
 		break;
 
 	case 2:
-		n_particles = createBoxFilledHomo(sim, p_col, num);
+		n_particles = ps::createBoxFilledHomo(sim, p_col, num);
 		break;
 
 	case 3:
 		std::cout << "Initial velocity x y z: ";
-		float x, y, z;
 		std::cin >> x >> y >> z;
-		n_particles = create3BoxesFilledHomo(sim, p_col, num, glm::vec3(x,y,z));
+		n_particles = ps::create3BoxesFilledHomo(sim, p_col, num, glm::vec3(x, y, z));
+		break;
+
+	case 4:
+		std::cout << "Initial velocity x y z: ";
+		std::cin >> x >> y >> z;
+		{
+			std::cout << "Enter 3 material id: ";
+			int tmp[3];
+			std::cin >> tmp[0] >> tmp[1] >> tmp[2];
+			n_particles = ps::create3BoxesSeparatedFilledHomo(sim, p_col, num, glm::vec3(x, y, z), tmp);
+		}
 		break;
 
 	default:
-		n_particles = createBoxFilled(sim, p_col, num);
+		n_particles = ps::createBoxFilled(sim, p_col, num);
 		break;
 	}
 
@@ -223,13 +159,19 @@ Simulator_3D loadSimulation(size_t &n_particles, glm::vec3* &p_col)
 	{
 		MSG("Choose shape: ");
 		TMSG("1 - Flat");
-		TMSG("2 - Two slopes");
+		TMSG("2 - Square Hourglasss");
+		TMSG("3 - Two slopes");
 		std::cin >> ph;
 		switch (ph)
 		{
 		case 2:
+			sim.setPhysicSlopes(0.25f, 0.4f, 0.1f, 2);
+			sim.setPhysicsZWall(0.3f, 0.7f, 2);
+			break;
 
-			sim.setPhysicSlopes(0.25f, 0.4, 0.1, 2);
+		case 3:
+
+			sim.setPhysicSlopes(0.25f, 0.4f, 0.1f, 2);
 			break;
 
 		case 1:
@@ -372,8 +314,17 @@ int writeSimulation(Simulator_3D& sim, SimVisualizer* const viewer, const int nu
 	constexpr int simPerFrame = static_cast<int>(secondsPerFrame / step_t);
 
 	writer.writeDataf(step_t, SBF_DT_FRAMES);
-	writer.writeDataf(sim.getYoung(), SBF_PARAM_E);
-	writer.writeDataf(sim.getNu(), SBF_PARAM_NU);
+
+	for (int i = 0; i < sim.getNumMaterials(); ++i)
+	{
+		writer.writeDataf(static_cast<float>(i), SBF_ID);
+		writer.writeDataf(sim.getYoung(i), SBF_PARAM_E);
+		writer.writeDataf(sim.getNu(i), SBF_PARAM_NU);
+		writer.writeDataf(sim.getHardening(i), SBF_PARAM_HARDENING);
+		writer.writeDataf(sim.getVolume(i), SBF_PARAM_VOLUME);
+		writer.writeDataf(sim.getMass(i), SBF_PARAM_MASS);
+	}
+
 	sim.dumpPositionsNormalized(p_pos);
 	writer.writeData3f(p_pos, SBF_DATA);
 
@@ -397,7 +348,7 @@ int writeSimulation(Simulator_3D& sim, SimVisualizer* const viewer, const int nu
 					break;
 			}
 
-			if (i % 10 == 0)
+			if (i % 50 == 0)
 			{
 				float percent = i / static_cast<float>(simPerFrame);
 				printProgress(percent);
@@ -490,7 +441,27 @@ int readSimulation()
 			break;
 
 		case SBF_PARAM_E:
-			MSG("Younk modulus: " << static_cast<float>(reader.ReadDataf()));
+			TMSG("Young modulus: " << static_cast<float>(reader.ReadDataf()));
+			break;
+
+		case SBF_PARAM_NU:
+			TMSG("Nu: " << static_cast<float>(reader.ReadDataf()));
+			break;
+
+		case SBF_PARAM_HARDENING:
+			TMSG("Hardening: " << static_cast<float>(reader.ReadDataf()));
+			break;
+
+		case SBF_PARAM_VOLUME:
+			TMSG("Volume: " << static_cast<float>(reader.ReadDataf()));
+			break;
+
+		case SBF_PARAM_MASS:
+			TMSG("Mass: " << static_cast<float>(reader.ReadDataf()));
+			break;
+
+		case SBF_ID:
+			MSG("Material: " << static_cast<float>(reader.ReadDataf()));
 			break;
 
 		default:
