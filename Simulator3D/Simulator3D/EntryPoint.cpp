@@ -209,9 +209,9 @@ int doConsoleSimulation()
 	int n_frames;
 	MSG("Enter number of frames:");
 	std::cin >> n_frames;
-
-	return writeSimulation(sim, nullptr, static_cast<int>(n_particles), fileName, n_frames, colordata);
-
+	int res = writeSimulation(sim, nullptr, static_cast<int>(n_particles), fileName, n_frames, colordata);
+	delete[] colordata;
+	return res;
 }
 
 
@@ -272,8 +272,10 @@ int doSimulation()
 		int n_frames;
 		MSG("Enter number of frames:");
 		std::cin >> n_frames;
-
-		return writeSimulation(sim, &viewer, static_cast<int>(n_particles), fileName, n_frames, colordata);
+		
+		int res = writeSimulation(sim, &viewer, static_cast<int>(n_particles), fileName, n_frames, colordata);
+		delete[] colordata;
+		return res;
 	}
 	return 0;
 }
@@ -393,7 +395,7 @@ int writeSimulation(Simulator_3D& sim, SimVisualizer* const viewer, const int nu
 #endif // PRINT_IMAGES_FLAG
 
 	}
-
+	delete[] p_pos;
 	return 0;
 }
 
