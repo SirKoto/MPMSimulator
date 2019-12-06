@@ -163,6 +163,54 @@ namespace ps
 		return n_particles;
 	}
 
+	int create2CollidingSpheres(Simulator_3D& sim, glm::vec3*& p_col, int _n_particles, float radius, float velocity, const int materials[2])
+	{
+		int p_perSphere = _n_particles / 2;
+		int height = static_cast<int>(std::floor(std::cbrt(p_perSphere)));
+		float interRadius = radius / height;
+
+
+		auto fill = [&height, &interRadius, &sim](const glm::vec3 &center, const glm::vec3 &v, int mat) {
+			int count = 0;
+			for (int i = 0; i < height; ++i)
+			{
+				int h = i - height / 2;
+				int w = 2 * static_cast<int>(std::sqrtf(static_cast<float>((height / 2) * (height / 2) - h * h)));
+				for (int j = 0; j < w; ++j)
+				{
+					for (int k = 0; k < w; ++k)
+					{
+						glm::vec3 pos;
+						pos.x = static_cast<float>(2 * i + ((j + k) % 2));
+						pos.y = (std::sqrtf(3)) * (j + (1.0f / 3.0f) * (k % 2));
+						pos.z = k * (2 * std::sqrtf(6) / 3);
+						pos *= interRadius;
+						sim.addParticleNormalized(center + pos - interRadius * glm::vec3(height / 2, w / 2, w / 2), v, mat);
+
+						++count;
+					}
+				}
+			}
+			return count;
+		};
+		const glm::vec3 center[2] = { glm::vec3(0.2, 0.5, 0.5), glm::vec3(0.8, 0.5, 0.5) };
+
+		int count = fill(center[0],  glm::vec3(velocity, 0.0f,0.0f), materials[0]);
+		count += fill(center[1], glm::vec3(-velocity, 0.0f, 0.0f), materials[1]);
+
+		p_col = new glm::vec3[count];
+
+		for (int i = 0; i < count/2; ++i)
+		{
+			p_col[i] = glm::vec3(0.f, 0.1f, 0.9f);
+		}
+		for (int i = count / 2; i < count; ++i)
+		{
+			p_col[i] = glm::vec3(0.1f, 0.3f, 0.9f);
+		}
+		return count;
+
+	}
 }
 
 #endif // !_PARTICLESTRUCTURES_
