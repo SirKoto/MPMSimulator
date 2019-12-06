@@ -5,7 +5,7 @@
 
 #include "Simulator_3D.h"
 #include <random>
-
+#include <cmath>
 namespace ps
 {
 	int create3BoxesFilledHomo(Simulator_3D& sim, glm::vec3*& p_col, int _n_particles = utils::maxParticles, const glm::vec3& velocity = glm::vec3(0.0f))
