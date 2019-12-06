@@ -193,7 +193,7 @@ namespace ps
 			}
 			return count;
 		};
-		const glm::vec3 center[2] = { glm::vec3(0.2, 0.5, 0.5), glm::vec3(0.8, 0.5, 0.5) };
+		const glm::vec3 center[2] = { glm::vec3(0.2, 0.53, 0.48), glm::vec3(0.8, 0.5, 0.5) };
 
 		int count = fill(center[0],  glm::vec3(velocity, 0.0f,0.0f), materials[0]);
 		count += fill(center[1], glm::vec3(-velocity, 0.0f, 0.0f), materials[1]);
