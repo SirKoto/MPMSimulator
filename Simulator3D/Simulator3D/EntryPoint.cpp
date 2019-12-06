@@ -123,6 +123,7 @@ Simulator_3D loadSimulation(size_t &n_particles, glm::vec3* &p_col)
 	TMSG("2 - Box Filled Homogen");
 	TMSG("3 - 3 Boxes different heights");
 	TMSG("4 - 3 Boxes aligned");
+	TMSG("5 - Sphere coliding");
 	std::cin >> n;
 	switch (n)
 	{
@@ -150,6 +151,19 @@ Simulator_3D loadSimulation(size_t &n_particles, glm::vec3* &p_col)
 			int tmp[3];
 			std::cin >> tmp[0] >> tmp[1] >> tmp[2];
 			n_particles = ps::create3BoxesSeparatedFilledHomo(sim, p_col, num, glm::vec3(x, y, z), tmp);
+		}
+		break;
+
+	case 5:
+		{
+			std::cout << "Initial velocity: ";
+			std::cin >> x;
+			std::cout << "Enter radius: ";
+			float r; std::cin >> r;
+			int tmp[2];
+			std::cout << "Enter 2 material id: ";
+			std::cin >> tmp[0] >> tmp[1];
+			n_particles = ps::create2CollidingSpheres(sim, p_col, num, r, x, tmp);
 		}
 		break;
 
@@ -295,7 +309,6 @@ int writeSimulation(Simulator_3D& sim, SimVisualizer* const viewer, const int nu
 		fileName.append(".sbf");
 	}
 
-	MSG("writing on " << fileName);
 	// create writer
 	WriteSBF writer("sim_files/" + fileName, num_p);
 
@@ -316,9 +329,12 @@ int writeSimulation(Simulator_3D& sim, SimVisualizer* const viewer, const int nu
 
 	if(viewer) viewer->enableUserInput(false);
 
-	constexpr float step_t = 1e-5f;
-	constexpr float secondsPerFrame = 1 / 60.0f;
-	constexpr int simPerFrame = static_cast<int>(secondsPerFrame / step_t);
+	std::cout << "FPS: "; 
+	float fps; std::cin >> fps;
+	const float step_t = 1e-5f;
+	const float secondsPerFrame = 1.0f / (fps > 0 ? fps : 60.0f);
+	const int simPerFrame = static_cast<int>(secondsPerFrame / step_t);
+	MSG("writing on " << fileName);
 
 	writer.writeDataf(step_t, SBF_DT_FRAMES);
 
