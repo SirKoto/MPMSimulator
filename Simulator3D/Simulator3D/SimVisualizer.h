@@ -92,6 +92,8 @@ private:
 	int m_SCR_WIDTH, m_SCR_HEIGHT;
 	int m_shadowTex_w = 2048, m_shadowTex_h = 2048;
 
+	int m_trianglesToDraw = 36; // for cube
+
 	GLuint m_VAO_particles, m_VBO_particles[3];
 	GLuint m_VAO_BB, m_VBO_BB;
 	GLuint m_depthFBO;
