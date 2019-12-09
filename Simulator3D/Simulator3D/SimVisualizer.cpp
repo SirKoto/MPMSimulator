@@ -772,7 +772,18 @@ void SimVisualizer::updateUniforms()
 
 	if (m_shadowsEnabled)
 	{
-		const glm::mat4 lightProjection = glm::perspective(glm::radians(72.0f), static_cast<float>(m_shadowTex_w) / m_shadowTex_h, 1.522f, 3.522f);//glm::ortho(-0.5f, 0.5f, -0.6f, 0.6f, 1.522f, 3.522f);//
+		float min = 10, max = -1;
+		for (int i = 0; i < sizeof(vertices); i+=6*sizeof(GLfloat))
+		{
+			glm::vec3 tmp(vertices[i], vertices[i + sizeof(GLfloat)], vertices[i + 2 * sizeof(GLfloat)]);
+			float d = glm::distance(tmp, m_lightPosition);
+			min = glm::min(min, d);
+			max = glm::max(max, d);
+		}
+		min = glm::clamp(min, 0.01f, 5.0f);
+		max = glm::clamp(max, min, 15.0f);
+
+		const glm::mat4 lightProjection = glm::perspective(glm::radians(72.0f), static_cast<float>(m_shadowTex_w) / m_shadowTex_h, min, max);//glm::ortho(-0.5f, 0.5f, -0.6f, 0.6f, 1.522f, 3.522f);//
 		const glm::mat4 lightView = glm::lookAt(m_lightPosition, glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(0.0f, 1.0f, 0.0f));
 		const glm::mat4 lightSpaceMatrix = lightProjection * lightView;
 
