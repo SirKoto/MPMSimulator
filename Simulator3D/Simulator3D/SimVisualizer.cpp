@@ -155,27 +155,20 @@ void SimVisualizer::reloadShaders()
 {
 	if (m_shadowsEnabled)
 	{
-		const glm::mat4 lightProjection = glm::perspective(glm::radians(72.0f), static_cast<float>(m_shadowTex_w) / m_shadowTex_h, 1.522f, 3.522f);//glm::ortho(-0.5f, 0.5f, -0.6f, 0.6f, 1.522f, 3.522f);//
-		const glm::mat4 lightView = glm::lookAt(m_lightPosition, glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(0.0f, 1.0f, 0.0f));
-		const glm::mat4 lightSpaceMatrix = lightProjection * lightView;
 
 		// enable particle shader
 		m_shaders[0] = Shader("shadersShadows/shaderPoint.vert", "shadersShadows/shaderPoint.frag");
 		m_shaders[0].use();
 		m_shaders[0].setInt("shadowMap", 0); // set shadowMap uniform sampler2D
-		m_shaders[0].setMat4("lightSpaceMatrix", lightSpaceMatrix);
 
 		// enable BB shader
 		m_shaders[1] = Shader("shadersShadows/shaderBB.vert", "shadersShadows/shaderBB.frag");
 		m_shaders[1].use();
 		m_shaders[1].setInt("shadowMap", 0); // set shadowMap uniform
-		m_shaders[1].setMat4("lightSpaceMatrix", lightSpaceMatrix);
 
 		// enable ShadowMap shader
 		m_shaders[2] = Shader("shadersShadows/shaderShadowMap.vert", "shadersShadows/shaderShadowMap.frag");
 		m_shaders[2].use();
-		m_shaders[2].setMat4("lightSpaceMatrix", lightSpaceMatrix);
-
 	}
 	else
 	{
@@ -428,6 +421,11 @@ void SimVisualizer::processKeyboardInput()
 		setMouseInteractive(false);
 	}
 
+	if (glfwGetKey(m_window, GLFW_KEY_F) == GLFW_PRESS)
+	{
+		m_lightPosition = m_camera.m_position;
+	}
+
 	processKeyboardInputCallbacks();
 
 }
@@ -657,6 +655,23 @@ void SimVisualizer::updateUniforms()
 	for (int i = 0; i < 2; i++) setUniforms(m_shaders[i], projectionView);
 
 	updateModelMatrix();
+
+	if (m_shadowsEnabled)
+	{
+		const glm::mat4 lightProjection = glm::perspective(glm::radians(72.0f), static_cast<float>(m_shadowTex_w) / m_shadowTex_h, 1.522f, 3.522f);//glm::ortho(-0.5f, 0.5f, -0.6f, 0.6f, 1.522f, 3.522f);//
+		const glm::mat4 lightView = glm::lookAt(m_lightPosition, glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(0.0f, 1.0f, 0.0f));
+		const glm::mat4 lightSpaceMatrix = lightProjection * lightView;
+
+		m_shaders[0].use();
+		m_shaders[0].setMat4("lightSpaceMatrix", lightSpaceMatrix);
+
+		m_shaders[1].use();
+		m_shaders[1].setMat4("lightSpaceMatrix", lightSpaceMatrix);
+
+		m_shaders[2].use();
+		m_shaders[2].setMat4("lightSpaceMatrix", lightSpaceMatrix);
+
+	}
 }
 
 void SimVisualizer::updateModelMatrix()
