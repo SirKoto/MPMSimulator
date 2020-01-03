@@ -324,14 +324,9 @@ void Simulator_3D::step(float dt)
 				}
 			}
 		}
-		if (this->mode == HYPERELASTICITY::SAND)
-		{
-			p.C *= (4.0f * d_size * d_size);
-		}
-		else
-		{
-			p.C *= 4.0f * grid_size;
-		}
+
+		p.C *= 4.0f * grid_size;
+
 #if defined(TIME_COUNT_FLAG) && defined(G2P_FLAG)
 		end = std::chrono::steady_clock::now();
 		v2 += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start_in).count();
