@@ -320,7 +320,7 @@ void Simulator_3D::step(float dt)
 					p.v += w * cell_v;
 
 					// apic, eq 10
-					utils::SumOuterProduct(p.C, w * cell_v, cell_dist);
+					SumOuterProduct(p.C, w * cell_v, cell_dist);
 				}
 			}
 		}
@@ -561,3 +561,18 @@ int Simulator_3D::addNewMaterial(float young, float nu, float hardening, float v
 	return static_cast<int>(v_properties.size()) - 1;
 }
 
+void Simulator_3D::SumOuterProduct(Eigen::Matrix3f& r, const Eigen::Array3f& a, const Eigen::Array3f& b)
+{
+
+	r(0, 0) += a[0] * b[0];
+	r(0, 1) += a[0] * b[1];
+	r(0, 2) += a[0] * b[2];
+
+	r(1, 0) += a[1] * b[0];
+	r(1, 1) += a[1] * b[1];
+	r(1, 2) += a[1] * b[2];
+
+	r(2, 0) += a[2] * b[0];
+	r(2, 1) += a[2] * b[1];
+	r(2, 2) += a[2] * b[2];
+}

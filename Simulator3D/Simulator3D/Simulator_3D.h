@@ -6,10 +6,6 @@
 #include <vector>
 #include <Eigen/Dense> // include all core and algebra headers
 
-#include "Utils.h"
-
-//#define COROTATED // if defined use corotated, else using Neo-hookean
-
 class Simulator_3D
 {
 public:
@@ -126,6 +122,8 @@ private:
 	std::vector<Particle> particles;
 	Eigen::Array4f* grid;// v.x, v.y, v.z, mass
 	Eigen::Array3f* physicsGrid;
+
+	inline static void SumOuterProduct(Eigen::Matrix3f& r, const Eigen::Array3f& a, const Eigen::Array3f& b);
 };
 
 
