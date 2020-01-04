@@ -92,11 +92,11 @@ private:
 
 		Eigen::Matrix3f F, C; // Gradient de deformaci� i APIC
 
-		float J; // Determinat de F (Jacobian) indica la deformacio del volum
+		float Jp; // Determinat de F (Jacobian) indica la deformacio del volum
 
 		const int prop_id;
 
-		Particle() : J(1.0f), prop_id(0)
+		Particle() : Jp(1.0f), prop_id(0)
 		{
 			pos = Eigen::Array3f::Zero();
 			v = Eigen::Array3f::Zero();
@@ -108,7 +108,7 @@ private:
 		Particle(const Eigen::Array3f& x, Eigen::Array3f& v, int prop_id = 0) :
 			pos(x),
 			v(v),
-			J(1),
+			Jp(1),
 			prop_id(prop_id)
 		{
 			F = Eigen::Matrix3f::Identity();

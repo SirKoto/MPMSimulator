@@ -166,7 +166,7 @@ namespace ps
 	int create2CollidingSpheres(Simulator_3D& sim, glm::vec3*& p_col, int _n_particles, float radius, float velocity, const int materials[2])
 	{
 		int p_perSphere = _n_particles / 2;
-		int height = static_cast<int>(std::floor(std::cbrt(p_perSphere)));
+		int height = 2 * static_cast<int>(std::floor(std::cbrt(p_perSphere * 3.0 / (4.0 * glm::pi<double>()))));
 		float interRadius = radius / height;
 
 
@@ -175,17 +175,19 @@ namespace ps
 			for (int i = 0; i < height; ++i)
 			{
 				int h = i - height / 2;
-				int w = 2 * static_cast<int>(std::sqrtf(static_cast<float>((height / 2) * (height / 2) - h * h)));
+				int cw = static_cast<int>(std::sqrt(static_cast<float>((height / 2) * (height / 2) - h * h)));
+				int w = 2 * cw;
 				for (int j = 0; j < w; ++j)
 				{
-					for (int k = 0; k < w; ++k)
+					int d = j - cw;
+					int cz = static_cast<int>(std::sqrt(static_cast<float>(cw * cw - d * d)));
+					int z = 2 * cz;
+
+					for (int k = 0; k < z; ++k)
 					{
-						glm::vec3 pos;
-						pos.x = static_cast<float>(2 * i + ((j + k) % 2));
-						pos.y = (std::sqrtf(3)) * (j + (1.0f / 3.0f) * (k % 2));
-						pos.z = k * (2 * std::sqrtf(6) / 3);
-						pos *= interRadius;
-						sim.addParticleNormalized(center + pos - interRadius * glm::vec3(height / 2, w / 2, w / 2), v, mat);
+						int t = k - cz;
+						glm::vec3 pos(d, h, t);
+						sim.addParticleNormalized(center + pos * interRadius, v, mat);
 
 						++count;
 					}

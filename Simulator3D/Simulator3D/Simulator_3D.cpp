@@ -85,7 +85,7 @@ void Simulator_3D::step(float dt)
 
 		property& p_prop = v_properties[p.prop_id];
 		// Lame parameters
-		const float e = std::exp(p_prop.hardening * (1.0f - p.J));
+		const float e = std::exp(p_prop.hardening * (1.0f - p.Jp));
 		const float mu = p_prop.mu * e;
 		const float lambda = p_prop.lambda * e;
 
@@ -103,20 +103,20 @@ void Simulator_3D::step(float dt)
 			//Corotated constitucional model     // [http://mpm.graphics Eqn. 52]
 			const Eigen::Matrix3f PF_t = (2.0f * mu * (p.F - r) * (p.F).transpose()) + (Eigen::Matrix3f::Identity() * (lambda * (J - 1.0f) * J));
 
-			const float DinvSQ = (4.0f * grid_size * grid_size);
+			const float Dinv = (4.0f * grid_size * grid_size);
 			//EQn. 173
-			const Eigen::Matrix3f stress = (-dt * p_prop.volume * DinvSQ) * PF_t; // eq_16_term_0
+			const Eigen::Matrix3f stress = (-dt * p_prop.volume * Dinv) * PF_t; // eq_16_term_0
 
 			affine = stress + p_prop.mass * p.C;
 		}
 		else if (this->mode == HYPERELASTICITY::NEOHOOKEAN)
 		{
-			// Neo-hookean multiplyed by F^t
+			// Neo-hookean times F^t
 			const Eigen::Matrix3f PF_t = (mu * ((p.F * (p.F).transpose()) - Eigen::Matrix3f::Identity())) +
 				(Eigen::Matrix3f::Identity() * (lambda * std::log(J)));
-			const float DinvSQ = (4.0f * grid_size * grid_size);
+			const float Dinv = (4.0f * grid_size * grid_size);
 			//EQn. 173
-			const Eigen::Matrix3f stress = (-dt * p_prop.volume * DinvSQ) * PF_t; // eq_16_term_0
+			const Eigen::Matrix3f stress = (-dt * p_prop.volume * Dinv) * PF_t; // eq_16_term_0
 
 			affine = stress + p_prop.mass * p.C;
 		}
@@ -175,7 +175,6 @@ void Simulator_3D::step(float dt)
 						const float w = weights[i + 1].x() * weights[j + 1].y() * weights[k + 1].z();
 						const int index = getInd(cell_x.x(), cell_x.y(), cell_x.z());
 
-						//TODO: optimitzar multiplicant w nomes per mass
 						Eigen::Array4f moment_mass = (Eigen::Array4f() << p.v * mass, mass).finished(); // moment and particle mass
 
 						moment_mass.head<3>() += (affine * cell_dist).array();
@@ -209,8 +208,7 @@ void Simulator_3D::step(float dt)
 			{
 				int idx = getInd(i, j, k);
 				Eigen::Array4f& cell = grid[idx]; // REFERENCE
-				// cell is (v.x(), v.y(), mass)
-				// only if there is mass
+
 				if (cell.w() > 0)
 				{
 					// normalize by mass
@@ -378,11 +376,11 @@ void Simulator_3D::step(float dt)
 
 
 		const float det = F.determinant();
-		const float newJ = glm::clamp(p.J * oldJ / det, 0.6f, 20.0f);
+		const float newJ = glm::clamp(p.Jp * oldJ / det, 0.6f, 20.0f);
 				
 
 		p.F = F;
-		p.J = newJ;
+		p.Jp = newJ;
 
 #if defined(TIME_COUNT_FLAG) && defined(G2P_FLAG)
 		end = std::chrono::steady_clock::now();
