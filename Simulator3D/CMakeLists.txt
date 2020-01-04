@@ -64,7 +64,8 @@ target_link_libraries(Simulator3D ${Boost_LIBRARIES})
 
 target_link_libraries(Simulator3D OpenMP::OpenMP_CXX)
 
-
+target_link_libraries(Simulator3D m)
+target_link_libraries(Simulator3D glfw OpenGL::GL ${CMAKE_DL_LIBS})
 
 target_include_directories(Simulator3D PUBLIC ${HEADERS_DIR})
 
