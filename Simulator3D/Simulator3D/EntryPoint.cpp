@@ -178,8 +178,8 @@ Simulator_3D loadSimulation(size_t &n_particles, glm::vec3* &p_col)
 	{
 		MSG("Choose shape: ");
 		TMSG("1 - Flat");
-		TMSG("2 - Square Hourglasss");
-		TMSG("3 - Two slopes");
+		TMSG("2 - Two slopes");
+		TMSG("3 - Two slopes unbounded");
 		std::cin >> ph;
 		switch (ph)
 		{
