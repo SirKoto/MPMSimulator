@@ -75,12 +75,13 @@ private:
 
 	struct property
 	{
-		const float young, nu, mu, lambda, hardening, volume, mass;
+		const float young, nu, mu, lambda, hardening, volume, mass, t_c, t_s, p_c, p_s;
 
 		property(float young, float nu, float hardening, float volume, float mass)
 			: young(young), nu(nu), hardening(hardening), volume(volume), mass(mass),
 				mu(young / (2 * (1 + nu))),
-				lambda(young * nu / ((1 + nu) * (1 - 2 * nu)))
+				lambda(young * nu / ((1 + nu) * (1 - 2 * nu))),
+			t_c(2.5e-2f), t_s(7.5e-3f), p_c(0.6f), p_s(20.f)
 		{}
 	};
 
@@ -90,7 +91,7 @@ private:
 	{
 		Eigen::Array3f pos, v; // posicio i velocitat de la particula
 
-		Eigen::Matrix3f F, C; // Gradient de deformaci� i APIC
+		Eigen::Matrix3f F, C; // Gradient de deformació i APIC
 
 		float Jp; // Determinat de F (Jacobian) indica la deformacio del volum
 

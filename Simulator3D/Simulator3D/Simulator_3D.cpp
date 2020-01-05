@@ -83,7 +83,7 @@ void Simulator_3D::step(float dt)
 		  0.5f * (distFromCenter + 0.5f).square()
 		};
 
-		property& p_prop = v_properties[p.prop_id];
+		const property& p_prop = v_properties[p.prop_id];
 		// Lame parameters
 		const float e = std::exp(p_prop.hardening * (1.0f - p.Jp));
 		const float mu = p_prop.mu * e;
@@ -361,9 +361,11 @@ void Simulator_3D::step(float dt)
 
 		Eigen::Vector3f svd_e = svd.singularValues();
 
+		const property& prop = v_properties[p.prop_id];
+
 		// Snow paper elasticiy constrains
 		for (int i = 0; i < 3; ++i) {
-			svd_e[i] = glm::clamp(svd_e[i], 1.0f - 2.5e-2f, 1.0f + 7.5e-3f);
+			svd_e[i] = glm::clamp(svd_e[i], 1.0f - prop.t_c, 1.0f + prop.t_s);
 		}
 
 		
@@ -376,7 +378,7 @@ void Simulator_3D::step(float dt)
 
 
 		const float det = F.determinant();
-		const float newJ = glm::clamp(p.Jp * oldJ / det, 0.6f, 20.0f);
+		const float newJ = glm::clamp(p.Jp * oldJ / det, prop.p_c, prop.p_s);
 				
 
 		p.F = F;
