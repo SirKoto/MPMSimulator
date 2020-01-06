@@ -158,15 +158,18 @@ void Simulator_3D::step(float dt)
 			const Eigen::Array3f jSemiStep = (affine.col(1) * d_size).array();
 			const Eigen::Array3f jstep = jSemiStep - (3.0f * kstep);
 			const Eigen::Array3f istep = (affine.col(0) * d_size).array() - (3.0f * jSemiStep);
-#if true // force unroll loop
+
+			float w;
+			int index;
+#if false // force unroll loop
 			f_unroll<-1>::call([&](int i)
 			{
 				f_unroll<-1>::call([&](int j)
 				{
 					f_unroll<-1>::call([&](int k)
 					{
-						const float w = weights[i + 1].x() * weights[j + 1].y() * weights[k + 1].z();
-						const int index = getInd(cell_idx.x() + i, cell_idx.y() + j, cell_idx.z() + k);
+						w = weights[i + 1].x() * weights[j + 1].y() * weights[k + 1].z();
+						index = getInd(cell_idx.x() + i, cell_idx.y() + j, cell_idx.z() + k);
 						grid[index] += w * moment_mass0;
 
 						moment_mass0.head<3>() += kstep;
@@ -183,8 +186,8 @@ void Simulator_3D::step(float dt)
 					for (int k = -1; k < 2; ++k)
 					{
 
-						const float w = weights[i + 1].x() * weights[j + 1].y() * weights[k + 1].z();
-						const int index = getInd(cell_idx.x() + i, cell_idx.y() + j, cell_idx.z() + k);
+						w = weights[i + 1].x() * weights[j + 1].y() * weights[k + 1].z();
+						index = getInd(cell_idx.x() + i, cell_idx.y() + j, cell_idx.z() + k);
 						grid[index] += w * moment_mass0;
 
 						moment_mass0.head<3>() += kstep;
@@ -340,25 +343,41 @@ void Simulator_3D::step(float dt)
 		start_in = std::chrono::steady_clock::now();
 #endif
 		// b-spline
-#if true
+
+		Eigen::Array3i cell_x = cell_idx + Eigen::Array3i::Constant(-1);
+		float w;
+		const Eigen::Array3f pTimesGridSize = p.pos * grid_size;
+		Eigen::Vector3f cell_dist = (cell_x.cast<float>() - pTimesGridSize) + 0.5f;
+
+#if false
 		f_unroll<-1>::call([&](int i)
 		{
 		f_unroll<-1>::call([&](int j)
 		{
 		f_unroll<-1>::call([&](int k)
 		{
-			const Eigen::Array3i cell_x = cell_idx + Eigen::Array3i(i, j, k);
-			const Eigen::Vector3f cell_dist = (cell_x.cast<float>() - (p.pos * grid_size)) + 0.5f;
-
-			const float w = weights[i + 1].x() * weights[j + 1].y() * weights[k + 1].z();
+			w = weights[i + 1].x() * weights[j + 1].y() * weights[k + 1].z();
 			const Eigen::Array3f& cell_v = grid[getInd(cell_x.x(), cell_x.y(), cell_x.z())].head<3>();
 
 			p.v += w * cell_v;
 
 			// apic, eq 10
-			SumOuterProduct(p.C, w* cell_v, cell_dist);
+			SumOuterProduct(p.C, w * cell_v, cell_dist);
+
+			cell_x.z() += 1;
+			cell_dist.z() += 1.0f;
 		});
+		cell_x.z() -= 3;
+		cell_x.y() += 1;
+
+		cell_dist.z() -= 3.0f;
+		cell_dist.y() += 1.0f;
 		});
+		cell_x.y() -= 3;
+		cell_x.x() += 1;
+
+		cell_dist.y() -= 3.0f;
+		cell_dist.x() += 1.0f;
 		});
 #else
 		for (int i = -1; i < 2; ++i)
@@ -367,18 +386,28 @@ void Simulator_3D::step(float dt)
 			{
 				for (int k = -1; k < 2; ++k)
 				{
-					const Eigen::Array3i cell_x = cell_idx + Eigen::Array3i(i, j, k);
-					const Eigen::Vector3f cell_dist = (cell_x.cast<float>() - (p.pos * grid_size)) + 0.5f;
-
-					const float w = weights[i + 1].x() * weights[j + 1].y() * weights[k + 1].z();
+					w = weights[i + 1].x() * weights[j + 1].y() * weights[k + 1].z();
 					const Eigen::Array3f& cell_v = grid[getInd(cell_x.x(), cell_x.y(), cell_x.z())].head<3>();
 
 					p.v += w * cell_v;
 
 					// apic, eq 10
 					SumOuterProduct(p.C, w * cell_v, cell_dist);
+
+					cell_x.z() += 1;
+					cell_dist.z() += 1.0f;
 				}
+				cell_x.z() -= 3;
+				cell_x.y() += 1;
+
+				cell_dist.z() -= 3.0f;
+				cell_dist.y() += 1.0f;
 			}
+				cell_x.y() -= 3;
+				cell_x.x() += 1;
+
+				cell_dist.y() -= 3.0f;
+				cell_dist.x() += 1.0f;
 		}
 #endif
 
