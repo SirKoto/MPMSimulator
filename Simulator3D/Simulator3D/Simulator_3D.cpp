@@ -11,6 +11,25 @@
 #include <chrono>
 #endif
 
+
+template <signed N> 
+struct f_unroll
+{
+	template <typename F>
+	static void call(F const& f)
+	{
+		f(N);
+		f_unroll<N + 1>::call(f);
+	}
+};
+
+template<>
+struct f_unroll<2> 
+{
+	template <typename F>
+	static void call(F const &f){}
+};
+
 Simulator_3D::Simulator_3D(HYPERELASTICITY mode) :
 	grid_size(128), d_size(1.0f / grid_size), mode(mode)
 {
@@ -139,7 +158,24 @@ void Simulator_3D::step(float dt)
 			const Eigen::Array3f jSemiStep = (affine.col(1) * d_size).array();
 			const Eigen::Array3f jstep = jSemiStep - (3.0f * kstep);
 			const Eigen::Array3f istep = (affine.col(0) * d_size).array() - (3.0f * jSemiStep);
+#if true // force unroll loop
+			f_unroll<-1>::call([&](int i)
+			{
+				f_unroll<-1>::call([&](int j)
+				{
+					f_unroll<-1>::call([&](int k)
+					{
+						const float w = weights[i + 1].x() * weights[j + 1].y() * weights[k + 1].z();
+						const int index = getInd(cell_idx.x() + i, cell_idx.y() + j, cell_idx.z() + k);
+						grid[index] += w * moment_mass0;
 
+						moment_mass0.head<3>() += kstep;
+					});
+					moment_mass0.head<3>() += jstep;
+				});
+				moment_mass0.head<3>() += istep;
+			});
+#else
 			for (int i = -1; i < 2; ++i)
 			{
 				for (int j = -1; j < 2; ++j)
@@ -157,6 +193,7 @@ void Simulator_3D::step(float dt)
 				}
 				moment_mass0.head<3>() += istep;
 			}
+#endif
 		}
 #else
 		{
@@ -303,6 +340,27 @@ void Simulator_3D::step(float dt)
 		start_in = std::chrono::steady_clock::now();
 #endif
 		// b-spline
+#if true
+		f_unroll<-1>::call([&](int i)
+		{
+		f_unroll<-1>::call([&](int j)
+		{
+		f_unroll<-1>::call([&](int k)
+		{
+			const Eigen::Array3i cell_x = cell_idx + Eigen::Array3i(i, j, k);
+			const Eigen::Vector3f cell_dist = (cell_x.cast<float>() - (p.pos * grid_size)) + 0.5f;
+
+			const float w = weights[i + 1].x() * weights[j + 1].y() * weights[k + 1].z();
+			const Eigen::Array3f& cell_v = grid[getInd(cell_x.x(), cell_x.y(), cell_x.z())].head<3>();
+
+			p.v += w * cell_v;
+
+			// apic, eq 10
+			SumOuterProduct(p.C, w* cell_v, cell_dist);
+		});
+		});
+		});
+#else
 		for (int i = -1; i < 2; ++i)
 		{
 			for (int j = -1; j < 2; ++j)
@@ -322,6 +380,7 @@ void Simulator_3D::step(float dt)
 				}
 			}
 		}
+#endif
 
 		p.C *= 4.0f * grid_size;
 
