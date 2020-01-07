@@ -6,8 +6,11 @@
 #include "Simulator_3D.h"
 #include <random>
 #include <cmath>
+
+// Header with model creations to simulate
 namespace ps
 {
+	// Create 3 boxes at the same height
 	int create3BoxesFilledHomo(Simulator_3D& sim, glm::vec3*& p_col, int _n_particles = utils::maxParticles, const glm::vec3& velocity = glm::vec3(0.0f))
 	{
 		int p_perBox = _n_particles / 3;
@@ -50,6 +53,7 @@ namespace ps
 		return n_particles;
 	}
 
+	// Create 3 boxes at diferent positions
 	int create3BoxesSeparatedFilledHomo(Simulator_3D& sim, glm::vec3*& p_col, int _n_particles, const glm::vec3& velocity,
 		const int materials[3])
 	{
@@ -100,6 +104,7 @@ namespace ps
 		return n_particles;
 	}
 
+	// Unique big BB filled with all particles at the same distances
 	int createBoxFilledHomo(Simulator_3D& sim, glm::vec3*& p_col, int _n_particles = utils::maxParticles,
 		float x0 = 0.1f, float x1 = 0.9f, float y0 = 0.65f, float y1 = 0.98f, float z0 = 0.3f, float z1 = 0.7f)
 	{
@@ -139,6 +144,7 @@ namespace ps
 		return n_particles;
 	}
 
+	// Unique big BB filled randomly
 	int createBoxFilled(Simulator_3D& sim, glm::vec3*& p_col, int n_particles = utils::maxParticles)
 	{
 		p_col = new glm::vec3[n_particles];
@@ -163,13 +169,14 @@ namespace ps
 		return n_particles;
 	}
 
+	// Two colliding spheres generated such that collide with diferent heights
 	int create2CollidingSpheres(Simulator_3D& sim, glm::vec3*& p_col, int _n_particles, float radius, float velocity, const int materials[2])
 	{
 		int p_perSphere = _n_particles / 2;
 		int height = 2 * static_cast<int>(std::floor(std::cbrt(p_perSphere * 3.0 / (4.0 * glm::pi<double>()))));
 		float interRadius = radius / height;
 
-
+		// lambda function to create a sphere
 		auto fill = [&height, &interRadius, &sim](const glm::vec3 &center, const glm::vec3 &v, int mat) {
 			int count = 0;
 			for (int i = 0; i < height; ++i)

@@ -49,12 +49,13 @@ namespace utils {
 
 	void utilF::writeFramesAsGif(const std::vector<FrameSBF<float>>& frames, SimVisualizer& viewer, int milisPerFrame, std::string fileName)
 	{
-		// add gif to filename if it does not have it
+		// add "gif" to filename if it does not have it
 		if (fileName.size() < 6 || fileName.compare(fileName.size() - 4, 4, ".sbf") != 0)
 		{
 			fileName.append(".gif");
 		}
 
+		// create dir
 		if (!createDir("gifs"))
 			return;
 
