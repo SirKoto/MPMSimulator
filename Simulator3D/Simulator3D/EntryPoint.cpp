@@ -266,6 +266,15 @@ int doSimulation()
 		std::function<void()> f = [&enterPressed]() {enterPressed = true; };
 		viewer.setKeyCallback(SimVisualizer::KEYS::ENTER, f);
 	}
+	{
+		// Print help
+		MSG("Usage:");
+		TMSG("Mouse: Camera movement");
+		TMSG("Mouse wheel: zoom");
+		TMSG("a,s,d,w: Camera movement");
+		TMSG("Enter: Do simulation");
+		TMSG("ESC: exit");
+	}
 
 	// show simulation stopped meanwhile
 	while (!viewer.shouldApplicationClose() && !enterPressed)
@@ -497,6 +506,25 @@ int readSimulation()
 	SimVisualizer viewer(n_particles);
 	if (!viewer.ErrorHappened() && !frames.empty())
 	{
+		{
+			// Print help
+			MSG("Usage:");
+			TMSG("Mouse: Camera movement");
+			TMSG("Mouse wheel: zoom");
+			TMSG("a,s,d,w: Camera movement");
+			TMSG("Enter: Resume simulation");
+			TMSG("p: Pause");
+			TMSG("o: First frame");
+			TMSG("m,n: focus/unfocus window");
+			TMSG("i: export to gif");
+			TMSG("k,l: inc/dec velocity");
+			TMSG("pad +/-: inc/dec particle size");
+			TMSG("r: reload shaders");
+			TMSG("t: toggle shadow map");
+			TMSG("f: set light at camera position");
+			TMSG("ESC: exit");
+		}
+
 		viewer.enableUserInput(true);
 		viewer.updateParticlesColor(color);
 
