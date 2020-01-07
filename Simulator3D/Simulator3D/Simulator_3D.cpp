@@ -12,24 +12,6 @@
 #endif
 
 
-template <signed N> 
-struct f_unroll
-{
-	template <typename F>
-	static void call(F const& f)
-	{
-		f(N);
-		f_unroll<N + 1>::call(f);
-	}
-};
-
-template<>
-struct f_unroll<2> 
-{
-	template <typename F>
-	static void call(F const &f){}
-};
-
 Simulator_3D::Simulator_3D(HYPERELASTICITY mode) :
 	grid_size(128), d_size(1.0f / grid_size), mode(mode)
 {
@@ -161,28 +143,13 @@ void Simulator_3D::step(float dt)
 
 			float w;
 			int index;
-#if false // force unroll loop
-			f_unroll<-1>::call([&](int i)
-			{
-				f_unroll<-1>::call([&](int j)
-				{
-					f_unroll<-1>::call([&](int k)
-					{
-						w = weights[i + 1].x() * weights[j + 1].y() * weights[k + 1].z();
-						index = getInd(cell_idx.x() + i, cell_idx.y() + j, cell_idx.z() + k);
-						grid[index] += w * moment_mass0;
-
-						moment_mass0.head<3>() += kstep;
-					});
-					moment_mass0.head<3>() += jstep;
-				});
-				moment_mass0.head<3>() += istep;
-			});
-#else
+#pragma GCC unroll 3
 			for (int i = -1; i < 2; ++i)
 			{
+#pragma GCC unroll 3
 				for (int j = -1; j < 2; ++j)
 				{
+#pragma GCC unroll 3
 					for (int k = -1; k < 2; ++k)
 					{
 
@@ -196,7 +163,6 @@ void Simulator_3D::step(float dt)
 				}
 				moment_mass0.head<3>() += istep;
 			}
-#endif
 		}
 #else
 		{
@@ -349,41 +315,13 @@ void Simulator_3D::step(float dt)
 		const Eigen::Array3f pTimesGridSize = p.pos * grid_size;
 		Eigen::Vector3f cell_dist = (cell_x.cast<float>() - pTimesGridSize) + 0.5f;
 
-#if false
-		f_unroll<-1>::call([&](int i)
-		{
-		f_unroll<-1>::call([&](int j)
-		{
-		f_unroll<-1>::call([&](int k)
-		{
-			w = weights[i + 1].x() * weights[j + 1].y() * weights[k + 1].z();
-			const Eigen::Array3f& cell_v = grid[getInd(cell_x.x(), cell_x.y(), cell_x.z())].head<3>();
-
-			p.v += w * cell_v;
-
-			// apic, eq 10
-			SumOuterProduct(p.C, w * cell_v, cell_dist);
-
-			cell_x.z() += 1;
-			cell_dist.z() += 1.0f;
-		});
-		cell_x.z() -= 3;
-		cell_x.y() += 1;
-
-		cell_dist.z() -= 3.0f;
-		cell_dist.y() += 1.0f;
-		});
-		cell_x.y() -= 3;
-		cell_x.x() += 1;
-
-		cell_dist.y() -= 3.0f;
-		cell_dist.x() += 1.0f;
-		});
-#else
+#pragma GCC unroll 3
 		for (int i = -1; i < 2; ++i)
 		{
+#pragma GCC unroll 3
 			for (int j = -1; j < 2; ++j)
 			{
+#pragma GCC unroll 3
 				for (int k = -1; k < 2; ++k)
 				{
 					w = weights[i + 1].x() * weights[j + 1].y() * weights[k + 1].z();
@@ -409,7 +347,6 @@ void Simulator_3D::step(float dt)
 				cell_dist.y() -= 3.0f;
 				cell_dist.x() += 1.0f;
 		}
-#endif
 
 		p.C *= 4.0f * grid_size;
 
