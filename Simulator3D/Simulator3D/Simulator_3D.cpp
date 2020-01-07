@@ -30,18 +30,16 @@ struct f_unroll<2>
 	static void call(F const &f){}
 };
 
+// Constructor
 Simulator_3D::Simulator_3D(HYPERELASTICITY mode) :
 	grid_size(128), d_size(1.0f / grid_size), mode(mode)
 {
-	minBorder = Eigen::Array3f::Constant(0.0f + 1.0e-3f);
-	maxBorder = Eigen::Array3f::Constant(1.0f - 1.0e-3f);
-
-
-	//particles = std::vector<Particle>(0);
+	// Reserve grid
 	grid = new Eigen::Array4f[((int)grid_size * (int)grid_size * (int)grid_size)];
-	std::memset(grid, 0, (static_cast<size_t>(grid_size * grid_size * grid_size) * static_cast<size_t>(sizeof(Eigen::Array4f))));
-
+	std::memset(grid, 0, ((size_t)grid_size * (size_t)grid_size * (size_t)grid_size) * (sizeof(Eigen::Array4f)));
+	// reserve physics grid
 	physicsGrid = new Eigen::Array3f[((int)grid_size * (int)grid_size * (int)grid_size)];
+	// Clear physics
 	clearPhysics();
 }
 
@@ -77,40 +75,42 @@ unsigned int Simulator_3D::dumpPositionsNormalized(float* positions) const
 	return size;
 }
 
+// Main function of the simulation
 void Simulator_3D::step(float dt)
 {
 	// all grid with 0's, velocity and mass
-	std::memset(grid, 0, (static_cast<int>(grid_size * grid_size * grid_size) * static_cast<int>(sizeof(Eigen::Array4f))));
+	std::memset(grid, 0, ((size_t)grid_size * (size_t)grid_size * (size_t)grid_size) * (sizeof(Eigen::Array4f)));
 
 #ifdef TIME_COUNT_FLAG
 	auto start = std::chrono::steady_clock::now();
 #endif
-	// Particle to grid
+	// *************  P2G ************* //
 	for (auto& p : this->particles)
 	{
-		assert(	p.pos.x() > 0.0f && p.pos.x() < 1.0f && 
-				p.pos.y() > 0.0f && p.pos.y() < 1.0f &&
-				p.pos.z() > 0.0f && p.pos.z() < 1.0f);
-		// compute the center 
-		const Eigen::Array3f& cell_idxf = (p.pos * grid_size);
-		const Eigen::Array3i cell_idx = cell_idxf.cast<int>(); // floor
-		const Eigen::Array3f distFromCenter = ((p.pos * grid_size) - cell_idx.cast<float>()) - 0.5f; // center at point 0,0,0
+		// Discretize position 
+		const Eigen::Array3f cell_if = (p.pos * grid_size);
+		const Eigen::Array3i cell_i = cell_if.cast<int>(); // floor
+		// Vector from cell center -> particle
+		const Eigen::Array3f distFromCenter = ((p.pos * grid_size) - cell_i.cast<float>()) - 0.5f; // center at point 0,0,0
 
+		// Interpolation function N matrix
 		const Eigen::Array3f weights[3] = {
 		  0.5f * (0.5f - distFromCenter).square(),
 		  0.75f - (distFromCenter).square(),
 		  0.5f * (distFromCenter + 0.5f).square()
 		};
 
+		// Load material properies
 		const property& p_prop = v_properties[p.prop_id];
+
 		// Lame parameters
 		const float e = std::exp(p_prop.hardening * (1.0f - p.Jp));
 		const float mu = p_prop.mu * e;
 		const float lambda = p_prop.lambda * e;
 
 		const float J = (p.F).determinant();
-		// Euler explicit time integration
-		// Looking for stress
+
+		// ----------  AFFINE MATRIX ---------- //
 		Eigen::Matrix3f affine;
 		if (this->mode == HYPERELASTICITY::COROTATED)
 		{
@@ -119,12 +119,12 @@ void Simulator_3D::step(float dt)
 			const Eigen::Matrix3f r = svd.matrixU() * svd.matrixV().transpose();
 
 
-			//Corotated constitucional model     // [http://mpm.graphics Eqn. 52]
+			//Corotated constitucional model
 			const Eigen::Matrix3f PF_t = (2.0f * mu * (p.F - r) * (p.F).transpose()) + (Eigen::Matrix3f::Identity() * (lambda * (J - 1.0f) * J));
 
 			const float Dinv = (4.0f * grid_size * grid_size);
-			//EQn. 173
-			const Eigen::Matrix3f stress = (-dt * p_prop.volume * Dinv) * PF_t; // eq_16_term_0
+
+			const Eigen::Matrix3f stress = (-dt * p_prop.volume * Dinv) * PF_t; 
 
 			affine = stress + p_prop.mass * p.C;
 		}
@@ -135,19 +135,19 @@ void Simulator_3D::step(float dt)
 				(Eigen::Matrix3f::Identity() * (lambda * std::log(J)));
 			const float Dinv = (4.0f * grid_size * grid_size);
 			//EQn. 173
-			const Eigen::Matrix3f stress = (-dt * p_prop.volume * Dinv) * PF_t; // eq_16_term_0
+			const Eigen::Matrix3f stress = (-dt * p_prop.volume * Dinv) * PF_t;
 
 			affine = stress + p_prop.mass * p.C;
 		}
 		else
 		{
-			// SAND
+			// SAND: No energy
 			affine = p_prop.mass * p.C;
 		}
-		//P2G
+		// ----------  PARTICLE TRANSFERENCE ---------- //
 #if true // optimization
 		{
-		const Eigen::Array3i cell_x0 = cell_idx + Eigen::Array3i::Constant(-1);
+		const Eigen::Array3i cell_x0 = cell_i + Eigen::Array3i::Constant(-1);
 		const Eigen::Vector3f cell_dist0 = ((cell_x0.cast<float>() - (p.pos * grid_size)) + 0.5f);
 
 
@@ -187,7 +187,7 @@ void Simulator_3D::step(float dt)
 					{
 
 						w = weights[i + 1].x() * weights[j + 1].y() * weights[k + 1].z();
-						index = getInd(cell_idx.x() + i, cell_idx.y() + j, cell_idx.z() + k);
+						index = getInd(cell_i.x() + i, cell_i.y() + j, cell_i.z() + k);
 						grid[index] += w * moment_mass0;
 
 						moment_mass0.head<3>() += kstep;
@@ -239,7 +239,7 @@ void Simulator_3D::step(float dt)
 	start = std::chrono::steady_clock::now();
 #endif
 
-	// Process grid
+	// *************  GRID PROCESSING ************* //
 	for (unsigned int i = 0; i < grid_size; ++i)
 	{
 		for (unsigned int j = 0; j < grid_size; ++j)
@@ -247,15 +247,16 @@ void Simulator_3D::step(float dt)
 			for (unsigned int k = 0; k < grid_size; k++)
 			{
 				int idx = getInd(i, j, k);
-				Eigen::Array4f& cell = grid[idx]; // REFERENCE
+				Eigen::Array4f& cell = grid[idx]; // reference
 
 				if (cell.w() > 0)
 				{
-					// normalize by mass
-					// momentum to velocity
+					// ----------  MOMENTUM 2 VELOCITY---------- //
 					cell /= cell.w();
+					// Gravity
 					cell.head<3>() += dt * g;
 
+					// ----------  LIMITS ---------- //
 					if (i < 2 && cell.x() < 0.0f)
 					{
 						cell.x() = 0.0f;
@@ -284,10 +285,14 @@ void Simulator_3D::step(float dt)
 						cell.z() = 0.0f;
 					}
 
+					// ----------  PHYSICS ---------- //
 					const Eigen::Vector3f& normalPhyisics = physicsGrid[idx];
+					// velocity · normal
 					float dot = normalPhyisics.dot(cell.head<3>().matrix());
+					// If oposed
 					if (dot < 0.0f)
 					{
+						// Remove normal velocity
 						cell.head<3>() = cell.head<3>() - (dot * normalPhyisics).array();
 					}
 				}
@@ -315,7 +320,7 @@ void Simulator_3D::step(float dt)
 #pragma omp parallel for
 #endif
 
-	// Grid to particle
+	// *************  G2P ************* //
 	for (int i = 0; i < particles.size(); ++i)
 	{
 		Particle& p = particles[i];
@@ -323,9 +328,9 @@ void Simulator_3D::step(float dt)
 		auto start_in = std::chrono::steady_clock::now();
 #endif
 		// compute the center 
-		const Eigen::Array3f& cell_idxf = (p.pos * grid_size);
-		const Eigen::Array3i cell_idx = cell_idxf.cast<int>(); // floor
-		const Eigen::Array3f distFromCenter = ((p.pos * grid_size) - cell_idx.cast<float>()) - 0.5f; // center at point 0,0
+		const Eigen::Array3f& cell_if = (p.pos * grid_size);
+		const Eigen::Array3i cell_i = cell_if.cast<int>(); // floor
+		const Eigen::Array3f distFromCenter = ((p.pos * grid_size) - cell_i.cast<float>()) - 0.5f; // center at point 0,0
 
 		const Eigen::Array3f weights[3] = {
 		  0.5f * (0.5f - distFromCenter).square(),
@@ -333,6 +338,7 @@ void Simulator_3D::step(float dt)
 		  0.5f * (distFromCenter + 0.5f).square()
 		};
 
+		// Set to zero velocity and C, befor transfer
 		p.C.setZero();
 		p.v.setZero();
 
@@ -342,12 +348,12 @@ void Simulator_3D::step(float dt)
 
 		start_in = std::chrono::steady_clock::now();
 #endif
-		// b-spline
-
-		Eigen::Array3i cell_x = cell_idx + Eigen::Array3i::Constant(-1);
+		// ----------  GRID TRANSFER ---------- //
+		// First cell
+		Eigen::Array3i cell_x = cell_i + Eigen::Array3i::Constant(-1);
+		// vector particle -> center cell
+		Eigen::Vector3f cell_dist = (cell_x.cast<float>() - p.pos * grid_size) + 0.5f;
 		float w;
-		const Eigen::Array3f pTimesGridSize = p.pos * grid_size;
-		Eigen::Vector3f cell_dist = (cell_x.cast<float>() - pTimesGridSize) + 0.5f;
 
 #if false
 		f_unroll<-1>::call([&](int i)
@@ -361,7 +367,6 @@ void Simulator_3D::step(float dt)
 
 			p.v += w * cell_v;
 
-			// apic, eq 10
 			SumOuterProduct(p.C, w * cell_v, cell_dist);
 
 			cell_x.z() += 1;
@@ -391,7 +396,6 @@ void Simulator_3D::step(float dt)
 
 					p.v += w * cell_v;
 
-					// apic, eq 10
 					SumOuterProduct(p.C, w * cell_v, cell_dist);
 
 					cell_x.z() += 1;
@@ -410,7 +414,7 @@ void Simulator_3D::step(float dt)
 				cell_dist.x() += 1.0f;
 		}
 #endif
-
+		// Apply D^-1 to get C
 		p.C *= 4.0f * grid_size;
 
 #if defined(TIME_COUNT_FLAG) && defined(G2P_FLAG)
@@ -420,22 +424,20 @@ void Simulator_3D::step(float dt)
 		start_in = std::chrono::steady_clock::now();
 #endif
 
-		assert(	p.pos.x() > 0.0f && p.pos.x() < 1.0f && 
-				p.pos.y() > 0.0f && p.pos.y() < 1.0f &&
-				p.pos.z() > 0.0f && p.pos.z() < 1.0f);
-		// advect particles
+		// ----------  ADVECTION ---------- //
 		p.pos += dt * p.v;
-
+		// Assert that the position is correct!!
 		assert(p.pos.x() > 0.0f && p.pos.x() < 1.0f &&
 			p.pos.y() > 0.0f && p.pos.y() < 1.0f &&
 			p.pos.z() > 0.0f && p.pos.z() < 1.0f);
 
-		// update F gradient (mls Eq. 17)
+		// ----------  DEFORMATION GRADIENT UPDATE ---------- //
 		Eigen::Matrix3f F = (Eigen::Matrix3f::Identity() + (dt * p.C)) * p.F;
 		// avoid infinities and NaNs
 		assert(std::isfinite(F(0, 0)) && std::isfinite(F(0, 1)) && std::isfinite(F(1, 0)) & std::isfinite(F(1, 1)));
 
-		
+		// ----------  PLASTICITY ---------- //
+		// SVD of new deformation gradient F
 		Eigen::JacobiSVD<Eigen::Matrix3f, Eigen::NoQRPreconditioner> svd(F, Eigen::ComputeFullU | Eigen::ComputeFullV);
 
 #if defined(TIME_COUNT_FLAG) && defined(G2P_FLAG)
@@ -497,7 +499,6 @@ void Simulator_3D::step(float dt)
 #endif
 }
 
-
 void Simulator_3D::addParticle(const glm::vec3& pos, const glm::vec3& v, int material)
 {
 	Eigen::Array3f Epos(pos.x, pos.y, pos.z);
@@ -516,7 +517,7 @@ void Simulator_3D::addParticleNormalized(const glm::vec3& pos, const glm::vec3& 
 
 void Simulator_3D::clearPhysics()
 {
-	std::memset(physicsGrid, 0, (static_cast<size_t>(grid_size * grid_size * grid_size)* static_cast<size_t>(sizeof(Eigen::Array3f))));
+	std::memset(physicsGrid, 0, ((size_t)grid_size * (size_t)grid_size * (size_t)grid_size * sizeof(Eigen::Array3f)));
 }
 
 void Simulator_3D::setPhysicsFlat(float height)
@@ -541,6 +542,7 @@ void Simulator_3D::setPhysicSlopes(float height, float initialH, float holeWidth
 	const int y_max = static_cast<int>(grid_size * initialH) + desp;
 	assert(y_max < grid_size - 1 && w < grid_size * 0.5f - 1);
 
+	// compute the left plane
 	Eigen::Vector3f normal;
 	Eigen::Vector3f pointInPlane;
 	{
@@ -556,6 +558,7 @@ void Simulator_3D::setPhysicSlopes(float height, float initialH, float holeWidth
 		pointInPlane.y() += grid_size * initialH;
 	}
 
+	// compute if point is below the plane defined by normal and pointInPlane
 	auto belowPlane = [&normal, &pointInPlane](Eigen::Vector3f point)
 	{
 		Eigen::Vector3f plan2point = point - pointInPlane;
@@ -585,6 +588,7 @@ void Simulator_3D::setPhysicSlopes(float height, float initialH, float holeWidth
 		}
 	}
 
+	// Compute the right plane
 	{
 		Eigen::Vector3f p0(grid_size - 1, height * grid_size, .0f);
 		Eigen::Vector3f p1(grid_size * 0.5f + holeWidth * grid_size, .0f, .0f);
@@ -623,6 +627,7 @@ void Simulator_3D::setPhysicSlopes(float height, float initialH, float holeWidth
 
 void Simulator_3D::setPhysicsZWall(float zmin, float zmax, int depth)
 {
+	// Assert wall position inside margins
 	assert(zmin > 0 && zmax < grid_size && zmin < zmax);
 
 	int z_min = static_cast<int>(grid_size * zmin);
@@ -651,7 +656,7 @@ int Simulator_3D::addNewMaterial(float young, float nu, float hardening, float v
 
 void Simulator_3D::SumOuterProduct(Eigen::Matrix3f& r, const Eigen::Array3f& a, const Eigen::Array3f& b)
 {
-
+	// Totally unrolled outer product
 	r(0, 0) += a[0] * b[0];
 	r(0, 1) += a[0] * b[1];
 	r(0, 2) += a[0] * b[2];
