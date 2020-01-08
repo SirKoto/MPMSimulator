@@ -9,7 +9,7 @@
 class Simulator_3D
 {
 public:
-
+	// Types of energy models for hyperplasticity
 	enum class HYPERELASTICITY
 	{
 		COROTATED,
@@ -17,34 +17,43 @@ public:
 		SAND
 	};
 
-
+	// Constructor
 	Simulator_3D(HYPERELASTICITY mode = HYPERELASTICITY::COROTATED);
 
+	// Destructor
 	~Simulator_3D()
 	{
 		delete[] grid, physicsGrid;
 	}
-	// Returns the number of particles dumped in positions
+	// Returns the number of particles. Dumps the position of each particle [0,grid_size]
 	unsigned int dumpPositions(float* positions) const;
 
+	// Returns the number of particles. Dumps the position of each particle [0,1]
 	unsigned int dumpPositionsNormalized(float* positions) const;
 
+	// Main function. Make a time advance of dt
 	void step(float dt);
 
+	// Add new particle. The position can be from [0, grid_size]
 	void addParticle(const glm::vec3& pos, const glm::vec3& v = glm::vec3(0), int material = 0);
 
+	// Add new particle. The position can be from [0, 1]
 	void addParticleNormalized(const glm::vec3& pos, const glm::vec3& v = glm::vec3(0), int material = 0);
 
+	// Remove all data from the pysicsGrid
 	void clearPhysics();
 
+	// Create flat physics surface at height [0,1]
 	void setPhysicsFlat(float height);
-
-	void setPhysicsHourglass(float extRadius, float intRadius, float separation);
 	
+	// Create two symetric slopes in the pysics grid. Given a height, and initial height
+	// And the width of the hole. Depth determines the number of layers in the grid filled
 	void setPhysicSlopes(float height, float initialH, float holeWidth, int depth = 1);
 
+	// Create vertical wall in the XY plane
 	void setPhysicsZWall(float zmin, float zmax, int depth = 1);
 
+	// Get young modulus from material in position pos
 	float getYoung(int pos = 0) { return v_properties[pos].young; }
 
 	float getNu(int pos = 0) { return v_properties[pos].nu; }
@@ -55,24 +64,23 @@ public:
 
 	float getMass(int pos = 0) { return v_properties[pos].mass; }
 
+	// Get the number of materials in the system actually
 	int getNumMaterials() { return static_cast<int>(v_properties.size()); }
 
+	// add a new material
 	int addNewMaterial(float young, float nu, float hardening, float volume = 1.0f, float mass = 1.0f);
 
 private:
 
 	const HYPERELASTICITY mode;
 
-	const float boundary = 0.05f;
+	const float grid_size; // Size of the grid
+	const float d_size;    // Inverse of the size
 
-
-	const float grid_size;
-	const float d_size; // derivate of the size
-
-	Eigen::Array3f minBorder, maxBorder;
-
+	// Gravity constant
 	const Eigen::Array3f g = Eigen::Array3f(0.0f, -10.0f, 0.0f);
 
+	// Struct defining the materials
 	struct property
 	{
 		const float young, nu, mu, lambda, hardening, volume, mass, t_c, t_s, p_c, p_s;
@@ -85,17 +93,19 @@ private:
 		{}
 	};
 
+	// vector of materials
 	std::vector<property> v_properties;
 
+	// Structure defining each particle
 	struct Particle
 	{
-		Eigen::Array3f pos, v; // posicio i velocitat de la particula
+		Eigen::Array3f pos, v; // position and velocity
 
-		Eigen::Matrix3f F, C; // Gradient de deformació i APIC
+		Eigen::Matrix3f F, C; // Deformation gradient and C from APIC
 
-		float Jp; // Determinat de F (Jacobian) indica la deformacio del volum
+		float Jp; // Determinat of plastic F (Jacobian).
 
-		const int prop_id;
+		const int prop_id; // material id
 
 		Particle() : Jp(1.0f), prop_id(0)
 		{
@@ -117,13 +127,15 @@ private:
 		}
 	};
 
+	// Using power of 2 grid sizes... faster indexing
 	//#define getInd(x, y, z) (((((x) << 6) | (y)) << 6) | (z))
 	#define getInd(x, y, z) (((((x) << 7) | (y)) << 7) | (z))
 
-	std::vector<Particle> particles;
-	Eigen::Array4f* grid;// v.x, v.y, v.z, mass
-	Eigen::Array3f* physicsGrid;
+	std::vector<Particle> particles; // vector of particles
+	Eigen::Array4f* grid; // Each element (v.x, v.y, v.z, mass)
+	Eigen::Array3f* physicsGrid; // Grid with the normals of the pysics
 
+	// Function to compute the outer product of two 3D arrays, and sum the resulting matrix to another
 	inline static void SumOuterProduct(Eigen::Matrix3f& r, const Eigen::Array3f& a, const Eigen::Array3f& b);
 };
 

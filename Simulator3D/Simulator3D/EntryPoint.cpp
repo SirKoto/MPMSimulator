@@ -69,9 +69,10 @@ Simulator_3D loadSimulation(size_t &n_particles, glm::vec3* &p_col)
 		break;
 	}
 
-	
+	// Create simulator
 	Simulator_3D sim(hyper);
 
+	// Add materials, at least one
 	float young, nu, hardening, volume, mass;
 	int another = 0;
 	do
@@ -205,6 +206,7 @@ Simulator_3D loadSimulation(size_t &n_particles, glm::vec3* &p_col)
 	return sim;
 }
 
+// Do simulation without graphical viewer
 int doConsoleSimulation()
 {
 	glm::vec3* p_col = nullptr;
@@ -234,6 +236,7 @@ int doSimulation()
 	// Create simulator and add points
 	glm::vec3* p_col = nullptr;
 	size_t n_particles;
+	// Create new simulator, with its initial state
 	Simulator_3D sim = loadSimulation(n_particles, p_col);
 
 	// always create color
@@ -303,6 +306,7 @@ int doSimulation()
 	return 0;
 }
 
+// Do and store a simulation
 int writeSimulation(Simulator_3D& sim, SimVisualizer* const viewer, const int num_p, std::string fileName,
 	const int framesToDo, const float* colorData)
 {
@@ -346,7 +350,7 @@ int writeSimulation(Simulator_3D& sim, SimVisualizer* const viewer, const int nu
 	MSG("writing on " << fileName);
 
 	writer.writeDataf(step_t, SBF_DT_FRAMES);
-
+	// Write all parameters
 	for (int i = 0; i < sim.getNumMaterials(); ++i)
 	{
 		writer.writeDataf(static_cast<float>(i), SBF_ID);
@@ -531,10 +535,10 @@ int readSimulation()
 		// set particle positions for frame 0
 		viewer.updateParticlePositions(frames[0]);
 		int i = -1;
-
-		int milisPerFrame = 30;
-		std::function<void()> inc = [&milisPerFrame]() {if(milisPerFrame != 0) milisPerFrame++; };
-		std::function<void()> dec = [&milisPerFrame]() {if(milisPerFrame >= 2) milisPerFrame--; };
+		// Set all callbacks
+		int microsPerFrame = 30000;
+		std::function<void()> inc = [&microsPerFrame]() {if(microsPerFrame != 0 && microsPerFrame < 1000000) microsPerFrame = static_cast<int>(microsPerFrame * 1.05); };
+		std::function<void()> dec = [&microsPerFrame]() {if (microsPerFrame >= 20) microsPerFrame = static_cast<int>(microsPerFrame * 0.95); };
 		std::function<void()> reset = [&i]() {i = 0; };
 
 		viewer.setKeyCallback(SimVisualizer::KEYS::K, inc);
@@ -542,18 +546,18 @@ int readSimulation()
 		viewer.setKeyCallback(SimVisualizer::KEYS::O, reset);
 
 		int buff = 0;
-		std::function<void()> pause = [&milisPerFrame, &buff]() {
+		std::function<void()> pause = [&microsPerFrame, &buff]() {
 			if (buff == 0)
-				std::swap(buff, milisPerFrame);
+				std::swap(buff, microsPerFrame);
 		};
-		std::function<void()> unpause = [&milisPerFrame, &buff]() {
-			if (milisPerFrame == 0)
-				std::swap(buff, milisPerFrame);
+		std::function<void()> unpause = [&microsPerFrame, &buff]() {
+			if (microsPerFrame == 0)
+				std::swap(buff, microsPerFrame);
 		};
 		viewer.setKeyCallback(SimVisualizer::KEYS::ENTER, unpause);
 		viewer.setKeyCallback(SimVisualizer::KEYS::P, pause);
 		
-		std::function<void()> writeGIf = [&frames, &viewer, &milisPerFrame]() {
+		std::function<void()> writeGIf = [&frames, &viewer, &microsPerFrame]() {
 			std::cout << "Enter file name to gif (0 to cancel): ";
 			std::string filename;
 
@@ -561,7 +565,7 @@ int readSimulation()
 			std::cin >> filename;
 
 			if (filename != "0")
-				utils::utilF::writeFramesAsGif(frames, viewer, milisPerFrame, filename);
+				utils::utilF::writeFramesAsGif(frames, viewer, microsPerFrame, filename);
 
 			viewer.enableUserInput(true);
 		};
@@ -570,8 +574,8 @@ int readSimulation()
 		while (!viewer.shouldApplicationClose())
 		{
 			auto last = std::chrono::high_resolution_clock::now();
-			auto count = std::chrono::milliseconds(milisPerFrame);
-			if (milisPerFrame != 0 && ++i >= frames.size())
+			auto count = std::chrono::microseconds(microsPerFrame);
+			if (microsPerFrame != 0 && ++i >= frames.size())
 				i = 0;
 			viewer.updateParticlePositions(frames[i]);
 			viewer.draw();
@@ -580,7 +584,7 @@ int readSimulation()
 			{
 				auto now = std::chrono::high_resolution_clock::now();
 				auto dt = now - last;
-				count -= std::chrono::duration_cast<std::chrono::milliseconds>(dt);
+				count -= std::chrono::duration_cast<std::chrono::microseconds>(dt);
 				last = now;
 				viewer.draw();
 			}
@@ -608,6 +612,7 @@ int readSimulation()
 
 int main()
 {
+	// What do the user wants to do?
 	int res;
 	do{
 		MSG("Do you want to do a new simulation or read a sbf file?");

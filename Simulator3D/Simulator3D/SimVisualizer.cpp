@@ -3,7 +3,7 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
-
+// Cube vertices
 constexpr GLfloat vertices[] = {
 	// Back face
  1.0f,  1.0f, 0.0f, 0.0f, 0.0f, -1.0f, // top-right             
@@ -54,6 +54,7 @@ constexpr GLfloat vertices[] = {
  1.0f,  1.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right      
 };
 
+// Cube vertices with averaged normals
 constexpr GLfloat Pvertices[] = {
 	// Back face
  1.0f,  1.0f, 0.0f, 1.0f, 1.0f, -1.0f, // top-right             
@@ -104,6 +105,10 @@ constexpr GLfloat Pvertices[] = {
  1.0f,  1.0f,  1.0f,  1.0f, 1.0f, 1.0f, // bottom-right      
 };
 
+// Generate the vertices and normals of an icosphere
+// centered at the origin, with top/botom-most vertices (0,+-1,0)
+// Returns: [x,y,z,nx,ny,nz] x 3 per face
+// The normals are averaged for smoth interpolation in shading
 std::vector<GLfloat> genIcosphere() {
 	constexpr float PI = 3.14159265358979323846f;
 	constexpr float H_ANGLE = (PI / 180) * 72;         // 72 degree = 360 / 5
@@ -217,6 +222,7 @@ std::vector<GLfloat> genIcosphere() {
 	}
 	return res;
 }
+
 SimVisualizer::SimVisualizer(int num_particles, bool shadows,
 	int width, int heigth) :
 	m_num_p(num_particles), m_shadowsEnabled(shadows),
@@ -323,6 +329,7 @@ void SimVisualizer::updateParticlesColor(const float* color)
 
 void SimVisualizer::draw()
 {
+	// update delta Time
 	updateDT();
 
 	if (m_userInputEnabled)
@@ -337,11 +344,13 @@ void SimVisualizer::draw()
 	// Update uniforms of all shaders
 	updateUniforms();
 
+	// Shadow mapping
 	if (m_shadowsEnabled)
 	{
 		drawShadowMap();
 	}
 
+	// Clear screen before drawing
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
 	m_shaders[1].use();
