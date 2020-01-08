@@ -345,11 +345,11 @@ void Simulator_3D::step(float dt)
 				cell_dist.z() -= 3.0f;
 				cell_dist.y() += 1.0f;
 			}
-				cell_x.y() -= 3;
-				cell_x.x() += 1;
+			cell_x.y() -= 3;
+			cell_x.x() += 1;
 
-				cell_dist.y() -= 3.0f;
-				cell_dist.x() += 1.0f;
+			cell_dist.y() -= 3.0f;
+			cell_dist.x() += 1.0f;
 		}
 		// Apply D^-1 to get C
 		p.C *= 4.0f * grid_size;
@@ -383,33 +383,32 @@ void Simulator_3D::step(float dt)
 
 		start_in = std::chrono::steady_clock::now();
 #endif
-		const Eigen::Matrix3f& svd_u = svd.matrixU();
-		const Eigen::Matrix3f& svd_v = svd.matrixV();
-
-		Eigen::Vector3f svd_e = svd.singularValues();
-
 		const property& prop = v_properties[p.prop_id];
 
-		// Snow paper elasticiy constrains
-		for (int i = 0; i < 3; ++i) {
-			svd_e[i] = glm::clamp(svd_e[i], 1.0f - prop.t_c, 1.0f + prop.t_s);
+		if(prop.plasticity){
+			const Eigen::Matrix3f& svd_u = svd.matrixU();
+			const Eigen::Matrix3f& svd_v = svd.matrixV();
+
+			Eigen::Vector3f svd_e = svd.singularValues();
+
+			// Snow paper elasticiy constrains
+			for (int i = 0; i < 3; ++i) {
+				svd_e[i] = glm::clamp(svd_e[i], 1.0f - prop.t_c, 1.0f + prop.t_s);
+			}
+
+			const float oldJ = F.determinant();
+			F = svd_u * svd_e.asDiagonal() * svd_v.transpose();
+			// avoid infinities and NaNs
+			assert(std::isfinite(F(0, 0)) && std::isfinite(F(0, 1)) && std::isfinite(F(1, 0)) & std::isfinite(F(1, 1)));
+
+
+
+			const float det = F.determinant();
+			const float newJ = glm::clamp(p.Jp * oldJ / det, prop.p_c, prop.p_s);
+			p.Jp = newJ;
 		}
 
-		
-
-		const float oldJ = F.determinant();
-		F = svd_u * svd_e.asDiagonal() * svd_v.transpose();
-		// avoid infinities and NaNs
-		assert(std::isfinite(F(0, 0)) && std::isfinite(F(0, 1)) && std::isfinite(F(1, 0)) & std::isfinite(F(1, 1)));
-
-
-
-		const float det = F.determinant();
-		const float newJ = glm::clamp(p.Jp * oldJ / det, prop.p_c, prop.p_s);
-				
-
 		p.F = F;
-		p.Jp = newJ;
 
 #if defined(TIME_COUNT_FLAG) && defined(G2P_FLAG)
 		end = std::chrono::steady_clock::now();
@@ -583,9 +582,9 @@ void Simulator_3D::setPhysicsZWall(float zmin, float zmax, int depth)
 	}
 }
 
-int Simulator_3D::addNewMaterial(float young, float nu, float hardening, float volume, float mass)
+int Simulator_3D::addNewMaterial(float young, float nu, float hardening, float volume, float mass, bool plasticity, float t_c, float t_s)
 {
-	property prop(young, nu, hardening, volume, mass);
+	property prop(young, nu, hardening, volume, mass, plasticity, t_c, t_s);
 	v_properties.push_back(prop);
 
 	return static_cast<int>(v_properties.size()) - 1;

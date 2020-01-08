@@ -73,8 +73,8 @@ Simulator_3D loadSimulation(size_t &n_particles, glm::vec3* &p_col)
 	Simulator_3D sim(hyper);
 
 	// Add materials, at least one
-	float young, nu, hardening, volume, mass;
-	int another = 0;
+	float young, nu, hardening, volume, mass, t_c, t_s;
+	int another = 0, plasticity;
 	do
 	{
 		std::cout << "Young Modulus(1e5): ";
@@ -87,6 +87,8 @@ Simulator_3D loadSimulation(size_t &n_particles, glm::vec3* &p_col)
 		std::cin >> volume;
 		std::cout << "mass(1.0): ";
 		std::cin >> mass;
+		std::cout << "Plastic material?(0/1): ";
+		std::cin >> plasticity;
 		if (!young)
 		{
 			young = 1e5f;
@@ -107,8 +109,23 @@ Simulator_3D loadSimulation(size_t &n_particles, glm::vec3* &p_col)
 		{
 			mass = 1.0f;
 		}
+		if (plasticity)
+		{
+			std::cout << "theta_c:(2.5e-2f): ";
+			std::cin >> t_c;
+			std::cout << "theta_s:(7.5e-3f): ";
+			std::cin >> t_s;
+			if (!t_c)
+			{
+				t_c = 2.5e-2f;
+			}
+			if (!t_s)
+			{
+				t_s = 7.5e-3f;
+			}
+		}
 
-		sim.addNewMaterial(young, nu, hardening, volume, mass);
+		sim.addNewMaterial(young, nu, hardening, volume, mass, plasticity, t_c, t_s);
 		std::cout << "Another material? (0/1): ";
 		std::cin >> another;
 	} while (another);

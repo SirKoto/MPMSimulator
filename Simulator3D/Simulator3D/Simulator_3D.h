@@ -68,7 +68,7 @@ public:
 	int getNumMaterials() { return static_cast<int>(v_properties.size()); }
 
 	// add a new material
-	int addNewMaterial(float young, float nu, float hardening, float volume = 1.0f, float mass = 1.0f);
+	int addNewMaterial(float young, float nu, float hardening, float volume, float mass, bool plasticity, float t_c, float t_s);
 
 private:
 
@@ -84,12 +84,14 @@ private:
 	struct property
 	{
 		const float young, nu, mu, lambda, hardening, volume, mass, t_c, t_s, p_c, p_s;
-
-		property(float young, float nu, float hardening, float volume, float mass)
+		const bool plasticity;
+		property(float young, float nu, float hardening, float volume, float mass, bool plasticity = true,
+			float t_c = 2.5e-2f, float t_s = 7.5e-3f)
 			: young(young), nu(nu), hardening(hardening), volume(volume), mass(mass),
 				mu(young / (2 * (1 + nu))),
 				lambda(young * nu / ((1 + nu) * (1 - 2 * nu))),
-			t_c(2.5e-2f), t_s(7.5e-3f), p_c(0.6f), p_s(20.f)
+			t_c(t_c), t_s(t_s), p_c(0.6f), p_s(20.f),
+			plasticity(plasticity)
 		{}
 	};
 
