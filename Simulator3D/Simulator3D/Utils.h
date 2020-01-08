@@ -27,6 +27,10 @@ const char SBF_PARAM_HARDENING = (0x05u);
 const char SBF_PARAM_VOLUME = (0x06u);
 const char SBF_PARAM_MASS = (0x07u);
 const char SBF_ID = (0x08u);
+const char SBF_PLASTIC = (0x09u);
+const char SBF_T_C = (0x0Au);
+const char SBF_T_S = (0x0Bu);
+const char SBF_MODEL = (0x0Cu);
 const char SBF_ERROR = (0xFEu);
 
 

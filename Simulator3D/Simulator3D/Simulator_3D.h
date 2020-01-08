@@ -64,6 +64,13 @@ public:
 
 	float getMass(int pos = 0) { return v_properties[pos].mass; }
 
+	float getPlasticity(int pos = 0) { return static_cast<float>(v_properties[pos].plasticity); }
+
+	float getT_C(int pos = 0) { return v_properties[pos].t_c; }
+
+	float getT_S(int pos = 0) { return v_properties[pos].t_s; }
+
+	HYPERELASTICITY getMode() { return mode; }
 	// Get the number of materials in the system actually
 	int getNumMaterials() { return static_cast<int>(v_properties.size()); }
 

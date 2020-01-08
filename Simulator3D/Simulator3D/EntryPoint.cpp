@@ -367,6 +367,7 @@ int writeSimulation(Simulator_3D& sim, SimVisualizer* const viewer, const int nu
 	MSG("writing on " << fileName);
 
 	writer.writeDataf(step_t, SBF_DT_FRAMES);
+	writer.writeDataf(static_cast<float>(static_cast<int>(sim.getMode())), SBF_MODEL);
 	// Write all parameters
 	for (int i = 0; i < sim.getNumMaterials(); ++i)
 	{
@@ -376,6 +377,12 @@ int writeSimulation(Simulator_3D& sim, SimVisualizer* const viewer, const int nu
 		writer.writeDataf(sim.getHardening(i), SBF_PARAM_HARDENING);
 		writer.writeDataf(sim.getVolume(i), SBF_PARAM_VOLUME);
 		writer.writeDataf(sim.getMass(i), SBF_PARAM_MASS);
+		writer.writeDataf(sim.getPlasticity(i), SBF_PLASTIC);
+		if (sim.getPlasticity(i))
+		{
+			writer.writeDataf(sim.getT_C(i), SBF_T_C);
+			writer.writeDataf(sim.getT_S(i), SBF_T_S);
+		}
 	}
 
 	sim.dumpPositionsNormalized(p_pos);
@@ -470,7 +477,7 @@ int readSimulation()
 	float* color = new float[3 * static_cast<size_t>(n_particles)];
 
 	std::vector<FrameSBF<float>> frames(0); // by default 300 frames
-
+	MSG("number of particles: " << n_particles);
 	char res = reader.ReadNextFlag(false);
 	while (res != SBF_ERROR)
 	{
@@ -515,6 +522,43 @@ int readSimulation()
 
 		case SBF_ID:
 			MSG("Material: " << static_cast<float>(reader.ReadDataf()));
+			break;
+			
+		case SBF_PLASTIC:
+			if (reader.ReadDataf())
+			{
+				TMSG("Plastic material");
+			}
+			else
+			{
+				TMSG("Completely elastic material");
+			}
+			break;
+
+		case SBF_T_C:
+			TMSG("T_c: " << static_cast<float>(reader.ReadDataf()));
+			break;
+
+		case SBF_T_S:
+			TMSG("T_s: " << static_cast<float>(reader.ReadDataf()));
+			break;
+
+		case SBF_MODEL:
+		{
+			Simulator_3D::HYPERELASTICITY mode = static_cast<Simulator_3D::HYPERELASTICITY>(static_cast<int>(reader.ReadDataf()));
+			if (mode == Simulator_3D::HYPERELASTICITY::COROTATED)
+			{
+				MSG("Corrotated model");
+			}
+			else if (mode == Simulator_3D::HYPERELASTICITY::NEOHOOKEAN)
+			{
+				MSG("Neo-Hookean model");
+			}
+			else
+			{
+				MSG("Sand model");
+			}
+		}
 			break;
 
 		default:
