@@ -1,3 +1,4 @@
+// Code partialy extracted from https://learnopengl.com/
 #pragma once
 
 #ifndef CAMERA_H
