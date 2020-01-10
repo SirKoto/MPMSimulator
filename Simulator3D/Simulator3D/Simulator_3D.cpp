@@ -115,7 +115,7 @@ void Simulator_3D::step(float dt)
 			const Eigen::Matrix3f PF_t = (mu * ((p.F * (p.F).transpose()) - Eigen::Matrix3f::Identity())) +
 				(Eigen::Matrix3f::Identity() * (lambda * std::log(J)));
 			const float Dinv = (4.0f * grid_size * grid_size);
-			//EQn. 173
+
 			const Eigen::Matrix3f stress = (-dt * p_prop.volume * Dinv) * PF_t;
 
 			affine = stress + p_prop.mass * p.C;
@@ -151,7 +151,6 @@ void Simulator_3D::step(float dt)
 #pragma GCC unroll 3
 					for (int k = -1; k < 2; ++k)
 					{
-
 						w = weights[i + 1].x() * weights[j + 1].y() * weights[k + 1].z();
 						index = getInd(cell_i.x() + i, cell_i.y() + j, cell_i.z() + k);
 						grid[index] += w * moment_mass0;
@@ -252,7 +251,7 @@ void Simulator_3D::step(float dt)
 
 					// ----------  PHYSICS ---------- //
 					const Eigen::Vector3f& normalPhyisics = physicsGrid[idx];
-					// velocity � normal
+					// velocity dot normal
 					float dot = normalPhyisics.dot(cell.head<3>().matrix());
 					// If oposed
 					if (dot < 0.0f)

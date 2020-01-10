@@ -97,7 +97,7 @@ Simulator_3D loadSimulation(size_t &n_particles, glm::vec3* &p_col)
 		{
 			nu = 0.3f;
 		}
-		if (!hardening)
+		if (hardening < 0)
 		{
 			hardening = 10.f;
 		}
