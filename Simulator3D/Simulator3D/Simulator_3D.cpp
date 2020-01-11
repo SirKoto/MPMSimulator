@@ -444,6 +444,8 @@ void Simulator_3D::addParticle(const glm::vec3& pos, const glm::vec3& v, int mat
 
 void Simulator_3D::addParticleNormalized(const glm::vec3& pos, const glm::vec3& v, int material)
 {
+	// Assert that the particle is not exactly at the limit
+	assert(static_cast<int>(pos.y * grid_size) != 0);
 	Eigen::Array3f Epos(pos.x, pos.y, pos.z);
 	Eigen::Array3f Ev(v.x, v.y, v.z);
 	Particle p(Epos, Ev, material);

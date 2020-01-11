@@ -73,7 +73,7 @@ Simulator_3D loadSimulation(size_t &n_particles, glm::vec3* &p_col)
 	Simulator_3D sim(hyper);
 
 	// Add materials, at least one
-	float young, nu, hardening, volume, mass, t_c, t_s;
+	float young, nu, hardening, volume, mass, t_c = 0, t_s = 0;
 	int another = 0, plasticity;
 	do
 	{
@@ -142,6 +142,7 @@ Simulator_3D loadSimulation(size_t &n_particles, glm::vec3* &p_col)
 	TMSG("3 - 3 Boxes different heights");
 	TMSG("4 - 3 Boxes aligned");
 	TMSG("5 - Sphere coliding");
+	TMSG("6 - C");
 	std::cin >> n;
 	switch (n)
 	{
@@ -183,6 +184,10 @@ Simulator_3D loadSimulation(size_t &n_particles, glm::vec3* &p_col)
 			std::cin >> tmp[0] >> tmp[1];
 			n_particles = ps::create2CollidingSpheres(sim, p_col, num, r, x, tmp);
 		}
+		break;
+
+	case 6:
+		n_particles = ps::createC(sim, p_col, num);
 		break;
 
 	default:

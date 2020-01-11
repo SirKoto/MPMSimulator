@@ -220,6 +220,30 @@ namespace ps
 		return count;
 
 	}
+
+	int createC(Simulator_3D& sim, glm::vec3*& p_col, int _n_particles) {
+		int a, b, c;
+		int particles = _n_particles / 3;
+
+		double areaA, areaB, areaC;
+		areaA = std::sqrt(std::pow(0.1f - 0.5f, 2) + std::pow(0.01f - 0.05f, 2) + std::pow(0.4f - 0.6f, 2));
+		areaB = std::sqrt(std::pow(0.1f - 0.2f, 2) + std::pow(0.05f - 0.7f, 2) + std::pow(0.45f - 0.55f, 2));
+		areaC = std::sqrt(std::pow(0.2f - 0.9f, 2) + std::pow(0.6f - 0.7f, 2) + std::pow(0.45f - 0.55f, 2));
+		double sum = areaA + areaB + areaC;
+		glm::vec3* p_cola, *p_colb, *p_colc;
+		a = createBoxFilledHomo(sim, p_cola, static_cast<int>(_n_particles * areaA / sum), 0.1f, 0.6f, 0.01f, 0.05f, 0.4f, 0.6f);
+		b = createBoxFilledHomo(sim, p_colb, static_cast<int>(_n_particles * areaB / sum), 0.1f, 0.2f, 0.05f, 0.7f, 0.45f, 0.55f);
+		c = createBoxFilledHomo(sim, p_colc, static_cast<int>(_n_particles * areaC / sum), 0.2f, 0.9f, 0.6f, 0.7f, 0.45f, 0.55f);
+
+		p_col = new glm::vec3[(size_t)a + (size_t)b + (size_t)c];
+		std::memcpy(p_col, p_cola, a * sizeof(glm::vec3));
+		std::memcpy(p_col + a, p_colb, b * sizeof(glm::vec3));
+		std::memcpy(p_col + a + b, p_colc, c * sizeof(glm::vec3));
+
+		delete[] p_cola, p_colb, p_colc;
+
+		return a + b + c;
+	}
 }
 
 #endif // !_PARTICLESTRUCTURES_
