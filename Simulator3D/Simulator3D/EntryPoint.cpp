@@ -187,7 +187,12 @@ Simulator_3D loadSimulation(size_t &n_particles, glm::vec3* &p_col)
 		break;
 
 	case 6:
-		n_particles = ps::createC(sim, p_col, num);
+	{
+		int tmp[2];
+		std::cout << "Enter 2 material id [base-support, stem]: ";
+		std::cin >> tmp[0] >> tmp[1];
+		n_particles = ps::createC(sim, p_col, num, tmp);
+	}
 		break;
 
 	default:

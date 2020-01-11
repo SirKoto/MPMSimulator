@@ -106,7 +106,7 @@ namespace ps
 
 	// Unique big BB filled with all particles at the same distances
 	int createBoxFilledHomo(Simulator_3D& sim, glm::vec3*& p_col, int _n_particles = utils::maxParticles,
-		float x0 = 0.1f, float x1 = 0.9f, float y0 = 0.65f, float y1 = 0.98f, float z0 = 0.3f, float z1 = 0.7f)
+		float x0 = 0.1f, float x1 = 0.9f, float y0 = 0.65f, float y1 = 0.98f, float z0 = 0.3f, float z1 = 0.7f, int material = 0)
 	{
 		const float vol = (x1 - x0) * (y1 - y0) * (z1 - z0);
 		const float p = _n_particles * (1 / vol);
@@ -135,7 +135,7 @@ namespace ps
 			{
 				for (float z = z0; z < z1; z += dx, i++)
 				{
-					sim.addParticleNormalized(glm::vec3(x, y, z));
+					sim.addParticleNormalized(glm::vec3(x, y, z), glm::vec3(0), material);
 					p_col[i] = color[y > y0 + 2.f * dy ? 0 : y > y0 + dy ? 1 : 2];
 				}
 			}
@@ -221,7 +221,7 @@ namespace ps
 
 	}
 
-	int createC(Simulator_3D& sim, glm::vec3*& p_col, int _n_particles) {
+	int createC(Simulator_3D& sim, glm::vec3*& p_col, int _n_particles, const int materials[2]) {
 		int a, b, c;
 		int particles = _n_particles / 3;
 
@@ -231,9 +231,9 @@ namespace ps
 		areaC = std::sqrt(std::pow(0.2f - 0.9f, 2) + std::pow(0.6f - 0.7f, 2) + std::pow(0.45f - 0.55f, 2));
 		double sum = areaA + areaB + areaC;
 		glm::vec3* p_cola, *p_colb, *p_colc;
-		a = createBoxFilledHomo(sim, p_cola, static_cast<int>(_n_particles * areaA / sum), 0.1f, 0.6f, 0.01f, 0.05f, 0.4f, 0.6f);
-		b = createBoxFilledHomo(sim, p_colb, static_cast<int>(_n_particles * areaB / sum), 0.1f, 0.2f, 0.05f, 0.7f, 0.45f, 0.55f);
-		c = createBoxFilledHomo(sim, p_colc, static_cast<int>(_n_particles * areaC / sum), 0.2f, 0.9f, 0.6f, 0.7f, 0.45f, 0.55f);
+		a = createBoxFilledHomo(sim, p_cola, static_cast<int>(_n_particles * areaA / sum), 0.1f, 0.6f, 0.01f, 0.05f, 0.4f, 0.6f, materials[0]);
+		b = createBoxFilledHomo(sim, p_colb, static_cast<int>(_n_particles * areaB / sum), 0.1f, 0.2f, 0.05f, 0.7f, 0.45f, 0.55f, materials[0]);
+		c = createBoxFilledHomo(sim, p_colc, static_cast<int>(_n_particles * areaC / sum), 0.2f, 0.9f, 0.6f, 0.7f, 0.45f, 0.55f, materials[1]);
 
 		p_col = new glm::vec3[(size_t)a + (size_t)b + (size_t)c];
 		std::memcpy(p_col, p_cola, a * sizeof(glm::vec3));
