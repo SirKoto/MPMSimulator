@@ -123,7 +123,8 @@ void Simulator_3D::step(float dt)
 		else if (this->mode == HYPERELASTICITY::LINEAR)
 		{
 			// Neo-hookean times F^t
-			const Eigen::Matrix3f PF_t = (mu * ((p.F * (p.F).transpose()) - Eigen::Matrix3f::Identity()));
+			const Eigen::Matrix3f PF_t = (mu * ((p.F * (p.F).transpose()) - Eigen::Matrix3f::Identity())) +
+				(Eigen::Matrix3f::Identity() * (lambda * std::log(J)));
 			const float Dinv = (4.0f * grid_size * grid_size);
 
 			const Eigen::Matrix3f stress = (-dt * p_prop.volume * Dinv) * PF_t;
