@@ -128,7 +128,7 @@ void Simulator_3D::step(float dt)
 
 			const Eigen::Matrix3f stress = (-dt * p_prop.volume * Dinv) * PF_t;
 
-			affine = stress + p_prop.mass * p.C;
+			affine = stress;
 		}
 		else
 		{
