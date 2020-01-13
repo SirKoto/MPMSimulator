@@ -51,6 +51,7 @@ Simulator_3D loadSimulation(size_t &n_particles, glm::vec3* &p_col)
 	TMSG("1 - Corotated");
 	TMSG("2 - Neo-Hookean");
 	TMSG("3 - Sand");
+	TMSG("4 - Linear");
 	int n; std::cin >> n;
 
 	Simulator_3D::HYPERELASTICITY hyper = Simulator_3D::HYPERELASTICITY::COROTATED;;
@@ -65,6 +66,8 @@ Simulator_3D loadSimulation(size_t &n_particles, glm::vec3* &p_col)
 	case 3:
 		hyper = Simulator_3D::HYPERELASTICITY::SAND;
 		break;
+	case 4:
+		hyper = Simulator_3D::HYPERELASTICITY::LINEAR;
 	default:
 		break;
 	}
@@ -563,6 +566,10 @@ int readSimulation()
 			else if (mode == Simulator_3D::HYPERELASTICITY::NEOHOOKEAN)
 			{
 				MSG("Neo-Hookean model");
+			}
+			else if (mode == Simulator_3D::HYPERELASTICITY::LINEAR)
+			{
+				MSG("Linear model");
 			}
 			else
 			{

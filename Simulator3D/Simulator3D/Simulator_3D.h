@@ -14,7 +14,8 @@ public:
 	{
 		COROTATED,
 		NEOHOOKEAN,
-		SAND
+		SAND,
+		LINEAR
 	};
 
 	// Constructor

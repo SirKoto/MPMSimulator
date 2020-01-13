@@ -120,6 +120,16 @@ void Simulator_3D::step(float dt)
 
 			affine = stress + p_prop.mass * p.C;
 		}
+		else if (this->mode == HYPERELASTICITY::LINEAR)
+		{
+			// Neo-hookean times F^t
+			const Eigen::Matrix3f PF_t = (mu * ((p.F * (p.F).transpose()) - Eigen::Matrix3f::Identity()));
+			const float Dinv = (4.0f * grid_size * grid_size);
+
+			const Eigen::Matrix3f stress = (-dt * p_prop.volume * Dinv) * PF_t;
+
+			affine = stress + p_prop.mass * p.C;
+		}
 		else
 		{
 			// SAND: No energy
