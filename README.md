@@ -10,7 +10,9 @@ Simulador 2D dissenyat unicament per a Windows, amb visual studio.
 Simulador 3D multiplataforma. Simulació, visualització, simulació i exportació.
 
 ## Videos
-![](images/C2.gif)
+<img src="https://github.com/SirKoto/MPMSimulator/blob/master/images/C2.gif?raw=true" width="410px"> <img src="https://github.com/SirKoto/MPMSimulator/blob/master/images/superDeffCor.gif?raw=true" width="410px">
+<img src="https://github.com/SirKoto/MPMSimulator/blob/master/images/cmp4.gif?raw=true" width="410px"> <img src="https://github.com/SirKoto/MPMSimulator/blob/master/images/snow2.gif?raw=true" width="410px">
+<img src="https://github.com/SirKoto/MPMSimulator/blob/master/images/hoursand1.gif?raw=true" width="410px">
 
 ## Organització de codi 3D
 - _Simulator\_3D_: Classe que inclou el simulador escencial de materials deformables.
