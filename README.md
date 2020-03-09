@@ -9,6 +9,9 @@ Simulador 2D dissenyat unicament per a Windows, amb visual studio.
 
 Simulador 3D multiplataforma. Simulació, visualització, simulació i exportació.
 
+## Videos
+![](images/C2.gif)
+
 ## Organització de codi 3D
 - _Simulator\_3D_: Classe que inclou el simulador escencial de materials deformables.
 - _EntryPoint_: Main del software. Inclou la carrega de simulacions i el bucle de comportament.
