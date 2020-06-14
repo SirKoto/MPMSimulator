@@ -9,12 +9,15 @@
 
 #include <iostream>
 
+#include <memory>
+
 #include <chrono>
 
 #include "IO/WriteSBF.h"
 #include "IO/ReadSBF.h"
 
 #include "Simulator_3D.h"
+#include "cuda/Simulator_3D_GPU.h"
 #include "SimVisualizer.h"
 
 #include "ParticleStructures.h"
@@ -44,9 +47,14 @@ void printProgress(float p)
 	std::cout << " ]" << std::flush;
 }
 
-Simulator_3D loadSimulation(size_t &n_particles, glm::vec3* &p_col)
+std::unique_ptr<Simulator_3D> loadSimulation(size_t &n_particles, glm::vec3* &p_col)
 {
-	
+
+	MSG("Device");
+	TMSG("0 - CPU"); 
+	TMSG("1 - GPU");
+	bool GPU;
+	std::cin >> GPU;
 	MSG("Hyperelasticity");
 	TMSG("1 - Corotated");
 	TMSG("2 - Neo-Hookean");
@@ -73,7 +81,8 @@ Simulator_3D loadSimulation(size_t &n_particles, glm::vec3* &p_col)
 	}
 
 	// Create simulator
-	Simulator_3D sim(hyper);
+	std::unique_ptr<Simulator_3D> sim = GPU ? std::make_unique<Simulator_3D_GPU>(hyper) : 
+										      std::make_unique<Simulator_3D>(hyper);
 
 	// Add materials, at least one
 	float young, nu, hardening, volume, mass, t_c = 0, t_s = 0;
@@ -128,7 +137,7 @@ Simulator_3D loadSimulation(size_t &n_particles, glm::vec3* &p_col)
 			}
 		}
 
-		sim.addNewMaterial(young, nu, hardening, volume, mass, plasticity, t_c, t_s);
+		sim->addNewMaterial(young, nu, hardening, volume, mass, plasticity, t_c, t_s);
 		std::cout << "Another material? (0/1): ";
 		std::cin >> another;
 	} while (another);
@@ -152,17 +161,17 @@ Simulator_3D loadSimulation(size_t &n_particles, glm::vec3* &p_col)
 		float x, y, z;
 
 	case 1:
-		n_particles = ps::createBoxFilled(sim, p_col, num);
+		n_particles = ps::createBoxFilled(*sim, p_col, num);
 		break;
 
 	case 2:
-		n_particles = ps::createBoxFilledHomo(sim, p_col, num);
+		n_particles = ps::createBoxFilledHomo(*sim, p_col, num);
 		break;
 
 	case 3:
 		std::cout << "Initial velocity x y z: ";
 		std::cin >> x >> y >> z;
-		n_particles = ps::create3BoxesFilledHomo(sim, p_col, num, glm::vec3(x, y, z));
+		n_particles = ps::create3BoxesFilledHomo(*sim, p_col, num, glm::vec3(x, y, z));
 		break;
 
 	case 4:
@@ -172,7 +181,7 @@ Simulator_3D loadSimulation(size_t &n_particles, glm::vec3* &p_col)
 			std::cout << "Enter 3 material id: ";
 			int tmp[3];
 			std::cin >> tmp[0] >> tmp[1] >> tmp[2];
-			n_particles = ps::create3BoxesSeparatedFilledHomo(sim, p_col, num, glm::vec3(x, y, z), tmp);
+			n_particles = ps::create3BoxesSeparatedFilledHomo(*sim, p_col, num, glm::vec3(x, y, z), tmp);
 		}
 		break;
 
@@ -185,7 +194,7 @@ Simulator_3D loadSimulation(size_t &n_particles, glm::vec3* &p_col)
 			int tmp[2];
 			std::cout << "Enter 2 material id: ";
 			std::cin >> tmp[0] >> tmp[1];
-			n_particles = ps::create2CollidingSpheres(sim, p_col, num, r, x, tmp);
+			n_particles = ps::create2CollidingSpheres(*sim, p_col, num, r, x, tmp);
 		}
 		break;
 
@@ -194,12 +203,12 @@ Simulator_3D loadSimulation(size_t &n_particles, glm::vec3* &p_col)
 		int tmp[2];
 		std::cout << "Enter 2 material id [base-support, stem]: ";
 		std::cin >> tmp[0] >> tmp[1];
-		n_particles = ps::createC(sim, p_col, num, tmp);
+		n_particles = ps::createC(*sim, p_col, num, tmp);
 	}
 		break;
 
 	default:
-		n_particles = ps::createBoxFilled(sim, p_col, num);
+		n_particles = ps::createBoxFilled(*sim, p_col, num);
 		break;
 	}
 
@@ -215,25 +224,25 @@ Simulator_3D loadSimulation(size_t &n_particles, glm::vec3* &p_col)
 		switch (ph)
 		{
 		case 2:
-			sim.setPhysicSlopes(0.25f, 0.4f, 0.1f, 2);
-			sim.setPhysicsZWall(0.3f, 0.7f, 2);
+			sim->setPhysicSlopes(0.25f, 0.4f, 0.1f, 2);
+			sim->setPhysicsZWall(0.3f, 0.7f, 2);
 			break;
 
 		case 3:
 
-			sim.setPhysicSlopes(0.25f, 0.4f, 0.1f, 2);
+			sim->setPhysicSlopes(0.25f, 0.4f, 0.1f, 2);
 			break;
 
 		case 1:
 			std::cout << "Flat. Set height(0-1): ";
 			float h; std::cin >> h;
 			assert(h >= 0.0f && h <= 1.0f);
-			sim.setPhysicsFlat(h);
+			sim->setPhysicsFlat(h);
 		default:
 			break;
 		}
 	}
-	return sim;
+	return std::move(sim);
 }
 
 // Do simulation without graphical viewer
@@ -241,7 +250,7 @@ int doConsoleSimulation()
 {
 	glm::vec3* p_col = nullptr;
 	size_t n_particles;
-	Simulator_3D sim = loadSimulation(n_particles, p_col);
+	std::unique_ptr<Simulator_3D> sim = loadSimulation(n_particles, p_col);
 	assert(p_col != nullptr);
 
 	float* colordata = new float[3 * n_particles];
@@ -255,7 +264,7 @@ int doConsoleSimulation()
 	int n_frames;
 	MSG("Enter number of frames:");
 	std::cin >> n_frames;
-	int res = writeSimulation(sim, nullptr, static_cast<int>(n_particles), fileName, n_frames, colordata);
+	int res = writeSimulation(*sim, nullptr, static_cast<int>(n_particles), fileName, n_frames, colordata);
 	delete[] colordata;
 	return res;
 }
@@ -267,7 +276,7 @@ int doSimulation()
 	glm::vec3* p_col = nullptr;
 	size_t n_particles;
 	// Create new simulator, with its initial state
-	Simulator_3D sim = loadSimulation(n_particles, p_col);
+	std::unique_ptr<Simulator_3D> sim = loadSimulation(n_particles, p_col);
 
 	// always create color
 	assert(p_col != nullptr);
@@ -287,7 +296,7 @@ int doSimulation()
 	}
 	delete[] p_col;
 
-	n_particles = sim.dumpPositionsNormalized(p_pos);
+	n_particles = sim->dumpPositionsNormalized(p_pos);
 	MSG(n_particles);
 
 	viewer.updateParticlePositions(p_pos);
@@ -329,7 +338,7 @@ int doSimulation()
 		MSG("Enter number of frames:");
 		std::cin >> n_frames;
 		
-		int res = writeSimulation(sim, &viewer, static_cast<int>(n_particles), fileName, n_frames, colordata);
+		int res = writeSimulation(*sim, &viewer, static_cast<int>(n_particles), fileName, n_frames, colordata);
 		delete[] colordata;
 		return res;
 	}
@@ -687,6 +696,7 @@ int readSimulation()
 
 	return res;
 }
+
 
 int main()
 {

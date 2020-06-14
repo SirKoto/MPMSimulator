@@ -40,7 +40,7 @@ unsigned int Simulator_3D::dumpPositions(float* positions) const
 	return size;
 }
 
-unsigned int Simulator_3D::dumpPositionsNormalized(float* positions) const
+unsigned int Simulator_3D::dumpPositionsNormalized(float* positions)
 {
 	unsigned int j = 0;
 	const unsigned int size = static_cast<unsigned int>(particles.size());

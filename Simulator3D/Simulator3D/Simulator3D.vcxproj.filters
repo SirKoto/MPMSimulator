@@ -19,6 +19,9 @@
     <Filter Include="Archivos de recursos\Shadows">
       <UniqueIdentifier>{a63bcd18-f5f7-4776-9a0c-4661c46782e7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Archivos de origen\CUDA">
+      <UniqueIdentifier>{ebb14269-6cb0-4b38-abe3-ab8f830ccef1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EntryPoint.cpp">
@@ -40,6 +43,9 @@
       <Filter>Archivos de origen</Filter>
     </ClCompile>
     <ClCompile Include="SimVisualizer.cpp">
+      <Filter>Archivos de origen</Filter>
+    </ClCompile>
+    <ClCompile Include="cuda\Simulator_3D_GPU.cpp">
       <Filter>Archivos de origen</Filter>
     </ClCompile>
   </ItemGroup>
@@ -69,6 +75,9 @@
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>
     <ClInclude Include="ParticleStructures.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
+    <ClInclude Include="cuda\Simulator_3D_GPU.h">
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>
   </ItemGroup>
@@ -106,5 +115,10 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="cuda\Sim3D.cu">
+      <Filter>Archivos de origen\CUDA</Filter>
+    </CudaCompile>
   </ItemGroup>
 </Project>
