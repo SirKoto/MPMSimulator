@@ -147,7 +147,7 @@ namespace mm {
 
 	// ADD OUTTER PRODUCT TO MATRIX
 	DEVICE_FUNC
-	void add_outter_product(mat3* r, const vec3& a, vec3& b);
+	void add_outter_product(mat3* r, const vec3& a,const vec3& b);
 
 	DEVICE_FUNC
 		vec3 col0(const mat3& m);
@@ -334,7 +334,7 @@ namespace mm {
 				float acc = 0.0f;
 #pragma unroll
 				for (int k = 0; k < 3; ++k) {
-					acc += a.m[i][k] * a.m[i][k];
+					acc += a.m[i][k] * a.m[j][k];
 				}
 				res.m[i][j] = acc;
 			}
@@ -452,7 +452,7 @@ namespace mm {
 
 	// OUTTER PRODUCT
 	DEVICE_FUNC
-	void add_outter_product(mat3* r, const vec3& a, vec3& b)
+	void add_outter_product(mat3* r, const vec3& a, const vec3& b)
 	{
 		// Totally unrolled outer product
 		r->m[0][0] += a.x * b.x;

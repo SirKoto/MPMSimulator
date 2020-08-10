@@ -66,7 +66,7 @@ if (idx < d_numParticles) {
 	const ParticleGPU& p = d_particles[idx];
 	// Discretize position 
 	const vec3 cell_if = mm::mul(p.pos, GRID_SIZE);
-	const int cell_x = cell_if.x, cell_y = cell_if.y, cell_z = cell_if.z; // floor
+	int cell_x = cell_if.x, cell_y = cell_if.y, cell_z = cell_if.z; // floor
 	// Vector from cell center -> particle
 	vec3 distFromCenter = mm::sub(cell_if, mm::floor(cell_if));
 	mm::add_to(&distFromCenter, -0.5f); // center at point 0,0,0
@@ -106,7 +106,7 @@ if (idx < d_numParticles) {
 
 	// ----------  AFFINE MATRIX ---------- //
 	mat3 affine = mm::mul(p.C, mass);
-	if(false){
+	if(true){
 		mat3 PF_t = mm::mul_trans(p.F);
 		mm::add_to(&PF_t, -1.0f); // Add only to diagonal
 		mm::mul_in(&PF_t, mu); // Multiply by mu
@@ -122,12 +122,12 @@ if (idx < d_numParticles) {
 	// ----------  PARTICLE TRANSFERENCE ---------- //
 	// This can be improved by using the previously computed distFromCenter
 	vec3 cell_dist0 = mm::add(mm::floor(cell_if), -1.0f);
-	cell_dist0 = mm::sub(cell_dist0, mm::mul(p.pos, GRID_SIZE));
+	cell_dist0 = mm::sub(cell_dist0, cell_if);
 	mm::add_to(&cell_dist0, 0.5f);
 
 	vec3 moment = mm::mul(p.v, mass);
 
-	vec4 moment_mass0 = vec4{ moment.x, moment.y, moment.z, mass }; // moment and particle mass
+	vec4 moment_mass0 = { moment.x, moment.y, moment.z, mass }; // moment and particle mass
 	
 	vec3 contribution = mm::mul(affine, cell_dist0);
 	mm::mul_in(&contribution, D_SIZE);
@@ -136,8 +136,8 @@ if (idx < d_numParticles) {
 	const vec3 kstep = mm::mul(mm::col2(affine), D_SIZE);// affine.col(2)* D_SIZE;
 	const vec3 jSemiStep = mm::mul(mm::col1(affine), D_SIZE); //(affine.col(1) * D_SIZE).array();
 	const vec3 jstep = mm::sub(jSemiStep, mm::mul(kstep, 3.0f));//jSemiStep -(3.0f * kstep);
-	const vec3 kSemiStep = mm::mul(mm::col0(affine), D_SIZE);
-	const vec3 istep = mm::sub(kSemiStep, mm::mul(jSemiStep, 3.0f)); //(affine.col(0) * D_SIZE).array() - (3.0f * jSemiStep);
+	const vec3 iSemiStep = mm::mul(mm::col0(affine), D_SIZE);
+	const vec3 istep = mm::sub(iSemiStep, mm::mul(jSemiStep, 3.0f)); //(affine.col(0) * D_SIZE).array() - (3.0f * jSemiStep);
 
 	float w;
 	unsigned int index;
@@ -275,7 +275,7 @@ if (idx < d_numParticles) {
 	cell_x -= 1; cell_y -= 1; cell_z -= 1;
 	// vector particle -> center cell
 	vec3 cell_dist = mm::sub(mm::floor(cell_if), cell_if);
-	mm::add_to(&cell_dist, 0.5f);
+	mm::add_to(&cell_dist, -0.5f); // -1 + 0.5
 	float w;
 	for (int i = -1; i < 2; ++i)
 	{
@@ -308,7 +308,6 @@ if (idx < d_numParticles) {
 	}
 	// Apply D^-1 to get C
 	mm::mul_in(&p.C, 4.0f * GRID_SIZE);
-	mm::set_zero(&p.C);
 
 	// ----------  ADVECTION ---------- //
 	//Eigen::Array3f tmp = p.pos;
@@ -322,9 +321,9 @@ if (idx < d_numParticles) {
 		p.pos.z >= 0.0f && p.pos.z <= 1.0f);
 
 	// ----------  DEFORMATION GRADIENT UPDATE ---------- //
-	mat3 F = mm::mul(p.C, dt);
-	mm::add_to(&F, 1.0f);
-	F = mm::mul(F, p.F);
+	mat3 Ftmp = mm::mul(p.C, dt);
+	mm::add_to(&Ftmp, 1.0f);
+	mat3 F = mm::mul(Ftmp, p.F);
 
 	/*
 	// ----------  PLASTICITY ---------- //
