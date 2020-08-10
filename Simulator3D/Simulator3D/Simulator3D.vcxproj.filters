@@ -80,6 +80,9 @@
     <ClInclude Include="cuda\Simulator_3D_GPU.h">
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>
+    <ClInclude Include="cuda\MinMath.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\shaderBB.frag">
