@@ -1,6 +1,5 @@
 #include "Simulator_3D_GPU.h"
 
-
 extern "C"
 void loadParticles2GPU(const S3::Particle * particles, size_t num);
 extern "C"
@@ -11,6 +10,8 @@ extern "C"
 void loadProperties2GPU(const S3::property * properties, size_t num);
 extern "C"
 void storeParticles2Array(S3::Particle * particles, size_t num);
+extern "C"
+void runIterationGPU(float dt);
 
 Simulator_3D_GPU::Simulator_3D_GPU(HYPERELASTICITY mode) : Simulator_3D(mode)
 {
@@ -23,6 +24,7 @@ void Simulator_3D_GPU::step(float dt)
 		this->m_hasUpdated = true;
 		updateGPUMemory();
 	}
+	runIterationGPU(dt);
 }
 
 unsigned int Simulator_3D_GPU::dumpPositions(float* positions) const
@@ -33,9 +35,10 @@ unsigned int Simulator_3D_GPU::dumpPositions(float* positions) const
 
 unsigned int Simulator_3D_GPU::dumpPositionsNormalized(float* positions)
 {
-	Simulator_3D_GPU::Particle* ptr = particles.data();
-	storeParticles2Array(ptr, this->particles.size());
-
+	if (this->m_hasUpdated) {
+		Simulator_3D_GPU::Particle* ptr = particles.data();
+		storeParticles2Array(ptr, this->particles.size());
+	}
 	return Simulator_3D::dumpPositionsNormalized(positions);
 }
 
