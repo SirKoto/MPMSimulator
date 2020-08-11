@@ -32,6 +32,7 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="cuda\MinMath.h" />
     <ClInclude Include="cuda\Simulator_3D_GPU.h" />
+    <CudaCompile Include="cuda\svd3_cuda.cuh" />
     <ClInclude Include="IO\FrameSBF.h" />
     <ClInclude Include="IO\ReadSBF.h" />
     <ClInclude Include="IO\WriteSBF.h" />

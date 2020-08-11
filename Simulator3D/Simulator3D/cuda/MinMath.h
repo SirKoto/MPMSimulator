@@ -107,6 +107,9 @@ namespace mm {
 		mat3 mul_trans(const mat3& a);
 
 	DEVICE_FUNC
+		mat3 mul_trans(const mat3& a, const mat3& b);
+
+	DEVICE_FUNC
 		vec3 mul(const vec3& v, float f);
 
 	DEVICE_FUNC
@@ -335,6 +338,26 @@ namespace mm {
 #pragma unroll
 				for (int k = 0; k < 3; ++k) {
 					acc += a.m[i][k] * a.m[j][k];
+				}
+				res.m[i][j] = acc;
+			}
+		}
+
+		return res;
+	}
+	// compute a * transposed(b)
+
+	DEVICE_FUNC
+	mat3 mul_trans(const mat3& a, const mat3& b) {
+		mat3 res;
+#pragma unroll
+		for (int i = 0; i < 3; ++i) {
+#pragma unroll
+			for (int j = 0; j < 3; ++j) {
+				float acc = 0.0f;
+#pragma unroll
+				for (int k = 0; k < 3; ++k) {
+					acc += a.m[i][k] * b.m[j][k];
 				}
 				res.m[i][j] = acc;
 			}

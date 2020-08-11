@@ -7,6 +7,8 @@
 #define GENERATE_IMPLEMENTATION_MM
 #include "MinMath.h"
 
+#include "svd3_cuda.cuh"
+
 using namespace mm;
 
 #define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
@@ -324,6 +326,43 @@ if (idx < d_numParticles) {
 	mat3 Ftmp = mm::mul(p.C, dt);
 	mm::add_to(&Ftmp, 1.0f);
 	mat3 F = mm::mul(Ftmp, p.F);
+
+	const S3::property& p_prop = d_properties[p.prop_id];
+	if (p_prop.plasticity)
+	{
+		mat3 u, v;
+		vec3 s;
+
+		svd(F.m[0][0], F.m[0][1], F.m[0][2],
+			F.m[1][0], F.m[1][1], F.m[1][2],
+			F.m[2][0], F.m[2][1], F.m[2][2],
+			u.m[0][0], u.m[0][1], u.m[0][2],
+			u.m[1][0], u.m[1][1], u.m[1][2],
+			u.m[2][0], u.m[2][1], u.m[2][2],
+			s.x, s.y, s.z,
+			v.m[0][0], v.m[0][1], v.m[0][2],
+			v.m[1][0], v.m[1][1], v.m[1][2],
+			v.m[2][0], v.m[2][1], v.m[2][2]);
+
+		// Snow paper elasticiy constrains
+		s.x = glm::clamp(s.x, 1.0f - p_prop.t_c, 1.0f + p_prop.t_s);
+		s.y = glm::clamp(s.y, 1.0f - p_prop.t_c, 1.0f + p_prop.t_s);
+		s.z = glm::clamp(s.z, 1.0f - p_prop.t_c, 1.0f + p_prop.t_s);
+
+		mat3 S;
+		S.m[0][0] = s.x;
+		S.m[1][1] = s.y;
+		S.m[2][2] = s.z;
+
+		const float oldJ = mm::determinant(F);
+
+		F = mm::mul(u, mm::mul_trans(S, v));
+
+		const float det = mm::determinant(F);
+		const float newJ = glm::clamp(p.Jp * oldJ / det, p_prop.p_c, p_prop.p_s);
+
+		p.Jp = newJ;
+	}
 
 	/*
 	// ----------  PLASTICITY ---------- //

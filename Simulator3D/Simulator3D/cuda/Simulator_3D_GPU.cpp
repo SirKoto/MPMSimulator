@@ -1,4 +1,5 @@
 #include "Simulator_3D_GPU.h"
+#include "../Utils.h"
 
 extern "C"
 void loadParticles2GPU(const S3::Particle * particles, size_t num);
