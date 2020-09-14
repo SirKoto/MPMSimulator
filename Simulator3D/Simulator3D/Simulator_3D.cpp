@@ -40,7 +40,7 @@ unsigned int Simulator_3D::dumpPositions(float* positions) const
 	return size;
 }
 
-unsigned int Simulator_3D::dumpPositionsNormalized(float* positions) const
+unsigned int Simulator_3D::dumpPositionsNormalized(float* positions)
 {
 	unsigned int j = 0;
 	const unsigned int size = static_cast<unsigned int>(particles.size());
@@ -101,7 +101,8 @@ void Simulator_3D::step(float dt)
 
 
 			//Corotated constitucional model
-			const Eigen::Matrix3f PF_t = (2.0f * mu * (p.F - r) * (p.F).transpose()) + (Eigen::Matrix3f::Identity() * (lambda * (J - 1.0f) * J));
+			const Eigen::Matrix3f PF_t = (2.0f * mu * (p.F - r) * (p.F).transpose()) 
+				+ (Eigen::Matrix3f::Identity() * (lambda * (J - 1.0f) * J));
 
 			const float Dinv = (4.0f * grid_size * grid_size);
 
