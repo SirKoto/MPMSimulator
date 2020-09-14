@@ -101,7 +101,8 @@ void Simulator_3D::step(float dt)
 
 
 			//Corotated constitucional model
-			const Eigen::Matrix3f PF_t = (2.0f * mu * (p.F - r) * (p.F).transpose()) + (Eigen::Matrix3f::Identity() * (lambda * (J - 1.0f) * J));
+			const Eigen::Matrix3f PF_t = (2.0f * mu * (p.F - r) * (p.F).transpose()) 
+				+ (Eigen::Matrix3f::Identity() * (lambda * (J - 1.0f) * J));
 
 			const float Dinv = (4.0f * grid_size * grid_size);
 

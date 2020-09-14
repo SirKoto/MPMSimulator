@@ -3,7 +3,7 @@
 
 #ifdef __CUDACC__
 #pragma message("Min Math: Cuda compilation code")
-#define DEVICE_FUNC __device__
+#define DEVICE_FUNC __device__ __forceinline__
 #else 
 #define DEVICE_FUNC
 #endif
@@ -80,6 +80,9 @@ namespace mm {
 
 	DEVICE_FUNC
 		vec3 sub(const vec3& a, const vec3& b);
+
+	DEVICE_FUNC
+		mat3 sub(const mat3& a, const mat3& b);
 
 	DEVICE_FUNC
 		void sub_in(float f, vec3* v);
@@ -268,6 +271,21 @@ namespace mm {
 		r.x = a.x - b.x;
 		r.y = a.y - b.y;
 		r.z = a.z - b.z;
+
+		return r;
+	}
+
+	DEVICE_FUNC
+	mat3 sub(const mat3& a, const mat3& b) {
+		mat3 r;
+		float* p = reinterpret_cast<float*>(r.m);
+		const float* pa = reinterpret_cast<const float*>(a.m);
+		const float* pb = reinterpret_cast<const float*>(b.m);
+
+#pragma unroll
+		for (int i = 0; i < 3; ++i) {
+			p[i] = *pa - *pb;
+		}
 
 		return r;
 	}

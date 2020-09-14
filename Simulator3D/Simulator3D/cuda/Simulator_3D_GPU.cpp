@@ -12,7 +12,7 @@ void loadProperties2GPU(const S3::property * properties, size_t num);
 extern "C"
 void storeParticles2Array(S3::Particle * particles, size_t num);
 extern "C"
-void runIterationGPU(float dt);
+void runIterationGPU(float dt, bool corrotated);
 
 Simulator_3D_GPU::Simulator_3D_GPU(HYPERELASTICITY mode) : Simulator_3D(mode)
 {
@@ -25,7 +25,7 @@ void Simulator_3D_GPU::step(float dt)
 		this->m_hasUpdated = true;
 		updateGPUMemory();
 	}
-	runIterationGPU(dt);
+	runIterationGPU(dt, this->mode == HYPERELASTICITY::COROTATED);
 }
 
 unsigned int Simulator_3D_GPU::dumpPositions(float* positions) const

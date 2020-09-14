@@ -83,9 +83,6 @@
     <ClInclude Include="cuda\MinMath.h">
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>
-    <ClInclude Include="cuda\svd3_cuda.cuh">
-      <Filter>Archivos de origen\CUDA</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\shaderBB.frag">
@@ -124,6 +121,9 @@
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="cuda\Sim3D.cu">
+      <Filter>Archivos de origen\CUDA</Filter>
+    </CudaCompile>
+    <CudaCompile Include="cuda\svd3_cuda.cuh">
       <Filter>Archivos de origen\CUDA</Filter>
     </CudaCompile>
   </ItemGroup>
