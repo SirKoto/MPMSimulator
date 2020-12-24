@@ -4,6 +4,10 @@ Projecte de Pol Martín Garcia de final de carrera d'informàtica.
 
 Simulació de materials deformables amb MPM-MLS.
 
+Thesis document can also be found on [UPCommons](https://upcommons.upc.edu/handle/2117/190540).
+
+Awarded best informatics engineering bachelor final thesis 2019-2020 on the Barcelona School of Informatics  (FIB).
+
 ## Estat actual
 Simulador 2D dissenyat unicament per a Windows, amb visual studio.
 
