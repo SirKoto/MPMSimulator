@@ -1,38 +1,47 @@
 # README
 
-Projecte de Pol Martín Garcia de final de carrera d'informàtica.
+Informatics Engineering final thesis.
 
-Simulació de materials deformables amb MPM-MLS.
+Simulation of deformable materials with MPM-MLS.
 
-## Estat actual
-Simulador 2D dissenyat unicament per a Windows, amb visual studio.
+Thesis document can also be found on [UPCommons](https://upcommons.upc.edu/handle/2117/190540).
 
-Simulador 3D multiplataforma. Simulació, visualització, simulació i exportació.
+Awarded best informatics engineering bachelor final thesis 2019-2020 on the Barcelona School of Informatics  (FIB).
+
+## Current State
+2D simulator, working only for Windows.
+
+3D simulator (multi-platform). Simulation, visualization, interaction and storage.
+- CMakeLists needs update to account for the CUDA new implementation
 
 ## Videos
 <img src="https://github.com/SirKoto/MPMSimulator/blob/master/images/C2.gif?raw=true" width="410px"> <img src="https://github.com/SirKoto/MPMSimulator/blob/master/images/superDeffCor.gif?raw=true" width="410px">
 <img src="https://github.com/SirKoto/MPMSimulator/blob/master/images/cmp4.gif?raw=true" width="410px"> <img src="https://github.com/SirKoto/MPMSimulator/blob/master/images/snow2.gif?raw=true" width="410px">
 <img src="https://github.com/SirKoto/MPMSimulator/blob/master/images/hoursand1.gif?raw=true" width="410px">
 
-## Organització de codi 3D
-- _Simulator\_3D_: Classe que inclou el simulador escencial de materials deformables.
-- _EntryPoint_: Main del software. Inclou la carrega de simulacions i el bucle de comportament.
-- _ParticleStructures_: Header amb les creacions d'estructures de partícules per a simular.
-- _Utils_: Classe amb funcionalitats utils, per separar dependències.
-- _SimVisualizer_: Visualitzador gràfic. S'usa de:
-    - _Shader.h_: Header per tractar els shaders.
-    - _Camera.h_: Header amb les funcionalitats d'una camera per openGL.
-    - *shaders*: Carpeta amb les shaders normals:
-    - *shaderShadows*: Carpeta amb les shaders compatibles amb el shadow map.
-- _IO/WriteSBF_: Classe d'escriptura de simulacions en binari al disc.
-- _IO/ReadSBF_: Classe de lectura d'arxius SBF.
-- _IO/FrameSBF_: Fotogrames compatibles amb ReadSBF, per a emmagatzemar la informació.
-- _glad/glad.h_ : Header per compatibilitat del projecte amb GLAD.
+## 3D simulator code organization
+- _Simulator\_3D_: CPU 3D simulator.
+- _EntryPoint_: Main of the program. Game loop and loading of simulations.
+- _ParticleStructures_: Header with the different particle distributions to simulate.
+- _Utils_: Constants, IO, and utility functions.
+- _SimVisualizer_: Graphic utilities. Uses:
+    - _Shader.h_: Header to process shaders.
+    - _Camera.h_: Header to update the camera and generate its information.
+    - *shaders*: folder with the actual GLSL shaders:
+    - *shaderShadows*: folder with the shadow mapping GLSL shaders.
+- _IO/WriteSBF_: Writing of simulation binary files to disk.
+- _IO/ReadSBF_: Reading of simulation binary files to disk.
+- _IO/FrameSBF_: Frames compatible with the simulations, to store and read these.
+- _glad/glad.h_: GLAD Header.
+- _cuda/MinMath.h_: Custom linear algebra library adapted for CUDA.
+- _cuda/Simulator_3D_GPU.h_: Interface to run the simulation on the GPU and retrieve the information.
+- _cuda/Sim3D.cu_: CUDA kernels of the simulation.
+- _cuda/svd3_cuda.cuh_: CUDA header with the SVD implementation (by Kui Wu)
 
-## Carpetes
-Es crearan automaticament les carpetes `sim_files` per la escriptura i lectura de totes les simulacions, i `gifs` per l'exportació de simulacions.
+## Folders
+The folders `sim_files` and `gifs` will be automatically created to store and read simulations, and for their exportation as gif files.
 
-## DEPENDENCIES
+## DEPENDENCES
 * GLFW-3.3
 * GLM
 * GLAD
@@ -41,17 +50,14 @@ Es crearan automaticament les carpetes `sim_files` per la escriptura i lectura d
 * Eigen
 * Boost
 * Boost::filesystem
+* CUDA
 
-## Instal·lació
-Es requereix de les dependencies anteriors, d'on Boost::filesystem es una llibreria compilada de sistema. I glfw3 ha de ser compilada previament.
-Aquestes s'han de linkar.
+## Install
+The previous dependences are required. In particular `Boost::filesystem` is a system dependent part of the Boost library, and `OpenGL`, `glfw3` and `CUDA` must also be in the system previously.
 
-La resta de llibreries es poden trobar a mode de headers, s'adjunten per comoditat.
+The other libraries are included on the project.
 
-El Simulador 3D inclou un arxiu `CMakeLists` per a la facil compilació amb aquesta eina.
-
-
-## Links interessants
+## Interesting links
 
 * [Tutorial MPM](https://nialltl.neocities.org/articles/mpm_guide.html)
 * [GitHub Yuan MLS-MPM](https://github.com/yuanming-hu/taichi_mpm/)
